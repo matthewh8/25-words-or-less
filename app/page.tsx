@@ -1,65 +1,91 @@
-import Image from "next/image";
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function Home() {
+  const [t1, setT1] = useState('')
+  const [t2, setT2] = useState('')
+  const [cleared, setCleared] = useState(false)
+  const router = useRouter()
+
+  function clearHistory() {
+    localStorage.removeItem('25wol_used_words')
+    setCleared(true)
+    setTimeout(() => setCleared(false), 2000)
+  }
+
+  function startGame() {
+    const params = new URLSearchParams({
+      t1: t1.trim() || 'Team 1',
+      t2: t2.trim() || 'Team 2',
+    })
+    router.push(`/game?${params}`)
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen bg-[#0d0d14] flex items-center justify-center p-6">
+      <div className="w-full max-w-sm fade-in-up">
+
+        {/* Logo */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#e8774d] text-white text-2xl font-black mb-5 shadow-lg">
+            25
+          </div>
+          <h1 className="text-[2.2rem] font-black text-white tracking-tight leading-none">
+            25 Words or Less
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+          <p className="text-[#e8774d]/80 text-sm mt-1.5 font-medium">Party word game</p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+
+        {/* Team inputs */}
+        <div className="space-y-3 mb-5">
+          {[
+            { val: t1, set: setT1, placeholder: 'Team 1 name' },
+            { val: t2, set: setT2, placeholder: 'Team 2 name' },
+          ].map(({ val, set, placeholder }) => (
+            <input
+              key={placeholder}
+              value={val}
+              onChange={e => set(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && startGame()}
+              placeholder={placeholder}
+              maxLength={20}
+              className="w-full bg-[#15151e] border border-white/[0.08] text-white placeholder-white/25 rounded-xl px-4 py-3.5 text-base font-medium outline-none focus:border-[#e8774d]/60 transition-colors"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          ))}
         </div>
-      </main>
+
+        <button
+          onClick={startGame}
+          className="w-full py-4 rounded-xl bg-[#e8774d] text-white font-black text-lg tracking-wide hover:bg-[#d9663b] active:scale-95 transition-all"
+        >
+          Start Game
+        </button>
+
+        <button
+          onClick={clearHistory}
+          className="w-full mt-3 py-2 text-white/20 text-xs hover:text-white/40 transition-colors"
+        >
+          {cleared ? 'Word history cleared' : 'Reset word history'}
+        </button>
+
+        {/* Round overview — minimal */}
+        <div className="mt-8 grid grid-cols-3 gap-2">
+          {[
+            { icon: '🎯', label: 'Round 1', sub: 'Bid on clue count' },
+            { icon: '🎨', label: 'Rounds 2–3', sub: 'Pick a color stack' },
+            { icon: '💰', label: 'Money Round', sub: '10 words, 60 secs' },
+          ].map(({ icon, label, sub }) => (
+            <div key={label} className="bg-[#15151e] border border-white/[0.06] rounded-xl p-3 text-center">
+              <div className="text-xl mb-1">{icon}</div>
+              <div className="text-white text-xs font-bold leading-tight">{label}</div>
+              <div className="text-white/35 text-[10px] mt-0.5 leading-tight">{sub}</div>
+            </div>
+          ))}
+        </div>
+
+      </div>
     </div>
-  );
+  )
 }
