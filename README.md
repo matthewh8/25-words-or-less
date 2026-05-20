@@ -46,10 +46,10 @@ In development, invalid YAML mode definitions throw with schema errors. In produ
 
 Words are organized by no-tag green/yellow/red difficulty decks plus a money-round deck in `data/words/word-bank.json`. Current audited deck sizes:
 
-- green: 6,000
-- yellow: 27,000
-- red: 16,680
-- money: 320
+- green: 16,000
+- yellow: 16,000
+- red: 16,000
+- money: 2,000
 
 Source and pipeline notes live in `data/words/README.md`. `npm run build:words` rebuilds the committed 50,000-entry runtime bank from open sources, removes exact and spacing-insensitive duplicates, filters malformed/unsafe/noisy entries, and audits every accepted single word into green/yellow/red based on how the stack and bidding rules use difficulty. `npm run audit:words` verifies the final split, duplicate removal, money phrase quality gates, and difficulty shape. `npm run organize:words -- <candidate_files...> --output data/words/organized.generated.json` remains available for review-only candidate experiments.
 

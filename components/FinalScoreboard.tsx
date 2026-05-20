@@ -1,6 +1,7 @@
 'use client'
 
 import type { GameState } from '@/lib/gameState'
+import TeamNameBlock, { teamPlayerLine } from './TeamNameBlock'
 import TeamStatusBar from './TeamStatusBar'
 
 interface Props {
@@ -31,6 +32,11 @@ export default function FinalScoreboard({ state, onRestart }: Props) {
               </>
             )}
           </h2>
+          {!tied && (
+            <p className="mt-2 truncate text-xs font-bold text-white/40 md:text-sm">
+              {teamPlayerLine(teams[winner].players)}
+            </p>
+          )}
           {moneyWon && (
             <p className="text-[#ffd23f]/80 text-sm mt-3">Money Round jackpot</p>
           )}
@@ -47,7 +53,7 @@ export default function FinalScoreboard({ state, onRestart }: Props) {
         </div>
 
         <div className="mb-4 grid gap-2 md:mb-8 md:grid-cols-2 md:gap-3">
-          {sorted.map(({ name, score, index }, rank) => (
+          {sorted.map(({ score, index, ...team }, rank) => (
             <div
               key={index}
               className={`flex min-w-0 items-center justify-between gap-3 rounded-lg px-3 py-3 transition-all sm:px-4 sm:py-4 md:px-5 md:py-6 ${
@@ -58,9 +64,11 @@ export default function FinalScoreboard({ state, onRestart }: Props) {
             >
               <div className="flex min-w-0 items-center gap-3">
                 <span className={`h-3 w-3 rounded-full ${index === 0 ? 'bg-[#ff3a6d]' : 'bg-[#3a8bff]'}`} />
-                <span className={`min-w-0 truncate text-lg font-black uppercase tracking-normal sm:text-xl md:text-2xl ${rank === 0 && !tied ? 'text-[#ffd23f]' : 'text-white'}`}>
-                  {name}
-                </span>
+                <TeamNameBlock
+                  team={team}
+                  nameClassName={`text-lg font-black uppercase tracking-normal sm:text-xl md:text-2xl ${rank === 0 && !tied ? 'text-[#ffd23f]' : 'text-white'}`}
+                  playersClassName="mt-0.5 text-[10px] font-bold text-white/35 md:text-xs"
+                />
               </div>
               <span className="shrink-0 text-3xl font-black tabular-nums tracking-normal text-white sm:text-4xl md:text-5xl">{score.toLocaleString()}</span>
             </div>

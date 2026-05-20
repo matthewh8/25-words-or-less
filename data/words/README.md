@@ -37,10 +37,10 @@ Raw downloads are cached under `data/words/raw/` and ignored by git. Use `npm ru
 
 Current generated mix:
 
-- `green`: 6,000 easiest single words
-- `yellow`: 27,000 broad standard words used for default bidding
-- `red`: 16,680 longer, abstract, inflected, obscure, or harder-to-clue words
-- `money`: 320 reviewed phrases, split evenly between the original curated party-game seed and curated Open English WordNet phrases
+- `green`: 16,000 easiest single words
+- `yellow`: 16,000 broad standard words used for default bidding
+- `red`: 16,000 longer, abstract, inflected, obscure, or harder-to-clue words
+- `money`: 2,000 reviewed phrases, including the original curated party-game seed plus curated Open English WordNet phrases
 
 Run the repeatable final audit with:
 

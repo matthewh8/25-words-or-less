@@ -2,6 +2,7 @@
 
 import type { GameState, GameAction } from '@/lib/gameState'
 import Scoreboard from './Scoreboard'
+import TeamNameBlock from './TeamNameBlock'
 import TeamStatusBar from './TeamStatusBar'
 
 interface Props {
@@ -38,7 +39,12 @@ export default function StackSelection({ state, dispatch }: Props) {
           />
         </div>
 
-        <p className="mono-label mb-1 text-[10px] text-white/45 md:mb-2">{teams[team].name}</p>
+        <TeamNameBlock
+          team={teams[team]}
+          className="mb-1 md:mb-2"
+          nameClassName="mono-label text-[10px] text-white/45"
+          playersClassName="mt-0.5 text-[10px] font-bold text-white/30"
+        />
         <h2 className="mb-3 text-4xl font-black uppercase leading-[0.9] text-white md:mb-6 md:text-6xl">Pick a stack</h2>
 
         <div className="grid grid-cols-3 gap-2 md:gap-3">

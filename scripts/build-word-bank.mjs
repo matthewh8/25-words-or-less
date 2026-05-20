@@ -7,11 +7,11 @@ import path from 'node:path'
 
 const DEFAULT_OUTPUT_PATH = 'data/words/word-bank.json'
 const DEFAULT_TARGET_TOTAL = 50000
-const DEFAULT_MONEY_TARGET = 320
+const DEFAULT_MONEY_TARGET = 2000
 const SINGLE_DECK_TARGET_WEIGHTS = {
-  green: 6000,
-  yellow: 27000,
-  red: 16680,
+  green: 16000,
+  yellow: 16000,
+  red: 16000,
 }
 const SINGLE_DECK_TARGET_WEIGHT_TOTAL = Object.values(SINGLE_DECK_TARGET_WEIGHTS)
   .reduce((total, weight) => total + weight, 0)
@@ -50,6 +50,10 @@ const BLOCKED_WORDS = new Set([
   'CUNT',
   'DICK',
   'DICKHEAD',
+  'DISMEMBER',
+  'DISMEMBERED',
+  'DISMEMBERING',
+  'DISMEMBERS',
   'DRUG',
   'DRUGGED',
   'DRUGGING',
@@ -63,8 +67,16 @@ const BLOCKED_WORDS = new Set([
   'FUCKED',
   'FUCKER',
   'FUCKING',
+  'GANGBANGER',
+  'GANGBANGERS',
   'GENOCIDE',
   'GOOK',
+  'GUN',
+  'GUNFIGHTER',
+  'GUNFIGHTERS',
+  'GUNMAN',
+  'GUNMEN',
+  'GUNS',
   'GYP',
   'GYPPED',
   'GYPPING',
@@ -78,6 +90,11 @@ const BLOCKED_WORDS = new Set([
   'MAIMING',
   'MAIMS',
   'MASSACRE',
+  'MASTURBATE',
+  'MASTURBATED',
+  'MASTURBATES',
+  'MASTURBATING',
+  'MASTURBATION',
   'MOLEST',
   'MOLESTED',
   'MOLESTING',
@@ -92,12 +109,16 @@ const BLOCKED_WORDS = new Set([
   'NAZIS',
   'NIGGA',
   'NIGGER',
+  'ORGY',
+  'ORGIES',
   'PORN',
   'PORNO',
   'PORNOGRAPHY',
   'PISS',
   'PISSED',
   'PISSING',
+  'PSYCHOSIS',
+  'PSYCHOTIC',
   'RAPE',
   'RAPED',
   'RAPIST',
@@ -108,6 +129,9 @@ const BLOCKED_WORDS = new Set([
   'RACISTS',
   'RETARD',
   'SEX',
+  'CONTRACEPTION',
+  'CONTRACEPTIVE',
+  'CONTRACEPTIVES',
   'SEXUAL',
   'SEXUALLY',
   'SHIT',
@@ -566,6 +590,7 @@ const MONEY_AUTO_BLOCKED_COMPONENTS = new Set([
   'BOMBING',
   'BUTLER',
   'CALIPER',
+  'CASSOCK',
   'CANNON',
   'CHAMBER',
   'CHECK',
@@ -583,6 +608,7 @@ const MONEY_AUTO_BLOCKED_COMPONENTS = new Set([
   'DAGGER',
   'DAMAGE',
   'DIPPER',
+  'DIPOLE',
   'DODGER',
   'DOWAGER',
   'DRAFT',
@@ -598,10 +624,12 @@ const MONEY_AUTO_BLOCKED_COMPONENTS = new Set([
   'JINKS',
   'LAPPING',
   'LATENCY',
+  'LIEN',
   'LIQUOR',
   'MACHINE',
   'GUN',
   'GUNNER',
+  'GYPSUM',
   'MEGATON',
   'MILLING',
   'MOORING',
@@ -656,6 +684,7 @@ const MONEY_AUTO_BLOCKED_COMPONENTS = new Set([
 
 const MONEY_AUTO_BAD_PHRASE_PATTERNS = [
   /\b(ABDUCTION|AEROSOL|ATOMIC|BOMBING|BRIEFCASE|CARPET BOMB|CRIMINAL|GUNNER|MEGATON|NUCLEAR|PHALLIC|PISTOL|RIFLE|SURGERY|WARHEAD)\b/,
+  /\bCOMFORT WOMAN\b/,
   /\b(BATTLE|BOMB|CANNON|MACHINE|REACTOR|ROCKET)\b.*\b(BATTLE|BOMB|CANNON|MACHINE|REACTOR|ROCKET)\b/,
   /\b(DOUBLE|FREE|HIGH|LAST|LOWER|OPEN|POWER|SECRET|SILENT|TICKET|UPPER)\b/,
 ]
@@ -870,6 +899,7 @@ function phraseQualityScore(phrase, components, seedPhrase, lexFileNums) {
   let score = seedPhrase ? -10 : 0
 
   score += words.length === 2 ? 0 : words.length === 3 ? 1 : 4
+  if (!seedPhrase && MONEY_SOURCE_ALLOWLIST.has(phrase)) score -= 5
   if (!seedPhrase) score += Math.max(0, phraseLexPenalty(lexFileNums))
   if (totalChars > 26) score += 6
   else if (totalChars > 22) score += 3
@@ -977,6 +1007,13 @@ function hasBadPhraseGloss(glosses) {
 function hasAutoMoneyPhraseBlock(phrase, words) {
   return words.some(word => MONEY_AUTO_BLOCKED_COMPONENTS.has(word))
     || MONEY_AUTO_BAD_PHRASE_PATTERNS.some(pattern => pattern.test(phrase))
+}
+
+function isPlayableMoneySourceComponent(component) {
+  return Boolean(component.cmuPhones || component.seedDecks.size)
+    && component.qualityScore <= 4
+    && component.difficultyScore <= 2.5
+    && (component.inDefault || component.seedDecks.size || EASY_WORDS.has(component.word))
 }
 
 function parseOpenEnglishWordNet(zipPath) {
@@ -1102,8 +1139,7 @@ function buildMoneyCandidates(seedPhrases, sourcePhrases, singleCandidates) {
     if (words.length < 2 || words.length > 4) return
     if (words.some(word => word.length < 2 || !isValidEntry(word))) return
     if (!seedPhrase && words.length > 3) return
-    if (!seedPhrase && !MONEY_SOURCE_ALLOWLIST.has(phrase)) return
-    if (!seedPhrase && !words.some(word => MONEY_SOURCE_ANCHOR_WORDS.has(word))) return
+    if (!seedPhrase && !words.some(word => MONEY_SOURCE_ANCHOR_WORDS.has(word) || EASY_WORDS.has(word))) return
     if (!seedPhrase && hasAutoMoneyPhraseBlock(phrase, words)) return
     if (!seedPhrase && phraseLexPenalty(lexFileNums) >= 8) return
     if (!seedPhrase && hasBadPhraseGloss(glosses)) return
@@ -1111,8 +1147,7 @@ function buildMoneyCandidates(seedPhrases, sourcePhrases, singleCandidates) {
     const components = words.map(word => singleCandidates.byWord.get(word) ?? (seedPhrase ? fallbackPhraseComponent(word) : null))
     if (components.some(component => !component)) return
     const resolvedComponents = components
-    if (!seedPhrase && resolvedComponents.some(component => !component.cmuPhones && !component.seedDecks.size)) return
-    if (!seedPhrase && resolvedComponents.some(component => component.difficultyScore > 0 || component.qualityScore > 2 || !component.inDefault)) return
+    if (!seedPhrase && resolvedComponents.some(component => !isPlayableMoneySourceComponent(component))) return
     if (!seedPhrase && words.some(word => PHRASE_JARGON_COMPONENTS.has(word))) return
 
     const difficultyScore = phraseDifficultyScore(phrase, resolvedComponents, seedPhrase, lexFileNums)

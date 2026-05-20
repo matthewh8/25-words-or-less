@@ -2,6 +2,7 @@
 
 import type { GameState } from '@/lib/gameState'
 import TeamStatusBar from './TeamStatusBar'
+import TeamNameBlock from './TeamNameBlock'
 
 interface Props {
   state: GameState
@@ -13,7 +14,6 @@ export default function PassToClueGiver({ state, onReady }: Props) {
   if (!cluing) return null
 
   const teamName = teams[cluing.cluingTeam].name
-  const roster = teams[cluing.cluingTeam].players
   const limit = cluing.wordLimit
   const wordCount = cluing.words.length
   const seconds = cluing.timeLeft
@@ -29,7 +29,12 @@ export default function PassToClueGiver({ state, onReady }: Props) {
         </div>
       </div>
 
-      <p className="mono-label text-[#ff3a6d] text-xs font-bold mb-3">{teamName}</p>
+      <TeamNameBlock
+        team={teams[cluing.cluingTeam]}
+        className="mb-3 text-center"
+        nameClassName="mono-label text-[#ff3a6d] text-xs font-bold"
+        playersClassName="mt-1 max-w-sm text-xs font-bold text-white/35"
+      />
       <h2 className="text-5xl font-black text-white text-center leading-[0.9] tracking-normal mb-2 uppercase">
         Guessers,<br />
         <span className="text-[#ff3a6d]">eyes closed</span>
@@ -37,11 +42,6 @@ export default function PassToClueGiver({ state, onReady }: Props) {
       <p className="text-white/40 text-sm text-center mt-2 max-w-xs">
         Everyone on <strong className="text-white/70">{teamName}</strong> except the clue giver looks away
       </p>
-      {roster.length > 0 && (
-        <p className="mt-3 max-h-10 max-w-sm overflow-hidden break-words text-center text-xs font-bold leading-snug text-white/35">
-          {roster.join(' / ')}
-        </p>
-      )}
 
       <div className="mt-4 w-full">
         <TeamStatusBar

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { GameState, GameAction } from '@/lib/gameState'
 import Scoreboard from './Scoreboard'
+import TeamNameBlock from './TeamNameBlock'
 import TeamStatusBar from './TeamStatusBar'
 import TimeConfigurator from './TimeConfigurator'
 
@@ -56,7 +57,11 @@ export default function MoneyRound({ state, dispatch }: Props) {
 
           <div className="mb-2 rounded-lg border border-[#ffd23f]/20 bg-[#ffd23f]/10 p-3 text-center md:mb-4 md:p-4">
             <p className="mono-label mb-1 text-[10px] text-[#ffd23f]/80">Playing for</p>
-            <p className="truncate text-lg font-black text-white">{teams[winnerTeam].name}</p>
+            <TeamNameBlock
+              team={teams[winnerTeam]}
+              nameClassName="text-lg font-black text-white"
+              playersClassName="mt-1 text-xs font-bold text-white/40"
+            />
           </div>
 
           <div className="mb-2 md:mb-4">
@@ -100,6 +105,12 @@ export default function MoneyRound({ state, dispatch }: Props) {
                 : `${correct}/${mode.money.wordCount} words / ${teams[winnerTeam].name} still wins`
               }
             </div>
+            <TeamNameBlock
+              team={teams[winnerTeam]}
+              className="mt-2"
+              nameClassName="sr-only"
+              playersClassName="text-xs font-bold text-white/35"
+            />
           </div>
 
           <TeamStatusBar

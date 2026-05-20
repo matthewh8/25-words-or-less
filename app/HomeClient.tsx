@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { teamPlayerLine } from '@/components/TeamNameBlock'
 import type { GameModeSummary } from '@/lib/gameMode'
 import { clearSavedSetup, clearUsedWords, readSavedSetup, writeSavedSetup } from '@/lib/storage'
 import {
@@ -223,6 +224,9 @@ export default function HomeClient({ gameModes }: HomeClientProps) {
                     className="min-w-0 flex-1 bg-transparent text-sm font-black text-white outline-none placeholder:text-white/25 lg:text-lg"
                   />
                 </div>
+                <p className="mt-1 truncate text-[10px] font-bold text-white/35">
+                  {teamPlayerLine(teamPlayers[index as TeamIndex], 'No players assigned', 4)}
+                </p>
               </label>
             ))}
           </div>

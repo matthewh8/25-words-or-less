@@ -1,6 +1,7 @@
 'use client'
 
 import type { TeamState } from '@/lib/gameState'
+import TeamNameBlock from './TeamNameBlock'
 
 interface TeamStatusBarProps {
   teams: [TeamState, TeamState]
@@ -11,13 +12,6 @@ interface TeamStatusBarProps {
 }
 
 const TEAM_COLORS = ['#ff3a6d', '#3a8bff'] as const
-
-function playerLine(players: string[]): string {
-  if (!players.length) return 'No players assigned'
-  const visible = players.slice(0, 5)
-  const extra = players.length - visible.length
-  return extra > 0 ? `${visible.join(' / ')} / +${extra}` : visible.join(' / ')
-}
 
 export default function TeamStatusBar({ teams, activeTeam, activeLabel = 'Up', caption, compact }: TeamStatusBarProps) {
   return (
@@ -41,9 +35,11 @@ export default function TeamStatusBar({ teams, activeTeam, activeLabel = 'Up', c
               <div className="mb-1 flex min-w-0 items-center justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-1.5">
                   <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: TEAM_COLORS[teamIndex] }} />
-                  <span className="min-w-0 truncate text-sm font-black uppercase tracking-normal text-white md:text-base">
-                    {team.name}
-                  </span>
+                  <TeamNameBlock
+                    team={team}
+                    nameClassName="text-sm font-black uppercase tracking-normal text-white md:text-base"
+                    playersClassName={`text-[10px] font-bold leading-snug text-white/45 md:text-[11px] ${compact ? 'max-h-4' : ''}`}
+                  />
                 </div>
                 <span className={`shrink-0 rounded-sm px-1.5 py-0.5 text-[8px] font-black uppercase ${
                   active ? 'bg-[#ffd23f] text-[#0a0d14]' : 'bg-white/10 text-white/45'
@@ -51,9 +47,6 @@ export default function TeamStatusBar({ teams, activeTeam, activeLabel = 'Up', c
                   {active ? activeLabel : `Team ${teamIndex + 1}`}
                 </span>
               </div>
-              <p className={`min-w-0 truncate text-[10px] font-bold leading-snug text-white/45 md:text-[11px] ${compact ? 'max-h-4' : ''}`}>
-                {playerLine(team.players)}
-              </p>
             </div>
           )
         })}

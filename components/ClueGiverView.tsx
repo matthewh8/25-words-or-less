@@ -11,6 +11,7 @@ import { getSpeechRecognitionConstructor, isSpeechRecognitionSupported, stopSpee
 import { useActionInterval } from '@/lib/useActionInterval'
 import Timer from './Timer'
 import Scoreboard from './Scoreboard'
+import TeamNameBlock from './TeamNameBlock'
 import TeamStatusBar from './TeamStatusBar'
 
 interface Props {
@@ -344,7 +345,13 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
             <p className="mono-label shrink-0 text-white/35 text-[10px]">
               {Math.min(currentWordIndex + 1, words.length)} of {words.length}
             </p>
-            <p className="mono-label min-w-0 truncate text-right text-white/35 text-[10px]">{teams[cluingTeam].name}</p>
+            <TeamNameBlock
+              team={teams[cluingTeam]}
+              className="text-right"
+              nameClassName="mono-label text-white/35 text-[10px]"
+              playersClassName="mt-0.5 text-[9px] font-bold text-white/25"
+              maxPlayers={3}
+            />
           </div>
 
           <div className="flex flex-1 flex-col items-center justify-center text-center">

@@ -7,6 +7,7 @@ import { useActionInterval } from '@/lib/useActionInterval'
 import Scoreboard from './Scoreboard'
 import Timer from './Timer'
 import TeamStatusBar from './TeamStatusBar'
+import TeamNameBlock from './TeamNameBlock'
 
 interface Props {
   state: GameState
@@ -109,6 +110,9 @@ export default function BiddingRound({ state, dispatch }: Props) {
             <p className="mt-1 text-xs text-white/45 md:mt-3 md:text-sm">
               <span className="font-semibold text-white">{activeName}</span> bids lower, bids {winBid}, or concedes
             </p>
+            <p className="mt-1 max-w-44 truncate text-[10px] font-bold text-white/30">
+              {teams[activeBidder].players.length ? teams[activeBidder].players.join(' / ') : 'No players assigned'}
+            </p>
             <div className={`mono-label mt-1 text-[10px] md:hidden ${timeExpired ? 'text-[#ff3a6d]' : 'text-white/45'}`}>
               {timeExpired ? 'timer expired' : `${biddingTimeLeft}s left`}
             </div>
@@ -128,7 +132,13 @@ export default function BiddingRound({ state, dispatch }: Props) {
                   className={`rounded-md border p-2 md:p-3 ${biddingTeam === i ? 'border-[#ffd23f] bg-[#ffd23f]/10' : 'border-white/10 bg-white/[0.03]'}`}
                 >
                   <div className="mono-label text-[9px] text-white/45">{biddingTeam === i ? 'holds bid' : 'challenger'}</div>
-                  <div className="mt-1 truncate text-base font-black uppercase md:text-lg">{team.name}</div>
+                  <TeamNameBlock
+                    team={team}
+                    className="mt-1"
+                    nameClassName="text-base font-black uppercase md:text-lg"
+                    playersClassName="mt-0.5 text-[10px] font-bold text-white/35"
+                    maxPlayers={3}
+                  />
                 </div>
               ))}
             </div>

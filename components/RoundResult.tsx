@@ -2,6 +2,7 @@
 
 import type { GameState, GameAction } from '@/lib/gameState'
 import Scoreboard from './Scoreboard'
+import TeamNameBlock from './TeamNameBlock'
 import TeamStatusBar from './TeamStatusBar'
 
 interface Props {
@@ -47,6 +48,12 @@ export default function RoundResult({ state, dispatch }: Props) {
           <p className="mono-label mb-2 text-[10px] text-white/45 md:mb-4">{isBid ? 'Bid result' : 'Round result'}</p>
           <div className={`mb-2 text-4xl font-black uppercase leading-[0.85] md:mb-4 md:text-8xl ${allCorrect ? 'text-[#2de584]' : 'text-white'}`}>{headline}</div>
           <div className="text-sm text-white/55 md:text-lg">{subline}</div>
+          <TeamNameBlock
+            team={teams[points > 0 ? awardTeam : lastResult.team]}
+            className="mt-2"
+            nameClassName="sr-only"
+            playersClassName="text-xs font-bold text-white/35"
+          />
           <div className="mt-3 md:mt-6">
             <Scoreboard teams={teams} highlight={points > 0 ? awardTeam : undefined} compact />
           </div>

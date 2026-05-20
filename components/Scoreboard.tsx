@@ -1,6 +1,7 @@
 'use client'
 
 import type { TeamState } from '@/lib/gameState'
+import TeamNameBlock from './TeamNameBlock'
 
 interface ScoreboardProps {
   teams: [TeamState, TeamState]
@@ -25,7 +26,13 @@ export default function Scoreboard({ teams, highlight, compact }: ScoreboardProp
           >
             <div className="mono-label flex min-w-0 items-center justify-center gap-1.5 text-[9px] opacity-70">
               <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: colors[i] }} />
-              <span className="min-w-0 truncate">{t.name}</span>
+              <TeamNameBlock
+                team={t}
+                nameClassName="uppercase"
+                playersClassName="mt-0.5 text-[8px] normal-case opacity-70"
+                emptyLabel="No players"
+                maxPlayers={3}
+              />
             </div>
             <div className="text-xl font-black tabular-nums tracking-normal">{t.score.toLocaleString()}</div>
           </div>
@@ -47,7 +54,12 @@ export default function Scoreboard({ teams, highlight, compact }: ScoreboardProp
         >
           <div className="mono-label mb-1 flex min-w-0 items-center justify-center gap-2 text-[10px] opacity-70">
             <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: colors[i] }} />
-            <span className="min-w-0 truncate">{t.name}</span>
+            <TeamNameBlock
+              team={t}
+              nameClassName="uppercase"
+              playersClassName="mt-0.5 text-[9px] normal-case opacity-70"
+              emptyLabel="No players"
+            />
           </div>
           <div className="text-5xl font-black tabular-nums tracking-normal">{t.score.toLocaleString()}</div>
           <div className="mono-label mt-1 text-[9px] opacity-45">points</div>
