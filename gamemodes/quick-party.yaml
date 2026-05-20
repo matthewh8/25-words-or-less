@@ -1,0 +1,78 @@
+id: quick-party
+name: Quick Party
+shortName: QUICK
+description: Short timers, one bid contest, and fewer stack turns for fast rotations.
+roundCount: 3
+
+timing:
+  turnSeconds: 30
+  moneySeconds: 45
+  biddingSeconds: 45
+  minSeconds: 10
+  maxSeconds: 180
+  turnPresets: [20, 30, 45, 60]
+  moneyPresets: [30, 45, 60, 90]
+
+bidding:
+  title: Speed Bid
+  contests: 1
+  wordDeck: bidding
+  wordCount: 5
+  minBid: 5
+  maxBid: 20
+  successPoints: 8
+  failurePoints: 4
+  failureAward: opponent
+
+stacks:
+  title: Fast Stacks
+  wordCount: 5
+  wordLimit: 16
+  allCorrectBonus: 4
+  rounds:
+    - number: 2
+      turns: 3
+      startTeam: 0
+  options:
+    - id: green
+      label: Green
+      wordDeck: green
+      pointsPerWord: 1
+      color: "#2de584"
+    - id: yellow
+      label: Yellow
+      wordDeck: yellow
+      pointsPerWord: 2
+      color: "#ffd23f"
+    - id: red
+      label: Red
+      wordDeck: red
+      pointsPerWord: 3
+      color: "#ff3a6d"
+
+money:
+  title: Flash Final
+  wordDeck: money
+  wordCount: 8
+  wordLimit: 20
+  jackpotPoints: 18
+
+clueActions:
+  allowSkip: true
+  allowBudgetRefund: true
+  autoAdvanceOnCorrect: true
+
+challenge:
+  enabledByDefault: true
+  includeAlcoholByDefault: false
+  maxPerGame: 3
+  frequency: low
+  prompts:
+    perfect:
+      - "Fast and clean: opponents give a five-second applause break."
+    standard:
+      - "Quick dare: losing team speaks in movie-trailer voice until Continue."
+
+accessibility:
+  speechRecognitionDefault: false
+  announceControls: true

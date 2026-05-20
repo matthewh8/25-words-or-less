@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 25 Words or Less
 
-## Getting Started
+Local same-screen party implementation built with Next.js App Router.
 
-First, run the development server:
+## Run
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Game Modes
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Game modes live in `gamemodes/*.yaml`. The home screen lists every YAML file in that directory, and `/game?mode=<id>` loads the selected mode on the server before starting the client reducer.
 
-## Learn More
+Bundled modes:
 
-To learn more about Next.js, take a look at the following resources:
+- `classic.yaml`
+- `quick-party.yaml`
+- `chaos.yaml`
+- `no-mercy.yaml`
+- `team-draft.yaml`
+- `finals-week.yaml`
+- `chill.yaml`
+- `drinking-lite.yaml`
+- `sudden-death.yaml`
+- `word-nerd.yaml`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Each YAML file controls:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- bidding contests, bid bounds, word count, and success/failure scoring
+- stack rounds, stack labels, per-word points, word limits, and all-correct bonus
+- money round word count, word limit, jackpot points, and timers
+- timer presets and min/max custom timer bounds
+- keyboard clue-action behavior
+- party challenge frequency, caps, and optional 21+ prompts
+- accessibility defaults such as speech-recognition opt-in
 
-## Deploy on Vercel
+To add a mode, copy `gamemodes/classic.yaml`, change `id`, `name`, and the rule values, then restart the dev server if it was already running.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+In development, invalid YAML mode definitions throw with schema errors. In production, bad or missing modes fall back to classic. Any configured `21+ option` challenge prompt must include a non-alcohol alternative, and any challenge-capable mode must define at least one prompt.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Word Bank
+
+Words are organized by green/yellow/red difficulty decks plus a money-round deck in `lib/words.ts`. Current curated deck sizes:
+
+- green: 2,054
+- yellow: 1,925
+- red: 2,092
+- money: 160
+
+Source and pipeline notes live in `data/word-bank-sources.md`. `npm run import:words -- <cefr_csv> data/word-bank.generated.json --source-id <slug-id> --source-name "<name>" --source-url <https-or-local-url> --license-note "<license note>"` generates a cleaned, attributed expansion file from a compatible CEFR CSV for review before integrating a larger bank.
+
+`validateWordBank()` checks deck IDs, difficulty tiers, source attribution, tag validity, ISO import dates, within-deck and cross-play-deck duplicates, empty values, malformed entries, over-long entries, lowercase entries, and blocked unsafe terms.
+`getWordBankSummary()` exposes the same inventory in code so deck sizes and source coverage are covered by tests, not only README prose.
+
+The full word bank is imported by server code. The client requests round-sized deals from `/api/deal`, so generated client chunks stay free of the bundled word-bank literals and only receive the words needed for the next screen.
+
+## Checks
+
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run audit
+npm run build
+npm run check
+```

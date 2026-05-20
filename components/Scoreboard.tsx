@@ -1,6 +1,6 @@
 'use client'
 
-import { TeamState } from '@/lib/gameState'
+import type { TeamState } from '@/lib/gameState'
 
 interface ScoreboardProps {
   teams: [TeamState, TeamState]
@@ -9,20 +9,25 @@ interface ScoreboardProps {
 }
 
 export default function Scoreboard({ teams, highlight, compact }: ScoreboardProps) {
+  const colors = ['#ff3a6d', '#3a8bff'] as const
+
   if (compact) {
     return (
-      <div className="flex gap-2 justify-center">
+      <div className="flex min-w-0 max-w-full flex-1 gap-2 justify-center">
         {teams.map((t, i) => (
           <div
             key={i}
-            className={`flex-1 px-3 py-2 rounded-xl text-center transition-all ${
+            className={`min-w-0 flex-1 rounded-md px-2 py-2 text-center transition-all sm:px-3 ${
               highlight === i
-                ? 'bg-[#e8774d] text-white'
-                : 'bg-white/[0.06] border border-white/[0.08] text-white'
+                ? 'bg-[#ffd23f] text-[#0a0d14]'
+                : 'bg-[#141826] border border-white/10 text-white'
             }`}
           >
-            <div className="text-[10px] uppercase tracking-widest font-semibold opacity-60 truncate">{t.name}</div>
-            <div className="text-lg font-black tabular-nums">{t.score.toLocaleString()}</div>
+            <div className="mono-label flex min-w-0 items-center justify-center gap-1.5 text-[9px] opacity-70">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: colors[i] }} />
+              <span className="min-w-0 truncate">{t.name}</span>
+            </div>
+            <div className="text-xl font-black tabular-nums tracking-normal">{t.score.toLocaleString()}</div>
           </div>
         ))}
       </div>
@@ -30,19 +35,22 @@ export default function Scoreboard({ teams, highlight, compact }: ScoreboardProp
   }
 
   return (
-    <div className="flex gap-3">
+    <div className="flex min-w-0 gap-3">
       {teams.map((t, i) => (
         <div
           key={i}
-          className={`flex-1 rounded-2xl p-5 text-center transition-all ${
+          className={`min-w-0 flex-1 rounded-lg p-5 text-center transition-all ${
             highlight === i
-              ? 'bg-[#e8774d] text-white'
-              : 'bg-white/[0.06] border border-white/[0.08] text-white'
+              ? 'bg-[#ffd23f] text-[#0a0d14]'
+              : 'bg-[#141826] border border-white/10 text-white'
           }`}
         >
-          <div className="text-xs uppercase tracking-widest font-semibold opacity-60 mb-0.5 truncate">{t.name}</div>
-          <div className="text-4xl font-black tabular-nums">{t.score.toLocaleString()}</div>
-          <div className="text-xs mt-0.5 opacity-40">pts</div>
+          <div className="mono-label mb-1 flex min-w-0 items-center justify-center gap-2 text-[10px] opacity-70">
+            <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: colors[i] }} />
+            <span className="min-w-0 truncate">{t.name}</span>
+          </div>
+          <div className="text-5xl font-black tabular-nums tracking-normal">{t.score.toLocaleString()}</div>
+          <div className="mono-label mt-1 text-[9px] opacity-45">points</div>
         </div>
       ))}
     </div>

@@ -1,8 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
-import { GameState, GameAction } from '@/lib/gameState'
-import { getChallenge, ChallengeContext } from '@/lib/challenges'
+import type { GameState, GameAction } from '@/lib/gameState'
 import Scoreboard from './Scoreboard'
 
 interface Props {
@@ -11,14 +9,13 @@ interface Props {
 }
 
 export default function RoundResult({ state, dispatch }: Props) {
-  const { lastResult, teams, cluing } = state
+  const { lastResult, teams, cluing, lastChallenge } = state
   if (!lastResult || !cluing) return null
 
-  const { points, team, allCorrect } = lastResult
+  const { points, awardTeam, allCorrect } = lastResult
   const correct = cluing.guessed.filter(Boolean).length
   const total = cluing.words.length
-  const isBid = cluing.difficulty === 'bid'
-  const other: 0 | 1 = team === 0 ? 1 : 0
+  const isBid = cluing.stream === 'bidding'
 
   const headline = isBid
     ? allCorrect ? 'Done!' : "Didn't make it"
@@ -26,59 +23,64 @@ export default function RoundResult({ state, dispatch }: Props) {
 
   const subline = isBid
     ? allCorrect
-      ? `${teams[team].name} gets +1,000 pts`
-      : `${teams[other].name} gets +500 pts`
-    : `+${points.toLocaleString()} pts for ${teams[team].name}`
-
-  const ctx: ChallengeContext = isBid && !allCorrect ? 'bid_fail' : allCorrect ? 'perfect' : 'partial'
-  // Stable per render — only recalculated when result changes
-  const challenge = useMemo(() => getChallenge(ctx), [ctx, points, team]) // eslint-disable-line react-hooks/exhaustive-deps
+      ? `${teams[awardTeam].name} gets +${points.toLocaleString()} pts`
+      : points > 0 ? `${teams[awardTeam].name} gets +${points.toLocaleString()} pts` : 'No points awarded'
+    : `+${points.toLocaleString()} pts for ${teams[awardTeam].name}`
 
   return (
-    <div className="min-h-screen bg-[#0d0d14] flex flex-col items-center justify-center p-5 fade-in-up">
-      <div className="w-full max-w-sm">
+    <div className="flex h-dvh flex-col items-center justify-center overflow-hidden bg-[#0a0d14] p-3 text-white md:p-8">
+      <div className="grid h-full w-full max-w-5xl grid-rows-[1fr_auto] gap-2 fade-in-up md:h-auto md:gap-5">
 
+        <div className="grid min-h-0 gap-2 lg:grid-cols-[0.95fr_1.05fr] lg:gap-5">
         {/* Result hero */}
-        <div className={`rounded-2xl p-5 text-center mb-4 ${
-          allCorrect ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-white/[0.04] border border-white/[0.08]'
+        <div className={`rounded-lg p-3 md:p-8 ${
+          allCorrect ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-[#141826] border border-white/10'
         }`}>
-          <div className="text-4xl mb-2">{allCorrect ? '🎉' : correct === 0 ? '😬' : '👏'}</div>
-          <div className={`text-3xl font-black mb-0.5 ${allCorrect ? 'text-emerald-400' : 'text-white'}`}>{headline}</div>
-          <div className="text-white/50 text-sm">{subline}</div>
+          <p className="mono-label mb-2 text-[10px] text-white/45 md:mb-4">{isBid ? 'Bid result' : 'Round result'}</p>
+          <div className={`mb-2 text-4xl font-black uppercase leading-[0.85] md:mb-4 md:text-8xl ${allCorrect ? 'text-[#2de584]' : 'text-white'}`}>{headline}</div>
+          <div className="text-sm text-white/55 md:text-lg">{subline}</div>
+          <div className="mt-3 md:mt-6">
+            <Scoreboard teams={teams} highlight={points > 0 ? awardTeam : undefined} compact />
+          </div>
         </div>
 
         {/* Word reveal */}
-        <div className="grid grid-cols-5 gap-1.5 mb-4">
+        <div className="min-h-0 rounded-lg border border-white/10 bg-[#141826] p-3 md:p-5">
+        <p className="mono-label mb-2 text-[10px] text-white/45 md:mb-3">Answers</p>
+        <div className="mb-2 grid grid-cols-2 gap-1.5 sm:grid-cols-5 lg:grid-cols-1 md:mb-4 md:gap-2">
           {cluing.words.map((w, i) => (
             <div
               key={i}
-              className={`rounded-xl py-3 px-1 text-center text-[11px] font-black ${
+              className={`flex min-w-0 items-center justify-between gap-2 rounded-md px-2 py-2 text-xs font-black uppercase md:px-3 md:py-3 md:text-sm ${
                 cluing.guessed[i]
                   ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/25'
-                  : 'bg-red-500/10 text-red-400/80 border border-red-500/20'
+                  : 'bg-[#ff3a6d]/10 text-[#ff3a6d] border border-[#ff3a6d]/20'
               }`}
             >
-              {w}
-              <div className="text-sm mt-1">{cluing.guessed[i] ? '✓' : '✗'}</div>
+              <span className="shrink-0 font-mono text-[10px] opacity-50 md:text-xs">0{i + 1}</span>
+              <span className="min-w-0 truncate">{w}</span>
+              <span>{cluing.guessed[i] ? '✓' : '✗'}</span>
             </div>
           ))}
         </div>
 
-        <Scoreboard teams={teams} highlight={allCorrect ? team : isBid && !allCorrect ? other : undefined} />
-
-        {/* Shot moment */}
-        <div className="mt-4 bg-[#1e1410] border border-[#e8774d]/25 rounded-xl p-4">
-          <p className="text-[#e8774d] text-[9px] uppercase tracking-[0.2em] font-bold mb-2">🥃 Shot Moment</p>
-          <p className="text-white/80 text-sm leading-snug">
-            <span className="mr-1.5">{challenge.emoji}</span>{challenge.text}
-          </p>
+        {lastChallenge && (
+          <div className="mt-2 rounded-md border border-[#ffd23f]/25 bg-[#161a2b] p-3 md:mt-4 md:p-4">
+            <p className="mono-label mb-1 text-[9px] font-bold text-[#ffd23f] md:mb-2">{lastChallenge.label}</p>
+            <p className="text-xs leading-snug text-white/80 md:text-sm">{lastChallenge.text}</p>
+            {lastChallenge.alcoholOptional && (
+              <p className="mono-label mt-2 text-[8px] text-white/35">Optional 21+ prompt / non-alcohol fallback included</p>
+            )}
+          </div>
+        )}
+        </div>
         </div>
 
         <button
           onClick={() => dispatch({ type: 'NEXT_AFTER_RESULT' })}
-          className="mt-4 w-full py-4 rounded-xl bg-[#e8774d] text-white font-black text-base tracking-wide hover:bg-[#d9663b] active:scale-95 transition-all"
+          className="w-full rounded-md bg-[#ffd23f] py-3.5 text-base font-black uppercase tracking-normal text-[#0a0d14] transition-all hover:bg-[#ffe071] active:scale-95 md:py-4"
         >
-          Continue →
+          Continue
         </button>
       </div>
     </div>

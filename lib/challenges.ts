@@ -1,69 +1,152 @@
+import type { ChallengeRules } from './gameMode'
+
 export interface Challenge {
-  emoji: string
+  label: string
   text: string
+  alcoholOptional: boolean
 }
 
-// Context-aware pools — picked from based on what just happened
-const onPerfect: Challenge[] = [
-  { emoji: '🏆', text: 'Perfect round — losing team each takes a drink.' },
-  { emoji: '🎉', text: 'All words guessed! Winning team picks one person from the other team to drink.' },
-  { emoji: '👑', text: 'Flawless. Losing team members drink once each.' },
-  { emoji: '🍾', text: 'Perfect round — everyone toasts and drinks together.' },
-  { emoji: '😤', text: 'Too good. Losing team\'s clue giver drinks twice.' },
-]
-
-const onBidFail: Challenge[] = [
-  { emoji: '😬', text: 'You said you could do it in that many words. Everyone on the failing team drinks.' },
-  { emoji: '🫵', text: 'Bold claim, bad execution. Clue giver drinks twice.' },
-  { emoji: '📉', text: 'Bid failed. Clue giver picks a teammate to drink with them.' },
-  { emoji: '🤦', text: 'Over-promised, under-delivered. Failing team each takes a sip.' },
-  { emoji: '🎯', text: 'Off target. The whole room decides if the clue giver drinks.' },
-]
-
-const onPartial: Challenge[] = [
-  { emoji: '🎲', text: 'One drink per missed word — split however the team wants.' },
-  { emoji: '🤏', text: 'Close but not perfect. Clue giver drinks once per skipped word.' },
-  { emoji: '👀', text: 'Left some on the table. Clue giver drinks once, guessers decide if they join.' },
-  { emoji: '💸', text: 'Points lost. Clue giver owes one drink to the room.' },
-  { emoji: '⏱️', text: 'Didn\'t finish in time. Everyone on the cluing team takes a sip.' },
-]
-
-const wildCards: Challenge[] = [
-  { emoji: '🔄', text: 'Swap seats with someone before the next round.' },
-  { emoji: '🤫', text: 'Loser of the round must whisper everything for the next turn.' },
-  { emoji: '🎤', text: 'Next clue giver must speak in an accent for their entire turn.' },
-  { emoji: '🙈', text: 'Next clue giver must give all clues with their eyes closed.' },
-  { emoji: '🤐', text: 'Slowest guesser last round takes a drink — team decides who that was.' },
-  { emoji: '🍺', text: 'Everyone takes one drink just because.' },
-  { emoji: '🫳', text: 'Losing team nominates their clue giver to drink.' },
-  { emoji: '🧊', text: 'Winning team picks one person on the losing team to drink.' },
-  { emoji: '🎯', text: 'Everyone drinks — it\'s been long enough.' },
-  { emoji: '🕵️', text: 'If any guesser cheated (peeked), they drink twice. Honor system.' },
-]
-
-function pick<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]
+export interface ChallengeStats {
+  stream: 'bidding' | 'stack' | 'money'
+  allCorrect: boolean
+  correctCount: number
+  totalWords: number
+  skipCount: number
+  moneyWon: boolean
+  roundMarker: number
+  challengesShown: number
 }
 
-export type ChallengeContext = 'perfect' | 'bid_fail' | 'partial' | 'money_win' | 'money_fail'
+export type ChallengeCategory =
+  | 'zeroCorrect'
+  | 'manySkips'
+  | 'perfect'
+  | 'closeFailure'
+  | 'moneyWin'
+  | 'moneyFail'
+  | 'standard'
 
-export function getChallenge(ctx: ChallengeContext): Challenge {
-  // 30% chance of a wildcard regardless of context, for variety
-  if (Math.random() < 0.30) return pick(wildCards)
+export interface ChallengeSettings {
+  enabled: boolean
+  includeAlcohol: boolean
+}
 
-  switch (ctx) {
-    case 'perfect':   return pick(onPerfect)
-    case 'bid_fail':  return pick(onBidFail)
-    case 'money_win': return pick([
-      { emoji: '🏆', text: 'JACKPOT! Losers each take two drinks to honor the champions.' },
-      { emoji: '🍾', text: 'Money round won! Everyone drinks in celebration.' },
-      { emoji: '💰', text: 'They did it! Losing team buys the next round.' },
-    ])
-    case 'money_fail': return pick([
-      { emoji: '😔', text: 'So close! Clue giver drinks once for every missed word.' },
-      { emoji: '💸', text: 'Left money on the table. Whole winning team takes a consolation drink.' },
-    ])
-    case 'partial':
-    default:          return pick([...onPartial, ...wildCards])
+const DEFAULT_PROMPTS: Record<ChallengeCategory, string[]> = {
+  zeroCorrect: [
+    'Team reset: everyone on the cluing team says one useful clue they should have tried.',
+    'Bench conference: cluing team takes ten seconds to create a team chant.',
+    'Water timeout: cluing team takes a reset sip of water before the next round.',
+  ],
+  manySkips: [
+    'Skip tax: cluing team must describe the next round in three words before it starts.',
+    'Speed bump: team captain gives the next clue giver a one-sentence pep talk.',
+    'Table vote: the room names the funniest skipped word.',
+  ],
+  perfect: [
+    'Victory lap: opponents give the perfect team a five-second applause break.',
+    'Perfect pressure: opponents choose one harmless voice for the next clue giver.',
+    'Clean sweep: winning team assigns a tiny celebration dance to the other team.',
+  ],
+  closeFailure: [
+    'So close: cluing team gets one dramatic group sigh.',
+    'Near miss: opponents pick the word that hurt the most.',
+    'One-away energy: cluing team points to its almost-MVP.',
+  ],
+  moneyWin: [
+    'Jackpot toast: everyone celebrates the winners with a water cheers.',
+    'Final flex: winners choose a victory pose for the room.',
+    'Clutch call: opponents must compliment the final clue giver.',
+  ],
+  moneyFail: [
+    'Final stumble: winning team still gets a water cheers.',
+    'Left on the table: room picks the one word that would have changed everything.',
+    'Closeout reset: both teams take ten seconds before final scores.',
+  ],
+  standard: [
+    'Room challenge: losing team gives the next clue giver a nickname for one round.',
+    'Mini dare: cluing team speaks in dramatic announcer voice until the next screen.',
+    'Hydration break: both teams take a quick water sip.',
+  ],
+}
+
+const ALCOHOL_PROMPTS: Record<ChallengeCategory, string[]> = {
+  zeroCorrect: [
+    '21+ option: cluing team takes one sip each, or does a team chant instead.',
+  ],
+  manySkips: [
+    '21+ option: one sip for the clue giver, or the clue giver does ten seconds of karaoke.',
+  ],
+  perfect: [
+    '21+ option: opponents take a sip, or perform the perfect team chant.',
+  ],
+  closeFailure: [
+    '21+ option: clue giver takes one sip, or gives the room a fake apology speech.',
+  ],
+  moneyWin: [
+    '21+ option: everyone takes a celebration sip, or raises a water cheers.',
+  ],
+  moneyFail: [
+    '21+ option: final clue giver takes a sip, or gives a dramatic concession speech.',
+  ],
+  standard: [
+    '21+ option: losing team takes a sip, or does a five-second slow clap.',
+  ],
+}
+
+function isAlcoholPrompt(text: string): boolean {
+  return text.toLowerCase().includes('21+ option')
+}
+
+function promptPool(rules: ChallengeRules, category: ChallengeCategory, includeAlcohol: boolean): string[] {
+  const configured = rules.prompts[category] ?? []
+  const safeConfigured = includeAlcohol ? configured : configured.filter(prompt => !isAlcoholPrompt(prompt))
+  const base = safeConfigured.length ? safeConfigured : DEFAULT_PROMPTS[category].filter(prompt => includeAlcohol || !isAlcoholPrompt(prompt))
+  return includeAlcohol ? [...base, ...ALCOHOL_PROMPTS[category]] : base
+}
+
+function chooseCategory(stats: ChallengeStats): ChallengeCategory {
+  if (stats.stream === 'money') return stats.moneyWon ? 'moneyWin' : 'moneyFail'
+  if (stats.allCorrect) return 'perfect'
+  if (stats.correctCount === 0) return 'zeroCorrect'
+  if (stats.skipCount >= Math.max(2, Math.ceil(stats.totalWords / 2))) return 'manySkips'
+  if (stats.correctCount >= stats.totalWords - 1) return 'closeFailure'
+  return 'standard'
+}
+
+function shouldShowChallenge(rules: ChallengeRules, settings: ChallengeSettings, stats: ChallengeStats): boolean {
+  if (!settings.enabled) return false
+  if (rules.frequency === 'off') return false
+  if (stats.challengesShown >= rules.maxPerGame) return false
+
+  const category = chooseCategory(stats)
+  if (rules.frequency === 'high') return true
+  if (category !== 'standard') return true
+  if (rules.frequency === 'low') return false
+
+  // Normal mode keeps routine prompts occasional while still showing performance-based prompts.
+  return (stats.roundMarker + stats.challengesShown) % 2 === 0
+}
+
+export function selectChallenge(
+  rules: ChallengeRules,
+  settings: ChallengeSettings,
+  stats: ChallengeStats
+): Challenge | null {
+  if (!shouldShowChallenge(rules, settings, stats)) return null
+
+  const category = chooseCategory(stats)
+  const pool = promptPool(rules, category, settings.includeAlcohol)
+  const text = pool[(stats.roundMarker + stats.correctCount + stats.skipCount + stats.challengesShown) % pool.length]
+
+  return {
+    label: category === 'moneyWin' ? 'Money win'
+      : category === 'moneyFail' ? 'Money miss'
+      : category === 'zeroCorrect' ? 'Zero correct'
+      : category === 'manySkips' ? 'Skip penalty'
+      : category === 'perfect' ? 'Perfect round'
+      : category === 'closeFailure' ? 'Close failure'
+      : 'Party prompt',
+    text,
+    alcoholOptional: isAlcoholPrompt(text),
   }
 }

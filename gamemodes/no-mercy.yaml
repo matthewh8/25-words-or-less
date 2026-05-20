@@ -1,0 +1,81 @@
+id: no-mercy
+name: No Mercy
+shortName: MERCY
+description: Stricter bids, fewer safety nets, and bigger failure swings.
+roundCount: 4
+
+timing:
+  turnSeconds: 35
+  moneySeconds: 55
+  biddingSeconds: 50
+  minSeconds: 10
+  maxSeconds: 240
+  turnPresets: [25, 35, 45, 60]
+  moneyPresets: [45, 55, 70, 90]
+
+bidding:
+  title: No Mercy Bid
+  contests: 2
+  wordDeck: bidding
+  wordCount: 5
+  minBid: 5
+  maxBid: 18
+  successPoints: 12
+  failurePoints: 8
+  failureAward: opponent
+
+stacks:
+  title: Pressure Stacks
+  wordCount: 5
+  wordLimit: 15
+  allCorrectBonus: 4
+  rounds:
+    - number: 2
+      turns: 3
+      startTeam: 0
+    - number: 3
+      turns: 3
+      startTeam: 1
+  options:
+    - id: green
+      label: Green
+      wordDeck: green
+      pointsPerWord: 1
+      color: "#2de584"
+    - id: yellow
+      label: Yellow
+      wordDeck: yellow
+      pointsPerWord: 2
+      color: "#ffd23f"
+    - id: red
+      label: Red
+      wordDeck: red
+      pointsPerWord: 4
+      color: "#ff3a6d"
+
+money:
+  title: Mercy Final
+  wordDeck: money
+  wordCount: 10
+  wordLimit: 20
+  jackpotPoints: 28
+
+clueActions:
+  allowSkip: true
+  allowBudgetRefund: false
+  autoAdvanceOnCorrect: true
+
+challenge:
+  enabledByDefault: true
+  includeAlcoholByDefault: false
+  maxPerGame: 4
+  frequency: normal
+  prompts:
+    closeFailure:
+      - "No mercy: opponents pick the most painful missed word."
+    zeroCorrect:
+      - "Shutout reset: cluing team takes a silent ten-second huddle."
+
+accessibility:
+  speechRecognitionDefault: false
+  announceControls: true

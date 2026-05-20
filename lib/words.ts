@@ -1,9 +1,83 @@
+import type { WordDeckId } from './gameMode'
+import { pickWords, type WordPools } from './wordSelection'
+
+export { pickWords } from './wordSelection'
+
 export type Difficulty = 'green' | 'yellow' | 'red'
+export type WordTag =
+  | 'campus'
+  | 'party'
+  | 'sports'
+  | 'movies'
+  | 'music'
+  | 'internet'
+  | 'food'
+  | 'relationships'
+  | 'travel'
+  | 'jobs'
+  | 'slang'
+  | 'history'
+  | 'science'
+  | 'games'
+  | 'brands'
+  | 'places'
+  | 'phrases'
+
+export interface WordSource {
+  id: string
+  name: string
+  url: string
+  licenseNote: string
+  importedAt: string
+  transform: string
+}
+
+export interface WordDeck {
+  id: WordDeckId
+  difficulty: Difficulty | 'money'
+  tags: WordTag[]
+  sourceIds: string[]
+  words: string[]
+}
+
+export interface WordDeckSummary {
+  id: WordDeckId
+  difficulty: Difficulty | 'money'
+  count: number
+  tags: WordTag[]
+  sourceIds: string[]
+}
+
+export interface WordBankSummary {
+  totalPlayableWords: number
+  deckCounts: Record<WordDeckId, number>
+  sourceCount: number
+  decks: WordDeckSummary[]
+}
 
 // Green = A1/A2 CEFR + curated easy words — everyday concrete nouns, common actions
 // Yellow = B1 CEFR + curated medium words — events, places, activities, characters
 // Red = B2 CEFR + curated hard words — abstract concepts, less common vocabulary
 // Words sourced from CEFRJ vocabulary profile (CC-BY) + hand-curated additions
+
+export const WORD_BANK_SOURCES: WordSource[] = [
+  {
+    id: 'cefr-j-olp',
+    name: 'Open Language Profiles English datasets from CEFR-J',
+    url: 'https://github.com/openlanguageprofiles/olp-en-cefrj',
+    licenseNote: 'CEFR-J vocabulary profile is permitted for research and commercial use with citation per repository terms.',
+    importedAt: '2026-05-19',
+    transform: 'Uppercased, deduped, grouped A1/A2 as green, B1 as yellow, B2 as red, then manually filtered for party play.',
+  },
+  {
+    id: 'curated-party',
+    name: 'Curated party-game additions',
+    url: 'local:lib/words.ts',
+    licenseNote: 'Original short list of common party-game words and phrases authored for this repo.',
+    importedAt: '2026-05-19',
+    transform: 'Uppercased, deduped, manually tiered by college-party playability.',
+  },
+]
 
 export const greenWords: string[] = [
   'ABILITY', 'ACCEPT', 'ACCEPTABLE', 'ACCIDENT', 'ACCORDION', 'ACCOUNT', 'ACHIEVE', 'ACORN', 'ACTION', 'ACTIVITY',
@@ -171,7 +245,7 @@ export const greenWords: string[] = [
   'SIGHT', 'SIGHTSEEING', 'SIGN', 'SIGNIFICANT', 'SILENCE', 'SILLY', 'SILVER', 'SIMILAR', 'SIMPLE', 'SING',
   'SINGER', 'SINGING', 'SINGLE', 'SINGULAR', 'SINK', 'SIR', 'SISTER', 'SITE', 'SITUATION', 'SIZE',
   'SKATE', 'SKATEBOARD', 'SKATEBOARDING', 'SKATING', 'SKI', 'SKIING', 'SKILL', 'SKIRT', 'SKUNK', 'SKY',
-  'SLAVE', 'SLED', 'SLEEP', 'SLEEPLESS', 'SLEEPY', 'SLICE', 'SLIDE', 'SLIM', 'SMALL', 'SMART',
+  'SLED', 'SLEEP', 'SLEEPLESS', 'SLEEPY', 'SLICE', 'SLIDE', 'SLIM', 'SMALL', 'SMART',
   'SMELL', 'SMILE', 'SMITH', 'SMOKE', 'SMOKING', 'SMOOTH', 'SMOOTHIE', 'SNACK', 'SNAIL', 'SNAKE',
   'SNOW', 'SNOWBOARDING', 'SNOWY', 'SOAP', 'SOCCER', 'SOCIAL', 'SOCIETY', 'SOCK', 'SODA', 'SOFA',
   'SOFTWARE', 'SOLDIER', 'SOLUTION', 'SOLVE', 'SON', 'SONG', 'SORRY', 'SOUND', 'SOUP', 'SOURCE',
@@ -270,7 +344,7 @@ export const yellowWords: string[] = [
   'DISCRIMINATION', 'DISEASE', 'DISGUSTING', 'DISHWASHER', 'DISSOLVE', 'DISTANCE', 'DISTANT', 'DISTINCTION', 'DISTINGUISH', 'DISTRIBUTE',
   'DISTRIBUTION', 'DISTRICT', 'DISTURB', 'DISTURBANCE', 'DIVE', 'DIVER', 'DIVERSE', 'DIVINE', 'DIVING', 'DIVORCED',
   'DOC', 'DOCTOR', 'DOCUMENT', 'DOCUMENTARY', 'DOWNSTAIRS', 'DOWNWARD', 'DOZE', 'DOZEN', 'DRAG', 'DRAGON',
-  'DRAMATIC', 'DROUGHT', 'DROWN', 'DRUNK', 'DUDE', 'DUMP', 'DUNGEON', 'DUSTBIN', 'DUSTY', 'DUTY',
+  'DRAMATIC', 'DROUGHT', 'DROWN', 'DUDE', 'DUMP', 'DUNGEON', 'DUSTBIN', 'DUSTY', 'DUTY',
   'DUVET', 'DYNASTY', 'EAGER', 'EAGERNESS', 'EARACHE', 'EARNEST', 'EASTERN', 'ECLIPSE', 'ECO', 'ECOLOGICAL',
   'ECOLOGY', 'ECONOMIC', 'ECONOMICS', 'ECONOMY', 'ECOSYSTEM', 'ECSTASY', 'EDGE', 'EDITION', 'EDUCATE', 'EFFECTIVE',
   'EFFICIENCY', 'EFFICIENT', 'ELBOW', 'ELECTION', 'ELECTRICAL', 'ELECTRICIAN', 'ELECTRICITY', 'ELECTRON', 'ELECTRONIC', 'ELEMENT',
@@ -290,7 +364,7 @@ export const yellowWords: string[] = [
   'FORTUNATE', 'FOUNDATION', 'FOUNTAIN', 'FRAGMENT', 'FREEZER', 'FREEZING', 'FREQUENCY', 'FREQUENT', 'FRESHMAN', 'FRIENDLINESS',
   'FRIGHT', 'FROST', 'FROZEN', 'FRUSTRATED', 'FRUSTRATION', 'FUEL', 'FUND', 'FUNDRAISER', 'FUNERAL', 'FUR',
   'FURNISH', 'FUSS', 'GAIN', 'GALA', 'GALL', 'GALLON', 'GAMING', 'GAP', 'GARDENING', 'GARMENT',
-  'GAY', 'GENE', 'GENERAL', 'GENERATE', 'GENEROUS', 'GENETIC', 'GENETICS', 'GENTLEMAN', 'GEOGRAPHICAL', 'GEOGRAPHY',
+  'GENE', 'GENERAL', 'GENERATE', 'GENEROUS', 'GENETIC', 'GENETICS', 'GENTLEMAN', 'GEOGRAPHICAL', 'GEOGRAPHY',
   'GEOLOGY', 'GESTURE', 'GIANT', 'GIFTED', 'GIGGLE', 'GLADIATOR', 'GLANCE', 'GLIDE', 'GLIMPSE', 'GLINT',
   'GLOBAL', 'GLORIOUS', 'GLORY', 'GOALKEEPER', 'GOBLIN', 'GODDESS', 'GOLFER', 'GOODS', 'GORGEOUS', 'GOSSIP',
   'GOVERN', 'GOVERNOR', 'GOWN', 'GRAB', 'GRACEFUL', 'GRADUATION', 'GRANT', 'GRAPH', 'GRAPHIC', 'GRAPHICS',
@@ -327,7 +401,7 @@ export const yellowWords: string[] = [
   'MISSION', 'MIST', 'MISTY', 'MISUNDERSTANDING', 'MODEM', 'MODERATE', 'MODIFY', 'MOISTURE', 'MOLECULE', 'MONITOR',
   'MONK', 'MONSOON', 'MONSTER', 'MONTHLY', 'MONUMENT', 'MORAL', 'MOSQUITO', 'MOTHERLAND', 'MOTIONLESS', 'MOTIVATE',
   'MOTIVATION', 'MOTIVE', 'MOTOR', 'MOTTO', 'MOUNT', 'MOUNTAINTOP', 'MOURN', 'MOVEMENT', 'MURDERER', 'MUSCLE',
-  'MUTUAL', 'MYTH', 'NAKED', 'NAP', 'NARRATE', 'NARRATIVE', 'NARROW', 'NASTY', 'NATIONALIST', 'NAUGHTY',
+  'MUTUAL', 'MYTH', 'NAP', 'NARRATE', 'NARRATIVE', 'NARROW', 'NASTY', 'NATIONALIST', 'NAUGHTY',
   'NEARBY', 'NECKLACE', 'NECTAR', 'NEEDLE', 'NEGOTIATE', 'NEGOTIATION', 'NEPHEW', 'NERVOUSNESS', 'NESS', 'NETWORK',
   'NEUTRAL', 'NEWBORN', 'NEWCOMER', 'NICKNAME', 'NIECE', 'NIGHTLIFE', 'NINJA', 'NOD', 'NONSENSE', 'NORTHEAST',
   'NORTHEASTERN', 'NORTHERN', 'NORTHWEST', 'NORTHWESTERN', 'NOTICEABLE', 'NOTICEBOARD', 'NOTION', 'NOTORIOUS', 'NOVELIST', 'NUCLEAR',
@@ -372,7 +446,7 @@ export const yellowWords: string[] = [
   'SEVERE', 'SEX', 'SHADOWY', 'SHALLOW', 'SHAME', 'SHAMEFUL', 'SHARP', 'SHAVE', 'SHEER', 'SHEET',
   'SHELTER', 'SHERIFF', 'SHIFT', 'SHINY', 'SHIVER', 'SHOCKED', 'SHOCKING', 'SHOPPER', 'SHORTAGE', 'SICKNESS',
   'SIDEWALK', 'SIGH', 'SIGNAL', 'SIGNATURE', 'SIGNIFICANCE', 'SIGNPOST', 'SILENT', 'SILK', 'SIMILARITY', 'SIMPLIFY',
-  'SKELETON', 'SKIN', 'SKYSCRAPER', 'SLAVERY', 'SLEEPOVER', 'SLEEVE', 'SLIGHT', 'SLIP', 'SLOGAN', 'SLOPE',
+  'SKELETON', 'SKIN', 'SKYSCRAPER', 'SLEEPOVER', 'SLEEVE', 'SLIGHT', 'SLIP', 'SLOGAN', 'SLOPE',
   'SLOT', 'SMOKER', 'SNEEZE', 'SNOWBOARD', 'SNOWSTORM', 'SOIL', 'SOLID', 'SOOTHE', 'SOPHOMORE', 'SORCERER',
   'SORE', 'SORROW', 'SORT', 'SOUL', 'SOUR', 'SOUTHEAST', 'SOUTHERN', 'SOUTHWEST', 'SOUVENIR', 'SPA',
   'SPARKLE', 'SPECIALIST', 'SPECTACULAR', 'SPECTATOR', 'SPELLING', 'SPHERE', 'SPHINX', 'SPICE', 'SPICY', 'SPIDER',
@@ -488,13 +562,13 @@ export const redWords: string[] = [
   'FRICTION', 'FRIENDLY', 'FRIGATE', 'FRONTIER', 'FRUGAL', 'FUME', 'FUNCTIONAL', 'FUNCTIONALITY', 'FUNDAMENTAL', 'FUNK',
   'FUNKY', 'FURIOUS', 'GAIETY', 'GAMBLING', 'GANG', 'GANGSTER', 'GARDENER', 'GASP', 'GATEWAY', 'GAUDY',
   'GAZE', 'GEAR', 'GENEROSITY', 'GENIUS', 'GENRE', 'GENUINE', 'GEOGRAPHIC', 'GERM', 'GERRYMANDER', 'GETAWAY',
-  'GHETTO', 'GIVEAWAY', 'GLACIS', 'GLARE', 'GLEAM', 'GLEE', 'GLOCAL', 'GLOOMY', 'GLORIFY', 'GLOW',
-  'GOD', 'GODLY', 'GOODWILL', 'GOOK', 'GORGE', 'GOVERNMENTAL', 'GRACEFULNESS', 'GRADUAL', 'GRAIN', 'GRAND',
+  'GIVEAWAY', 'GLACIS', 'GLARE', 'GLEAM', 'GLEE', 'GLOCAL', 'GLOOMY', 'GLORIFY', 'GLOW',
+  'GOD', 'GODLY', 'GOODWILL', 'GORGE', 'GOVERNMENTAL', 'GRACEFULNESS', 'GRADUAL', 'GRAIN', 'GRAND',
   'GRASP', 'GRAVESTONE', 'GRAVITATION', 'GREATNESS', 'GRIEF', 'GRIEVE', 'GRIM', 'GRIN', 'GRIP', 'GROSS',
   'GROWING', 'GUERRILLA', 'GUIDELINE', 'GULP', 'GUM', 'GUNSHOT', 'GUTS', 'GYMNASTIC', 'HABITANT', 'HAIKU',
   'HAIRY', 'HANDICAP', 'HANDICRAFT', 'HANDOUT', 'HANDRAIL', 'HARBINGER', 'HARDWARE', 'HARMLESS', 'HARROW', 'HASTE',
   'HATCHING', 'HAUNTING', 'HAY', 'HAZARDOUS', 'HEADQUARTERS', 'HEAP', 'HEARTBREAKING', 'HEDGE', 'HEGEMONY', 'HELPER',
-  'HEMP', 'HERB', 'HERITAGE', 'HESITATION', 'HIJACK', 'HILARIOUS', 'HINT', 'HOLDER', 'HOLLOW', 'HOLOCAUST',
+  'HEMP', 'HERB', 'HERITAGE', 'HESITATION', 'HIJACK', 'HILARIOUS', 'HINT', 'HOLDER', 'HOLLOW',
   'HOMAGE', 'HOMEWARD', 'HONE', 'HOOD', 'HOOK', 'HOSPICE', 'HOSPITABLE', 'HOSPITALITY', 'HOURLY', 'HOUSEKEEPER',
   'HOUSEMASTER', 'HOUSEWIFE', 'HOVER', 'HUBRIS', 'HUMANE', 'HUMANIST', 'HUMBLE', 'HUMBUG', 'HUMILIATE', 'HUMILIATING',
   'HUMILIATION', 'HUSH', 'HYBRID', 'HYGIENE', 'HYPERBOLE', 'HYPHEN', 'ICEMAN', 'ICON', 'ICY', 'IDENTICAL',
@@ -519,7 +593,7 @@ export const redWords: string[] = [
   'LIGHTING', 'LIMB', 'LIMBO', 'LINEN', 'LINER', 'LING', 'LINGER', 'LISTENER', 'LITERAL', 'LITTER',
   'LOAN', 'LOBBY', 'LONELINESS', 'LOUSY', 'LOWER', 'LOWLAND', 'LUCRATIVE', 'LUSH', 'LUXURIOUS', 'LYRICS',
   'MADAM', 'MADAME', 'MADNESS', 'MAESTRO', 'MAGNETISM', 'MAGNIFY', 'MALADY', 'MALARIA', 'MANIFESTO', 'MANIPULATE',
-  'MANUAL', 'MANUFACTURE', 'MANUFACTURER', 'MANUFACTURING', 'MARGIN', 'MARKETING', 'MASK', 'MASSACRE', 'MASSAGE', 'MASSEUR',
+  'MANUAL', 'MANUFACTURE', 'MANUFACTURER', 'MANUFACTURING', 'MARGIN', 'MARKETING', 'MASK', 'MASSAGE', 'MASSEUR',
   'MASTER', 'MASTERPIECE', 'MASTERY', 'MATE', 'MATHEMATICAL', 'MATURE', 'MEANS', 'MEDIA', 'MEDICATION', 'MEDIOCRE',
   'MELANCHOLY', 'MELODY', 'MEMORIAL', 'MENTOR', 'MERCHANDISE', 'MERCY', 'MERGE', 'MERGER', 'MESSENGER', 'METAMORPHOSIS',
   'METAPHOR', 'METRIC', 'MICRO', 'MICROBE', 'MICROCOMPUTER', 'MICROORGANISM', 'MICROPHONE', 'MICROSCOPE', 'MICROSCOPIC', 'MICROSCOPY',
@@ -557,8 +631,8 @@ export const redWords: string[] = [
   'PROMINENCE', 'PROMPT', 'PROPAGANDA', 'PROPHECY', 'PROPONENT', 'PROPOSED', 'PROSE', 'PROSECUTE', 'PROSPECT', 'PROSPER',
   'PROVEN', 'PROVINCE', 'PROVISION', 'PROXIMITY', 'PSYCHOLOGY', 'PUBLICATION', 'PUBLICITY', 'PUDDING', 'PULSE', 'PUNCH',
   'PUNCTUAL', 'PUNCTUALITY', 'PURCHASE', 'PURPOSEFUL', 'PURSUIT', 'PUZZLED', 'QUALIFICATION', 'QUANTIFY', 'QUARANTINE', 'QUARREL',
-  'QUARRELSOME', 'QUEER', 'QUERY', 'QUOTABLE', 'QUOTATION', 'QUOTE', 'RACK', 'RADAR', 'RADIATE', 'RADICAL',
-  'RADIUM', 'RAFTER', 'RAG', 'RAINSTORM', 'RAMP', 'RAPE', 'RASH', 'RATTLE', 'RAVAGE', 'REACTION',
+  'QUARRELSOME', 'QUERY', 'QUOTABLE', 'QUOTATION', 'QUOTE', 'RACK', 'RADAR', 'RADIATE', 'RADICAL',
+  'RADIUM', 'RAFTER', 'RAG', 'RAINSTORM', 'RAMP', 'RASH', 'RATTLE', 'RAVAGE', 'REACTION',
   'REAR', 'REBEL', 'REBELLION', 'REBELLIOUS', 'RECESSION', 'RECIPE', 'RECKON', 'RECOGNITION', 'RECOLLECT', 'RECOLLECTION',
   'RECOMMENDABLE', 'RECOMMENDATION', 'RECONSIDER', 'RECREATION', 'RECRUIT', 'RECTANGULAR', 'REDEMPTION', 'REDO', 'REDUNDANT', 'REED',
   'REFERENCE', 'REFERENT', 'REFINERY', 'REFLECTIVE', 'REFORM', 'REFRAIN', 'REFRESH', 'REFUGE', 'REFUGEE', 'REFUTE',
@@ -566,7 +640,7 @@ export const redWords: string[] = [
   'RELAY', 'RELEVANT', 'RELIC', 'RELIEF', 'RELIEVE', 'RELIEVED', 'RELUCTANT', 'REMAINING', 'REMAINS', 'REMINDER',
   'REMNANT', 'RENTAL', 'REPAINT', 'REPERTOIRE', 'REPETITION', 'REPLACEMENT', 'REPLICA', 'REPRESS', 'REPRESSION', 'REPRINT',
   'REPROVE', 'RESIDENCE', 'RESIGN', 'RESIGNATION', 'RESISTANCE', 'RESOLUTION', 'RESONANCE', 'RESONANT', 'RESPECTED', 'RESPIRATION',
-  'RESPIRATORY', 'RESTRICTION', 'RESUME', 'RETAILER', 'RETARD', 'RETINA', 'RETIREMENT', 'RETREAT', 'RETRIEVE', 'REVELATION',
+  'RESPIRATORY', 'RESTRICTION', 'RESUME', 'RETAILER', 'RETINA', 'RETIREMENT', 'RETREAT', 'RETRIEVE', 'REVELATION',
   'REVENGE', 'REVENUE', 'REVERENCE', 'REVERSE', 'REVIVAL', 'REVIVE', 'REVOLUTION', 'REVOLUTIONARY', 'REVOLVE', 'RHINOCEROS',
   'RHYME', 'RHYTHMIC', 'RIB', 'RIDER', 'RIDGE', 'RIGHTEOUSNESS', 'RIM', 'RIP', 'RISKY', 'RITE',
   'RITUAL', 'RIVAL', 'ROAM', 'ROAR', 'ROCKY', 'ROOMMATE', 'ROSY', 'ROUTE', 'ROYALTY', 'RUB',
@@ -575,7 +649,7 @@ export const redWords: string[] = [
   'SATISFACTORY', 'SCANDAL', 'SCAR', 'SCARLET', 'SCENT', 'SCHADENFREUDE', 'SCHEDULED', 'SCHEME', 'SCHOLASTICISM', 'SCHOOLGIRL',
   'SCRAMBLE', 'SCRIBBLE', 'SCROOGE', 'SCUBA', 'SCYTHE', 'SEASONAL', 'SECONDARY', 'SECTOR', 'SEESAW', 'SEGMENT',
   'SELFLESS', 'SELLER', 'SEMICOLON', 'SEMINAR', 'SENATOR', 'SENSIBLE', 'SENSITIVE', 'SERENDIPITY', 'SERENE', 'SERENITY',
-  'SERIAL', 'SERVANT', 'SETBACK', 'SEXUAL', 'SEXY', 'SHABBY', 'SHAKEN', 'SHAKESPEAREAN', 'SHAKY', 'SHATTER',
+  'SERIAL', 'SERVANT', 'SETBACK', 'SHABBY', 'SHAKEN', 'SHAKESPEAREAN', 'SHAKY', 'SHATTER',
   'SHED', 'SHIELD', 'SHIPPING', 'SHIPWRECK', 'SHOOTING', 'SHOPKEEPER', 'SHOPLIFT', 'SHOPLIFTER', 'SHOPLIFTING', 'SHORTNESS',
   'SHOWBIZ', 'SHOWCASE', 'SHRINK', 'SHRUG', 'SIGNIFY', 'SILVERWARE', 'SIMPLIFICATION', 'SIMULTANEOUS', 'SINCERE', 'SINCERITY',
   'SKATEBOARDER', 'SKETCH', 'SKILLED', 'SKIM', 'SKIP', 'SKYLARK', 'SLAM', 'SLANG', 'SLAP', 'SLASH',
@@ -599,7 +673,7 @@ export const redWords: string[] = [
   'THERAPY', 'THERMOMETER', 'THESIS', 'THICKNESS', 'THIGH', 'THINKER', 'THOUGHTFUL', 'THOUGHTLESS', 'THREAD', 'THREATEN',
   'THRESHOLD', 'THRILL', 'THRILLED', 'THRILLING', 'THROAT', 'TIGHTROPE', 'TIMELESS', 'TIMELINESS', 'TIMING', 'TIPTOE',
   'TIREDNESS', 'TIRESOME', 'TOENAIL', 'TOIL', 'TOLERANT', 'TOLERATE', 'TOLL', 'TOMB', 'TON', 'TORCH',
-  'TORTOISESHELL', 'TORTURE', 'TOUGH', 'TOXIC', 'TRADER', 'TRAILER', 'TRAINEE', 'TRAINER', 'TRAIT', 'TRAITOR',
+  'TORTOISESHELL', 'TOUGH', 'TOXIC', 'TRADER', 'TRAILER', 'TRAINEE', 'TRAINER', 'TRAIT', 'TRAITOR',
   'TRAJECTORY', 'TRAMP', 'TRAMPLE', 'TRANSCENDENCE', 'TRANSCRIPT', 'TRANSFUSION', 'TRANSISTOR', 'TRANSITION', 'TRANSITIVE', 'TRANSLATION',
   'TRANSLATOR', 'TRANSMISSION', 'TRANSMIT', 'TRANSPARENT', 'TRAVERSE', 'TREAD', 'TREATY', 'TREK', 'TREMOR', 'TRIAL',
   'TRIANGLE', 'TRIBE', 'TRICKY', 'TRIO', 'TRIVIAL', 'TROLLEY', 'TROOP', 'TROPIC', 'TROUBLESOME', 'TRUNK',
@@ -624,47 +698,276 @@ export const redWords: string[] = [
   'ZIP', 'ZOOM',
 ]
 
-// Money round pool — fun, visual, varied difficulty
+// Money round pool — distinct high-energy phrases for the final screen.
 export const moneyWords: string[] = [
-  'ADVENTURE', 'ALLIGATOR', 'AMBUSH', 'ASTEROID', 'ASTRONAUT', 'AVALANCHE', 'BACKFLIP', 'BASKETBALL', 'BLIZZARD', 'BONFIRE',
-  'BOOKWORM', 'BOOMERANG', 'BUMBLEBEE', 'CAMPFIRE', 'CARNIVAL', 'CASTLE', 'CATFISH', 'CENTIPEDE', 'CHAMPIONSHIP', 'CHOCOLATE',
-  'CIRCUS', 'CLIFFHANGER', 'COMEBACK', 'COMET', 'COUNTDOWN', 'COWBOY', 'CRATER', 'CROSSROADS', 'DETECTIVE', 'DIAMOND',
-  'DISCOVERY', 'DISGUISE', 'DRAGON', 'DRIFTWOOD', 'EARTHQUAKE', 'ECLIPSE', 'FESTIVAL', 'FIREPLACE', 'FIREWORK', 'FLASHBACK',
-  'FOGHORN', 'FROSTBITE', 'GETAWAY', 'GEYSER', 'GLACIER', 'GRASSHOPPER', 'HEIST', 'HELICOPTER', 'HOMERUN', 'HONEYBEE',
-  'HOURGLASS', 'JAILBREAK', 'JELLYFISH', 'JUNGLE', 'KNOCKOUT', 'LABYRINTH', 'LIGHTHOUSE', 'LOLLIPOP', 'MARATHON', 'METEORITE',
-  'MILKSHAKE', 'MOONLIGHT', 'NIGHTMARE', 'OCEAN', 'OVERTIME', 'PANCAKE', 'PARACHUTE', 'PARADISE', 'PINBALL', 'PIRANHA',
-  'PIRATE', 'PLAYOFF', 'PORCUPINE', 'QUICKSAND', 'RAINBOW', 'RAINSTORM', 'RATTLESNAKE', 'RIVALRY', 'ROADRUNNER', 'ROCKET',
-  'ROLLERCOASTER', 'SANDCASTLE', 'SAXOPHONE', 'SCORPION', 'SHIPWRECK', 'SHOWDOWN', 'SKATEBOARD', 'SLEEPOVER', 'SNOWBALL', 'SNOWDRIFT',
-  'SNOWFLAKE', 'SOMERSAULT', 'SPAGHETTI', 'SPOTLIGHT', 'STAMPEDE', 'STARFISH', 'STARGAZING', 'SUBMARINE', 'SUNBURN', 'SUNRISE',
-  'SUPERHERO', 'SYMPHONY', 'TARANTULA', 'TELESCOPE', 'THUNDER', 'THUNDERBOLT', 'THUNDERCLAP', 'THUNDERSTORM', 'TORNADO', 'TOUCHDOWN',
-  'TRAMPOLINE', 'TREASURE', 'TUMBLEWEED', 'UNDERDOG', 'VOLCANO', 'VOLLEYBALL', 'WATERFALL', 'WEDDING', 'WHIRLPOOL', 'WILDFIRE',
-  'WINDMILL',
+  'AIR GUITAR', 'ALIEN ABDUCTION', 'BACKSTAGE PASS', 'BALLOON DROP', 'BATTLE OF THE BANDS', 'BEACH BONFIRE', 'BIGFOOT SIGHTING', 'BIRTHDAY CAKE', 'BLACK LIGHT', 'BLANKET FORT',
+  'BLOW UP POOL', 'BOARD GAME NIGHT', 'BOBA TEA', 'BOTTLE ROCKET', 'BRAIN FREEZE', 'BRUNCH BUFFET', 'BUBBLE MACHINE', 'CAMPUS LEGEND', 'CAR CHASE', 'CEREAL MASCOT',
+  'CHAMPAGNE TOWER', 'CHEESE FOUNTAIN', 'CLASS GROUP CHAT', 'CLOWN CAR', 'COFFEE RUN', 'CONFETTI CANNON', 'COSTUME PARTY', 'COUNTDOWN CLOCK', 'CRASH PAD', 'DANCE BATTLE',
+  'DORM ROOM', 'DOUBLE DATE', 'DRAMA QUEEN', 'ESCAPE ROOM', 'FANTASY DRAFT', 'FAST FOOD DRIVE THRU', 'FILM PREMIERE', 'FINAL EXAM', 'FIRE DRILL', 'FOAM FINGER',
+  'FOOD TRUCK', 'FRAT HOUSE', 'FREE SAMPLE', 'FRIEND ZONE', 'GAME DAY', 'GHOST STORY', 'GLITTER BOMB', 'GROUP PROJECT', 'HALL PASS', 'HAUNTED HOUSE',
+  'HIDDEN TALENT', 'HIGH FIVE', 'HOT SAUCE', 'HOUSE PARTY', 'ICE CREAM TRUCK', 'INSIDE JOKE', 'INSTANT RAMEN', 'JUMP SCARE', 'KARAOKE NIGHT', 'KITCHEN SINK',
+  'LASER TAG', 'LAST CALL', 'LAUNDRY DAY', 'LIP SYNC', 'LIVE STREAM', 'LOCKER ROOM', 'LOST AND FOUND', 'MASCOT SUIT', 'MIDNIGHT SNACK', 'MOVIE TRAILER',
+  'MUSIC FESTIVAL', 'NERF WAR', 'OPEN MIC', 'PARTY BUS', 'PEP RALLY', 'PHOTO BOOTH', 'PILLOW FIGHT', 'PIZZA DELIVERY', 'PODCAST HOST', 'POOL FLOAT',
+  'POP QUIZ', 'POWER NAP', 'PRANK CALL', 'RAFFLE TICKET', 'RED CARPET', 'ROAD TRIP', 'ROOFTOP PARTY', 'ROOMMATE CODE', 'SCAVENGER HUNT', 'SECRET MENU',
+  'SELFIE STICK', 'SHOPPING CART', 'SLEEPOVER STORY', 'SNOW DAY', 'SOAP OPERA', 'SODA FOUNTAIN', 'SPACE CAMP', 'SPIRIT WEEK', 'SPORTS BAR', 'STAGE DIVE',
+  'STUDY BREAK', 'SUMMER CAMP', 'TACO TRUCK', 'TAILGATE PARTY', 'TALENT SHOW', 'TEXT MESSAGE', 'THEME SONG', 'THRIFT STORE', 'TIKTOK DANCE', 'TOGA PARTY',
+  'TRIVIA NIGHT', 'UGLY SWEATER', 'VENDING MACHINE', 'VIDEO GAME BOSS', 'VIP SECTION', 'VOICE MEMO', 'WATER BALLOON', 'WEEKEND PLANS', 'WIFI PASSWORD', 'YEARBOOK PHOTO',
+  'YOGA POSE', 'ZIP LINE', 'ZOOM CALL', 'AWARD SHOW', 'BACKYARD BBQ', 'BLOCK PARTY', 'CARD TRICK', 'DANCE FLOOR', 'DESSERT TABLE', 'ENERGY DRINK',
+  'FAKE ID', 'FASHION SHOW', 'FOOD COMA', 'FREE THROW', 'GAME CONTROLLER', 'HOMECOMING DANCE', 'ICE BREAKER', 'JELLO SHOT', 'JUKEBOX HERO', 'LIGHT SABER',
+  'MAGIC SHOW', 'MARCHING BAND', 'MIC DROP', 'NERVOUS LAUGH', 'PARTY HAT', 'PHONE CHARGER', 'PROM PHOTO', 'QUARTERBACK SNEAK', 'RAIN CHECK', 'ROLLER RINK',
+  'SCHOOL SPIRIT', 'SILENT DISCO', 'SNACK TABLE', 'SPRING BREAK', 'STUDENT SECTION', 'SURPRISE PARTY', 'TEAM PHOTO', 'TEXT THREAD', 'VICTORY SONG', 'WATER PARK',
 ]
 
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
+const WORD_POOLS: WordPools = {
+  bidding: Array.from(new Set([...greenWords, ...yellowWords])),
+  green: greenWords,
+  yellow: yellowWords,
+  red: redWords,
+  money: moneyWords,
 }
 
-export function pickWords(pool: string[], count: number, usedWords: string[] = []): string[] {
-  const available = pool.filter(w => !usedWords.includes(w))
-  const source = available.length >= count ? available : shuffle([...pool])
-  return shuffle(source).slice(0, count)
+export function getWordPools(): WordPools {
+  return {
+    bidding: [...WORD_POOLS.bidding],
+    green: [...WORD_POOLS.green],
+    yellow: [...WORD_POOLS.yellow],
+    red: [...WORD_POOLS.red],
+    money: [...WORD_POOLS.money],
+  }
+}
+
+export function getWordsForDeck(deckId: WordDeckId, count: number, usedWords: string[] = []): string[] {
+  return pickWords(WORD_POOLS[deckId], count, usedWords)
 }
 
 export function getBiddingWords(usedWords: string[] = []): string[] {
-  return pickWords([...greenWords, ...yellowWords], 5, usedWords)
+  return getWordsForDeck('bidding', 5, usedWords)
 }
 
 export function getColorWords(difficulty: Difficulty, usedWords: string[] = []): string[] {
-  const pool = difficulty === 'green' ? greenWords : difficulty === 'yellow' ? yellowWords : redWords
-  return pickWords(pool, 5, usedWords)
+  return getWordsForDeck(difficulty, 5, usedWords)
 }
 
 export function getMoneyWords(usedWords: string[] = []): string[] {
-  return pickWords(moneyWords, 10, usedWords)
+  return getWordsForDeck('money', 10, usedWords)
+}
+
+export const WORD_BANK_TAGS: WordTag[] = [
+  'campus',
+  'party',
+  'sports',
+  'movies',
+  'music',
+  'internet',
+  'food',
+  'relationships',
+  'travel',
+  'jobs',
+  'slang',
+  'history',
+  'science',
+  'games',
+  'brands',
+  'places',
+  'phrases',
+]
+
+const BLOCKED_WORDS = new Set([
+  'GOOK',
+  'RAPE',
+  'RETARD',
+  'SLAVE',
+  'SLAVERY',
+  'HOLOCAUST',
+  'MASSACRE',
+  'TORTURE',
+])
+
+const VALID_WORD_DECK_IDS = new Set<WordDeckId>(['bidding', 'green', 'yellow', 'red', 'money'])
+const VALID_DIFFICULTIES = new Set<WordDeck['difficulty']>(['green', 'yellow', 'red', 'money'])
+const WORD_ENTRY_PATTERN = /^[A-Z0-9][A-Z0-9 ]*$/
+const SOURCE_ID_PATTERN = /^[a-z0-9][a-z0-9-]*$/
+
+function canonicalWordEntry(word: string): string {
+  return word.trim().replace(/\s+/g, ' ')
+}
+
+function spacingInsensitiveKey(word: string): string {
+  return canonicalWordEntry(word).replace(/\s/g, '')
+}
+
+function isIsoDateOnly(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+  const date = new Date(`${value}T00:00:00.000Z`)
+  if (Number.isNaN(date.getTime())) return false
+  return date.toISOString().slice(0, 10) === value
+}
+
+export function getWordDecks(): WordDeck[] {
+  return [
+    {
+      id: 'green',
+      difficulty: 'green',
+      tags: ['campus', 'food', 'sports', 'music', 'places', 'games'],
+      sourceIds: ['cefr-j-olp', 'curated-party'],
+      words: greenWords,
+    },
+    {
+      id: 'yellow',
+      difficulty: 'yellow',
+      tags: ['campus', 'party', 'sports', 'movies', 'music', 'internet', 'jobs', 'travel'],
+      sourceIds: ['cefr-j-olp', 'curated-party'],
+      words: yellowWords,
+    },
+    {
+      id: 'red',
+      difficulty: 'red',
+      tags: ['science', 'history', 'phrases', 'slang', 'games'],
+      sourceIds: ['cefr-j-olp'],
+      words: redWords,
+    },
+    {
+      id: 'bidding',
+      difficulty: 'yellow',
+      tags: ['campus', 'party', 'food', 'sports', 'movies', 'music'],
+      sourceIds: ['cefr-j-olp', 'curated-party'],
+      words: WORD_POOLS.bidding,
+    },
+    {
+      id: 'money',
+      difficulty: 'money',
+      tags: ['party', 'sports', 'movies', 'food', 'places', 'games'],
+      sourceIds: ['curated-party'],
+      words: moneyWords,
+    },
+  ]
+}
+
+export function getWordBankSummary(
+  decks: WordDeck[] = getWordDecks(),
+  sources: WordSource[] = WORD_BANK_SOURCES
+): WordBankSummary {
+  const deckCounts: Record<WordDeckId, number> = {
+    bidding: 0,
+    green: 0,
+    yellow: 0,
+    red: 0,
+    money: 0,
+  }
+  const deckSummaries = decks.map(deck => {
+    deckCounts[deck.id] = deck.words.length
+    return {
+      id: deck.id,
+      difficulty: deck.difficulty,
+      count: deck.words.length,
+      tags: [...deck.tags],
+      sourceIds: [...deck.sourceIds],
+    }
+  })
+
+  return {
+    totalPlayableWords: deckSummaries
+      .filter(deck => deck.id !== 'bidding')
+      .reduce((total, deck) => total + deck.count, 0),
+    deckCounts,
+    sourceCount: sources.length,
+    decks: deckSummaries,
+  }
+}
+
+export function validateWordBank(
+  decks: WordDeck[] = getWordDecks(),
+  sources: WordSource[] = WORD_BANK_SOURCES
+): string[] {
+  const errors: string[] = []
+  const sourceIds = new Set(sources.map(source => source.id))
+  const validTags = new Set(WORD_BANK_TAGS)
+  const seenSourceIds = new Set<string>()
+  const seenDeckIds = new Set<string>()
+  const playableWordOwners = new Map<string, string>()
+  const playableNearDuplicateOwners = new Map<string, { deckId: string; word: string }>()
+
+  if (!sources.length) errors.push('word bank must include at least one source')
+  sources.forEach(source => {
+    const sourceId = source.id || '(missing id)'
+    if (!source.id || !source.name || !source.url || !source.licenseNote || !source.importedAt || !source.transform) {
+      errors.push(`source ${sourceId} is missing attribution metadata`)
+    }
+    if (source.id) {
+      if (seenSourceIds.has(source.id)) errors.push(`source ${source.id} is duplicated`)
+      seenSourceIds.add(source.id)
+      if (!SOURCE_ID_PATTERN.test(source.id)) errors.push(`source ${source.id} has invalid id`)
+    }
+    if (source.importedAt && !isIsoDateOnly(source.importedAt)) {
+      errors.push(`source ${sourceId} has invalid import date ${source.importedAt}`)
+    }
+    if (source.url && !/^(https?:\/\/|local:)/.test(source.url)) {
+      errors.push(`source ${sourceId} has invalid url ${source.url}`)
+    }
+  })
+
+  decks.forEach(deck => {
+    const deckId = typeof deck.id === 'string' && deck.id ? deck.id : '(missing id)'
+    if (seenDeckIds.has(deckId)) errors.push(`${deckId} deck id is duplicated`)
+    seenDeckIds.add(deckId)
+    if (!VALID_WORD_DECK_IDS.has(deck.id)) errors.push(`${deckId} deck has invalid id`)
+    if (!VALID_DIFFICULTIES.has(deck.difficulty)) errors.push(`${deckId} deck has invalid difficulty ${deck.difficulty}`)
+    if (!Array.isArray(deck.sourceIds) || deck.sourceIds.length === 0) errors.push(`${deckId} deck must include source attribution`)
+    if (!Array.isArray(deck.tags) || deck.tags.length === 0) errors.push(`${deckId} deck must include at least one tag`)
+    if (!Array.isArray(deck.words) || !deck.words.length) errors.push(`${deckId} deck is empty`)
+
+    const deckSourceIds = new Set<string>()
+    ;(Array.isArray(deck.sourceIds) ? deck.sourceIds : []).forEach(sourceId => {
+      if (deckSourceIds.has(sourceId)) errors.push(`${deck.id} deck repeats source ${sourceId}`)
+      deckSourceIds.add(sourceId)
+      if (!sourceIds.has(sourceId)) errors.push(`${deck.id} deck references unknown source ${sourceId}`)
+    })
+    ;(Array.isArray(deck.tags) ? deck.tags : []).forEach(tag => {
+      if (!validTags.has(tag)) errors.push(`${deck.id} deck has invalid tag ${tag}`)
+    })
+
+    const seen = new Set<string>()
+    const nearSeen = new Map<string, string>()
+    ;(Array.isArray(deck.words) ? deck.words : []).forEach((word, index) => {
+      const label = `${deckId}[${index}]`
+      if (typeof word !== 'string' || !word.trim()) {
+        errors.push(`${label} is empty`)
+        return
+      }
+      const canonical = canonicalWordEntry(word)
+      if (word !== canonical) errors.push(`${label} must use normalized spacing: ${word}`)
+      if (canonical.length > 32) errors.push(`${label} is too long: ${canonical}`)
+      if (canonical !== canonical.toUpperCase()) errors.push(`${label} must be uppercase: ${canonical}`)
+      if (!WORD_ENTRY_PATTERN.test(canonical)) errors.push(`${label} has invalid characters: ${canonical}`)
+      if (BLOCKED_WORDS.has(canonical)) errors.push(`${label} is blocked by safety filter: ${canonical}`)
+      if (seen.has(canonical)) errors.push(`${deckId} contains duplicate word: ${canonical}`)
+      seen.add(canonical)
+
+      const nearKey = spacingInsensitiveKey(canonical)
+      const previousNearWord = nearSeen.get(nearKey)
+      if (previousNearWord && previousNearWord !== canonical) {
+        errors.push(`${deckId} contains near-duplicate word: ${canonical} matches ${previousNearWord}`)
+      } else {
+        nearSeen.set(nearKey, canonical)
+      }
+
+      if (deck.id !== 'bidding') {
+        const previousDeck = playableWordOwners.get(canonical)
+        if (previousDeck && previousDeck !== deckId) {
+          errors.push(`${deckId} duplicates ${canonical} from ${previousDeck}`)
+        } else {
+          playableWordOwners.set(canonical, deckId)
+        }
+
+        const previousNearOwner = playableNearDuplicateOwners.get(nearKey)
+        if (previousNearOwner && previousNearOwner.word !== canonical) {
+          errors.push(`${deckId} near-duplicates ${canonical} from ${previousNearOwner.deckId} (${previousNearOwner.word})`)
+        } else {
+          playableNearDuplicateOwners.set(nearKey, { deckId, word: canonical })
+        }
+      }
+    })
+  })
+
+  return errors
 }

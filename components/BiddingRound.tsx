@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { GameState, GameAction } from '@/lib/gameState'
+import { useState } from 'react'
+import type { GameState, GameAction } from '@/lib/gameState'
+import { useActionInterval } from '@/lib/useActionInterval'
 import Scoreboard from './Scoreboard'
 import Timer from './Timer'
 
@@ -12,20 +13,22 @@ interface Props {
 
 export default function BiddingRound({ state, dispatch }: Props) {
   const { bid, teams } = state
+  const mode = state.gameMode
   const [input, setInput] = useState('')
   const [error, setError] = useState('')
+  const [history, setHistory] = useState<{ team: 0 | 1; amount: number }[]>([])
 
-  useEffect(() => {
-    const id = setInterval(() => dispatch({ type: 'BIDDING_TICK' }), 1000)
-    return () => clearInterval(id)
-  }, [dispatch])
+  useActionInterval(
+    () => dispatch({ type: 'BIDDING_TICK' }),
+    bid && bid.biddingTimeLeft > 0 ? 1000 : null
+  )
 
   if (!bid) return null
 
   const { words, currentBid, activeBidder, biddingTeam, biddingTimeLeft } = bid
   const activeName = teams[activeBidder].name
   const concedeName = teams[biddingTeam].name
-  const minBid = 6
+  const minBid = mode.bidding.minBid
 
   function placeBid(raw: string) {
     const n = parseInt(raw, 10)
@@ -34,6 +37,7 @@ export default function BiddingRound({ state, dispatch }: Props) {
     if (n < minBid) { setError(`Minimum is ${minBid}`); return }
     setError('')
     setInput('')
+    setHistory(prev => [...prev.slice(-7), { team: activeBidder, amount: n }])
     dispatch({ type: 'PLACE_BID', amount: n })
   }
 
@@ -56,87 +60,117 @@ export default function BiddingRound({ state, dispatch }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0d0d14] flex flex-col items-center justify-center p-5 fade-in-up">
-      <div className="w-full max-w-sm">
+    <div className="flex h-dvh flex-col items-center justify-center overflow-hidden bg-[#0a0d14] p-2 text-white md:p-8">
+      <div className="grid h-full w-full max-w-6xl grid-rows-[auto_1fr] gap-2 fade-in-up md:h-auto md:gap-4">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-5">
-          <span className="text-[#e8774d] text-xs uppercase tracking-[0.2em] font-bold">
-            Bidding · {state.round1Contests + 1}/2
+        <div className="flex items-center justify-between gap-3">
+          <span className="mono-label text-[#ffd23f] text-xs font-bold">
+            Bidding {state.round1Contests + 1}/{mode.bidding.contests}
           </span>
           <Scoreboard teams={teams} compact />
         </div>
 
-        {/* Words */}
-        <div className="bg-[#15151e] border border-white/[0.08] rounded-xl p-4 mb-5">
-          <p className="text-white/30 text-[10px] uppercase tracking-widest mb-3">5 words to clue</p>
-          <div className="flex flex-col gap-1.5 mb-3">
-            {words.map((w, i) => (
-              <div key={i} className="bg-white/[0.06] rounded-lg py-2.5 px-4 text-white font-black text-center text-sm leading-tight">
-                {w}
-              </div>
-            ))}
-          </div>
-          <button
-            onClick={() => dispatch({ type: 'REFRESH_BID' })}
-            className="w-full py-2.5 rounded-lg border border-[#e8774d]/40 text-[#e8774d] font-bold text-sm hover:bg-[#e8774d]/10 active:scale-95 transition-all"
-          >
-            ↺ New Words
-          </button>
-        </div>
-
-        {/* Current bid + timer */}
-        <div className="text-center mb-6">
-          <p className="text-white/30 text-xs uppercase tracking-widest mb-1">Current bid</p>
-          <div className="text-[5.5rem] font-black leading-none text-white tabular-nums">{currentBid}</div>
-          <p className="text-white/40 text-sm mt-1">
-            <span className="text-white font-semibold">{activeName}</span> — bid lower or concede
-          </p>
-          <div className="mt-4 flex justify-center">
-            <Timer timeLeft={biddingTimeLeft} total={90} />
-          </div>
-        </div>
-
-        {/* Bid input — ↑↓ arrows adjust, Enter submits */}
-        <div className="mb-3">
-          <div className="flex gap-2">
-            <input
-              type="number"
-              inputMode="numeric"
-              value={input}
-              onChange={e => { setInput(e.target.value); setError('') }}
-              onKeyDown={handleKey}
-              placeholder={`${minBid}–${currentBid - 1}`}
-              min={minBid}
-              max={currentBid - 1}
-              autoFocus
-              className="flex-1 bg-[#15151e] border border-white/[0.08] text-white placeholder-white/20 rounded-xl px-4 py-3.5 text-xl font-black text-center outline-none focus:border-[#e8774d]/60 transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            />
+        <div className="grid min-h-0 gap-2 lg:grid-cols-[1fr_260px_1fr] lg:gap-4">
+          {/* Words */}
+          <div className="rounded-lg border border-white/10 bg-[#141826] p-3 md:p-5">
+            <p className="mono-label mb-2 text-[10px] text-white/45 md:mb-3">{words.length} words to clue</p>
+            <div className="mb-2 grid grid-cols-2 gap-1.5 md:mb-4 lg:flex lg:flex-col lg:gap-2">
+              {words.map((w, i) => (
+                <div key={i} className="flex min-w-0 items-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-2 py-2 text-white md:gap-3 md:px-4 md:py-3">
+                  <span className="font-mono text-xs text-white/35">0{i + 1}</span>
+                  <span className="min-w-0 truncate font-black uppercase tracking-normal">{w}</span>
+                </div>
+              ))}
+            </div>
             <button
-              onClick={() => placeBid(input)}
-              disabled={!input}
-              className="px-5 py-3.5 rounded-xl bg-[#15151e] border border-white/[0.08] text-white font-black text-sm disabled:opacity-30 hover:border-white/20 active:scale-95 transition-all"
+              onClick={() => { setHistory([]); dispatch({ type: 'REFRESH_BID' }) }}
+              className="mono-label w-full rounded-md border border-[#ffd23f]/40 py-2.5 text-[10px] text-[#ffd23f] hover:bg-[#ffd23f]/10 active:scale-95 transition-all"
             >
-              Bid
+              New Words
             </button>
           </div>
-          {error
-            ? <p className="text-red-400 text-xs mt-1.5 text-center">{error}</p>
-            : <p className="text-white/20 text-xs mt-1.5 text-center">↑↓ arrows adjust · Enter to bid</p>
-          }
+
+          {/* Current bid + timer */}
+          <div className="flex flex-col items-center justify-center rounded-lg border border-white/10 bg-[#101522] p-2 text-center md:p-5">
+            <p className="mono-label mb-1 text-[10px] text-white/45 md:mb-2">Current bid</p>
+            <div className="text-5xl font-black leading-[0.8] tracking-normal text-[#ffd23f] tabular-nums md:text-[9rem]">{currentBid}</div>
+            <p className="mt-1 text-xs text-white/45 md:mt-3 md:text-sm">
+              <span className="font-semibold text-white">{activeName}</span> bids lower or concedes
+            </p>
+            <div className="mono-label mt-1 text-[10px] text-white/45 md:hidden">{biddingTimeLeft}s left</div>
+            <div className="mt-2 hidden justify-center md:mt-5 md:flex">
+              <Timer timeLeft={biddingTimeLeft} total={mode.timing.biddingSeconds} />
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-white/10 bg-[#141826] p-3 md:p-5">
+            <div className="mb-2 grid grid-cols-2 gap-2 md:mb-4">
+              {teams.map((team, i) => (
+                <div
+                  key={team.name}
+                  className={`rounded-md border p-2 md:p-3 ${biddingTeam === i ? 'border-[#ffd23f] bg-[#ffd23f]/10' : 'border-white/10 bg-white/[0.03]'}`}
+                >
+                  <div className="mono-label text-[9px] text-white/45">{biddingTeam === i ? 'holds bid' : 'challenger'}</div>
+                  <div className="mt-1 truncate text-base font-black uppercase md:text-lg">{team.name}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Bid input */}
+            <div className="mb-2 md:mb-3">
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  value={input}
+                  onChange={e => { setInput(e.target.value); setError('') }}
+                  onKeyDown={handleKey}
+                  placeholder={`${minBid}–${currentBid - 1}`}
+                  min={minBid}
+                  max={currentBid - 1}
+                  autoFocus
+                  aria-label={`Bid lower than ${currentBid}`}
+                  className="min-w-0 flex-1 rounded-md border border-white/10 bg-[#0a0d14] px-4 py-2.5 text-center text-lg font-black text-white outline-none transition-colors placeholder:text-white/20 focus:border-[#ffd23f]/60 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none md:py-3.5 md:text-xl"
+                />
+                <button
+                  onClick={() => placeBid(input)}
+                  disabled={!input}
+                  className="rounded-md border border-white/10 bg-white/[0.06] px-4 py-2.5 text-sm font-black text-white transition-all hover:border-white/20 active:scale-95 disabled:opacity-30 md:px-5 md:py-3.5"
+                >
+                  Bid
+                </button>
+              </div>
+              {error
+                ? <p className="text-[#ff3a6d] text-xs mt-1.5 text-center">{error}</p>
+                : <p className="text-white/25 text-xs mt-1.5 text-center">Arrow keys adjust / Enter submits</p>
+              }
+            </div>
+
+            <div className="mb-1 min-h-0 md:mb-3 md:min-h-10">
+              {history.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {history.map((h, i) => (
+                    <span key={`${h.team}-${h.amount}-${i}`} className="rounded-full border border-white/10 px-2 py-1 font-mono text-[10px] text-white/55">
+                      {teams[h.team].name.slice(0, 1)} / {h.amount}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={() => dispatch({ type: 'CONCEDE' })}
+              className="w-full rounded-md bg-[#ffd23f] py-2 text-base font-black uppercase tracking-normal text-[#0a0d14] transition-all hover:bg-[#ffe071] active:scale-95 md:py-3.5"
+            >
+              Concede
+            </button>
+
+            <p className="mt-3 hidden text-center text-xs text-white/25 md:block">
+              <strong className="text-white/50">{concedeName}</strong> clues all {words.length} using {currentBid} words.
+            </p>
+          </div>
         </div>
-
-        {/* Concede */}
-        <button
-          onClick={() => dispatch({ type: 'CONCEDE' })}
-          className="w-full py-3.5 rounded-xl bg-[#e8774d] text-white font-black text-base hover:bg-[#d9663b] active:scale-95 transition-all"
-        >
-          Concede
-        </button>
-
-        <p className="text-white/20 text-xs text-center mt-3">
-          Concede → <strong className="text-white/35">{concedeName}</strong> gives clues using {currentBid} words
-        </p>
 
       </div>
     </div>

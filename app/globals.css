@@ -1,14 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #0d0d14;
-  --surface: #15151e;
-  --surface2: #1e1e2a;
-  --border: rgba(255,255,255,0.08);
-  --accent: #e8774d;
-  --accent2: #c084fc;
-  --text: #f0f0f5;
-  --muted: rgba(240,240,245,0.45);
+  --bg: #0a0d14;
+  --surface: #141826;
+  --surface2: #202842;
+  --border: rgba(255,255,255,0.10);
+  --accent: #ffd23f;
+  --accent-ink: #0a0d14;
+  --accent2: #ff3a6d;
+  --blue: #3a8bff;
+  --green: #2de584;
+  --text: #ffffff;
+  --muted: rgba(255,255,255,0.65);
 }
 
 @theme inline {
@@ -20,14 +23,101 @@
   --color-accent2: var(--accent2);
   --color-text: var(--text);
   --color-muted: var(--muted);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-space-grotesk);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 * { -webkit-tap-highlight-color: transparent; }
 
+html {
+  height: 100%;
+  width: 100%;
+  max-width: 100vw;
+  background: var(--bg);
+  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  overscroll-behavior: none;
+}
+
 body {
+  height: 100%;
+  width: 100%;
+  max-width: 100vw;
+  position: fixed;
+  inset: 0;
   background: var(--bg);
   color: var(--text);
+  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  overscroll-behavior: none;
+}
+
+body > * {
+  min-height: 0;
+  min-width: 0;
+}
+
+@supports (overflow: clip) {
+  html,
+  body {
+    overflow: clip;
+  }
+}
+
+* {
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.panel-scroll {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,210,63,0.55) rgba(255,255,255,0.06);
+}
+
+.panel-scroll::-webkit-scrollbar {
+  width: 0.5rem;
+  height: 0.5rem;
+  display: block;
+}
+
+.panel-scroll::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+}
+
+.panel-scroll::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: rgba(255,210,63,0.55);
+  background-clip: padding-box;
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.mono-label {
+  font-family: var(--font-jetbrains-mono), monospace;
+  text-transform: uppercase;
+  letter-spacing: 0;
 }
 
 @keyframes pulse-ring {
@@ -40,10 +130,11 @@ body {
 }
 
 @keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .fade-in-up {
   animation: fade-in-up 0.35s ease both;
+  transform: none !important;
 }

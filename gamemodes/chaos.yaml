@@ -1,0 +1,81 @@
+id: chaos
+name: Chaos
+shortName: CHAOS
+description: Swingier bonuses, more challenges, and shorter pressure turns.
+roundCount: 4
+
+timing:
+  turnSeconds: 35
+  moneySeconds: 50
+  biddingSeconds: 60
+  minSeconds: 10
+  maxSeconds: 240
+  turnPresets: [25, 35, 45, 60]
+  moneyPresets: [40, 50, 60, 90]
+
+bidding:
+  title: Chaos Bid
+  contests: 2
+  wordDeck: bidding
+  wordCount: 5
+  minBid: 4
+  maxBid: 22
+  successPoints: 12
+  failurePoints: 6
+  failureAward: opponent
+
+stacks:
+  title: Chaos Stacks
+  wordCount: 5
+  wordLimit: 18
+  allCorrectBonus: 8
+  rounds:
+    - number: 2
+      turns: 3
+      startTeam: 1
+    - number: 3
+      turns: 3
+      startTeam: 0
+  options:
+    - id: green
+      label: Green
+      wordDeck: green
+      pointsPerWord: 1
+      color: "#2de584"
+    - id: yellow
+      label: Yellow
+      wordDeck: yellow
+      pointsPerWord: 3
+      color: "#ffd23f"
+    - id: red
+      label: Red
+      wordDeck: red
+      pointsPerWord: 5
+      color: "#ff3a6d"
+
+money:
+  title: Wild Final
+  wordDeck: money
+  wordCount: 10
+  wordLimit: 22
+  jackpotPoints: 30
+
+clueActions:
+  allowSkip: true
+  allowBudgetRefund: true
+  autoAdvanceOnCorrect: true
+
+challenge:
+  enabledByDefault: true
+  includeAlcoholByDefault: false
+  maxPerGame: 8
+  frequency: high
+  prompts:
+    manySkips:
+      - "Skip spiral: cluing team performs a tiny celebration for every word they did get."
+    standard:
+      - "Chaos rule: next clue giver gets a harmless voice chosen by the room."
+
+accessibility:
+  speechRecognitionDefault: false
+  announceControls: true

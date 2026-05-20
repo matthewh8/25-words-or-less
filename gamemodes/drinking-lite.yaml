@@ -1,0 +1,83 @@
+id: drinking-lite
+name: Drinking Lite
+shortName: LITE
+description: Optional 21+ prompts with non-alcohol alternatives and capped frequency.
+roundCount: 4
+
+timing:
+  turnSeconds: 45
+  moneySeconds: 60
+  biddingSeconds: 75
+  minSeconds: 10
+  maxSeconds: 300
+  turnPresets: [30, 45, 60, 90]
+  moneyPresets: [45, 60, 90, 120]
+
+bidding:
+  title: Party Bid
+  contests: 2
+  wordDeck: bidding
+  wordCount: 5
+  minBid: 6
+  maxBid: 25
+  successPoints: 10
+  failurePoints: 5
+  failureAward: opponent
+
+stacks:
+  title: Party Stacks
+  wordCount: 5
+  wordLimit: 20
+  allCorrectBonus: 5
+  rounds:
+    - number: 2
+      turns: 3
+      startTeam: 0
+    - number: 3
+      turns: 3
+      startTeam: 1
+  options:
+    - id: green
+      label: Green
+      wordDeck: green
+      pointsPerWord: 1
+      color: "#2de584"
+    - id: yellow
+      label: Yellow
+      wordDeck: yellow
+      pointsPerWord: 2
+      color: "#ffd23f"
+    - id: red
+      label: Red
+      wordDeck: red
+      pointsPerWord: 3
+      color: "#ff3a6d"
+
+money:
+  title: Party Final
+  wordDeck: money
+  wordCount: 10
+  wordLimit: 25
+  jackpotPoints: 25
+
+clueActions:
+  allowSkip: true
+  allowBudgetRefund: true
+  autoAdvanceOnCorrect: true
+
+challenge:
+  enabledByDefault: true
+  includeAlcoholByDefault: true
+  maxPerGame: 5
+  frequency: normal
+  prompts:
+    zeroCorrect:
+      - "21+ option: cluing team takes one sip each, or performs a team chant."
+    perfect:
+      - "21+ option: opponents take one sip, or deliver a dramatic compliment."
+    standard:
+      - "21+ option: losing team takes a sip, or does a five-second slow clap."
+
+accessibility:
+  speechRecognitionDefault: false
+  announceControls: true

@@ -1,0 +1,79 @@
+id: chill
+name: Chill
+shortName: CHILL
+description: Easier words, longer timers, lower penalties, and fewer interruptions.
+roundCount: 4
+
+timing:
+  turnSeconds: 60
+  moneySeconds: 75
+  biddingSeconds: 100
+  minSeconds: 20
+  maxSeconds: 300
+  turnPresets: [45, 60, 75, 90]
+  moneyPresets: [60, 75, 90, 120]
+
+bidding:
+  title: Easy Bid
+  contests: 2
+  wordDeck: green
+  wordCount: 5
+  minBid: 7
+  maxBid: 25
+  successPoints: 8
+  failurePoints: 3
+  failureAward: opponent
+
+stacks:
+  title: Chill Stacks
+  wordCount: 5
+  wordLimit: 24
+  allCorrectBonus: 3
+  rounds:
+    - number: 2
+      turns: 3
+      startTeam: 0
+    - number: 3
+      turns: 3
+      startTeam: 1
+  options:
+    - id: green
+      label: Green
+      wordDeck: green
+      pointsPerWord: 1
+      color: "#2de584"
+    - id: yellow
+      label: Yellow
+      wordDeck: yellow
+      pointsPerWord: 2
+      color: "#ffd23f"
+    - id: red
+      label: Red
+      wordDeck: red
+      pointsPerWord: 3
+      color: "#ff3a6d"
+
+money:
+  title: Chill Final
+  wordDeck: money
+  wordCount: 8
+  wordLimit: 28
+  jackpotPoints: 18
+
+clueActions:
+  allowSkip: true
+  allowBudgetRefund: true
+  autoAdvanceOnCorrect: true
+
+challenge:
+  enabledByDefault: false
+  includeAlcoholByDefault: false
+  maxPerGame: 2
+  frequency: low
+  prompts:
+    standard:
+      - "Chill prompt: both teams take a water break."
+
+accessibility:
+  speechRecognitionDefault: false
+  announceControls: true

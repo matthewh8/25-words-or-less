@@ -1,0 +1,91 @@
+id: classic
+name: Classic 25
+shortName: FIVE
+description: Classic two-team 25 Words or Less flow with bidding, color stacks, and a money round.
+roundCount: 4
+
+timing:
+  turnSeconds: 45
+  moneySeconds: 60
+  biddingSeconds: 90
+  minSeconds: 10
+  maxSeconds: 300
+  turnPresets: [30, 45, 60, 90]
+  moneyPresets: [45, 60, 90, 120]
+
+bidding:
+  title: The Bid
+  contests: 2
+  wordDeck: bidding
+  wordCount: 5
+  minBid: 6
+  maxBid: 25
+  successPoints: 10
+  failurePoints: 5
+  failureAward: opponent
+
+stacks:
+  title: Color Stacks
+  wordCount: 5
+  wordLimit: 20
+  allCorrectBonus: 5
+  rounds:
+    - number: 2
+      turns: 3
+      startTeam: 0
+    - number: 3
+      turns: 3
+      startTeam: 1
+  options:
+    - id: green
+      label: Green
+      wordDeck: green
+      pointsPerWord: 1
+      color: "#2de584"
+    - id: yellow
+      label: Yellow
+      wordDeck: yellow
+      pointsPerWord: 2
+      color: "#ffd23f"
+    - id: red
+      label: Red
+      wordDeck: red
+      pointsPerWord: 3
+      color: "#ff3a6d"
+
+money:
+  title: Money Round
+  wordDeck: money
+  wordCount: 10
+  wordLimit: 25
+  jackpotPoints: 25
+
+clueActions:
+  allowSkip: true
+  allowBudgetRefund: true
+  autoAdvanceOnCorrect: true
+
+challenge:
+  enabledByDefault: true
+  includeAlcoholByDefault: false
+  maxPerGame: 5
+  frequency: normal
+  prompts:
+    zeroCorrect:
+      - "Team reset: cluing team gets a ten-second huddle before the next screen."
+    manySkips:
+      - "Skip tax: cluing team must explain the funniest skipped word."
+    perfect:
+      - "Perfect round: opponents give a five-second applause break."
+    closeFailure:
+      - "One-away energy: cluing team names its almost-MVP."
+    moneyWin:
+      - "Jackpot toast: everyone raises a water cheers. 21+ option: swap water for a sip, or keep the water cheers."
+    moneyFail:
+      - "Final stumble: the room picks the word that would have changed everything."
+    standard:
+      - "Mini dare: cluing team uses announcer voice until the next screen."
+
+accessibility:
+  speechRecognitionDefault: false
+  announceControls: true

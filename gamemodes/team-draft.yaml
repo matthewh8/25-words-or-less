@@ -1,0 +1,79 @@
+id: team-draft
+name: Team Draft
+shortName: DRAFT
+description: Balanced scoring for nights where player setup and rerolling teams matter most.
+roundCount: 4
+
+timing:
+  turnSeconds: 45
+  moneySeconds: 60
+  biddingSeconds: 75
+  minSeconds: 15
+  maxSeconds: 300
+  turnPresets: [30, 45, 60, 75]
+  moneyPresets: [45, 60, 75, 90]
+
+bidding:
+  title: Draft Bid
+  contests: 2
+  wordDeck: bidding
+  wordCount: 5
+  minBid: 6
+  maxBid: 25
+  successPoints: 9
+  failurePoints: 4
+  failureAward: opponent
+
+stacks:
+  title: Rotation Stacks
+  wordCount: 5
+  wordLimit: 20
+  allCorrectBonus: 5
+  rounds:
+    - number: 2
+      turns: 4
+      startTeam: 0
+    - number: 3
+      turns: 4
+      startTeam: 1
+  options:
+    - id: green
+      label: Green
+      wordDeck: green
+      pointsPerWord: 1
+      color: "#2de584"
+    - id: yellow
+      label: Yellow
+      wordDeck: yellow
+      pointsPerWord: 2
+      color: "#ffd23f"
+    - id: red
+      label: Red
+      wordDeck: red
+      pointsPerWord: 3
+      color: "#ff3a6d"
+
+money:
+  title: Draft Final
+  wordDeck: money
+  wordCount: 10
+  wordLimit: 25
+  jackpotPoints: 22
+
+clueActions:
+  allowSkip: true
+  allowBudgetRefund: true
+  autoAdvanceOnCorrect: true
+
+challenge:
+  enabledByDefault: false
+  includeAlcoholByDefault: false
+  maxPerGame: 3
+  frequency: low
+  prompts:
+    standard:
+      - "Draft note: each team names a teammate MVP."
+
+accessibility:
+  speechRecognitionDefault: false
+  announceControls: true

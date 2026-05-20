@@ -3,28 +3,36 @@
 interface TimerProps {
   timeLeft: number
   total: number
+  size?: 'sm' | 'md' | 'lg'
 }
 
-export default function Timer({ timeLeft, total }: TimerProps) {
-  const pct = (timeLeft / total) * 100
+export default function Timer({ timeLeft, total, size = 'sm' }: TimerProps) {
+  const safeTotal = Math.max(1, total)
+  const pct = Math.max(0, Math.min(100, (timeLeft / safeTotal) * 100))
   const urgent = timeLeft <= 10
   const warning = timeLeft <= 20
+  const ring = size === 'lg' ? 248 : size === 'md' ? 176 : 132
+  const text = size === 'lg' ? 'text-7xl' : size === 'md' ? 'text-5xl' : 'text-4xl'
 
   return (
-    <div className="flex flex-col items-center gap-2.5">
-      <div className={`text-6xl font-black tabular-nums transition-colors duration-500 ${
-        urgent ? 'text-red-400' : warning ? 'text-amber-400' : 'text-white'
-      }`}>
-        {timeLeft}
-        <span className="text-2xl font-medium text-white/30">s</span>
-      </div>
-      <div className="w-40 h-1.5 bg-white/10 rounded-full overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all duration-1000 ${
-            urgent ? 'bg-red-400' : warning ? 'bg-amber-400' : 'bg-[#e8774d]'
-          }`}
-          style={{ width: `${pct}%` }}
-        />
+    <div
+      className="relative grid place-items-center shrink-0"
+      style={{
+        width: ring,
+        height: ring,
+        borderRadius: ring / 2,
+        background: `conic-gradient(${urgent ? '#ff3a6d' : warning ? '#ffd23f' : '#ffd23f'} ${pct}%, rgba(255,255,255,0.08) 0)`,
+      }}
+      aria-label={`${timeLeft} seconds left`}
+    >
+      <div className="absolute inset-2 rounded-full bg-[#0a0d14] border border-white/10" />
+      <div className="relative flex flex-col items-center">
+        <div className={`${text} font-black tabular-nums leading-none tracking-normal transition-colors duration-500 ${
+          urgent ? 'text-[#ff3a6d]' : warning ? 'text-[#ffd23f]' : 'text-white'
+        }`}>
+          {timeLeft}
+        </div>
+        <div className="mono-label mt-1 text-[10px] text-white/45">seconds</div>
       </div>
     </div>
   )
