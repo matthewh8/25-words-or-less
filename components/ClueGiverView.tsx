@@ -351,6 +351,7 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
               nameClassName="mono-label text-white/35 text-[10px]"
               playersClassName="mt-0.5 text-[9px] font-bold text-white/25"
               maxPlayers={3}
+              maxChars={24}
             />
           </div>
 

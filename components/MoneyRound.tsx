@@ -6,6 +6,7 @@ import Scoreboard from './Scoreboard'
 import TeamNameBlock from './TeamNameBlock'
 import TeamStatusBar from './TeamStatusBar'
 import TimeConfigurator from './TimeConfigurator'
+import WordRevealList from './WordRevealList'
 
 interface Props {
   state: GameState
@@ -13,7 +14,7 @@ interface Props {
 }
 
 export default function MoneyRound({ state, dispatch }: Props) {
-  const { teams, cluing, lastChallenge } = state
+  const { teams, cluing, lastChallenge, lastReveal } = state
   const mode = state.gameMode
   const winnerTeam: 0 | 1 = teams[0].score >= teams[1].score ? 0 : 1
   const [time, setTime] = useState(state.moneyTime)
@@ -61,6 +62,7 @@ export default function MoneyRound({ state, dispatch }: Props) {
               team={teams[winnerTeam]}
               nameClassName="text-lg font-black text-white"
               playersClassName="mt-1 text-xs font-bold text-white/40"
+              maxChars={32}
             />
           </div>
 
@@ -89,7 +91,10 @@ export default function MoneyRound({ state, dispatch }: Props) {
 
   if (state.phase === 'money_result') {
     const won = state.moneyWon
-    const correct = cluing?.guessed.filter(Boolean).length ?? 0
+    const revealWords = lastReveal?.words ?? cluing?.words ?? []
+    const revealGuessed = lastReveal?.guessed ?? cluing?.guessed ?? []
+    const revealDefinitions = lastReveal?.definitions ?? cluing?.definitions
+    const correct = revealGuessed.filter(Boolean).length
     return (
       <div className={`flex h-dvh flex-col items-center justify-center overflow-hidden p-3 text-white md:p-8 ${won ? 'bg-[#07130d]' : 'bg-[#0a0d14]'}`}>
         <div className="grid h-full w-full max-w-5xl grid-rows-[auto_1fr_auto_auto_auto] gap-2 fade-in-up md:h-auto md:gap-4">
@@ -110,6 +115,7 @@ export default function MoneyRound({ state, dispatch }: Props) {
               className="mt-2"
               nameClassName="sr-only"
               playersClassName="text-xs font-bold text-white/35"
+              maxChars={32}
             />
           </div>
 
@@ -121,16 +127,13 @@ export default function MoneyRound({ state, dispatch }: Props) {
             compact
           />
 
-          {cluing && (
-            <div className="grid min-h-0 grid-cols-2 gap-1.5 sm:grid-cols-5">
-              {cluing.words.map((w, i) => (
-                <div key={i} className={`min-w-0 rounded-md px-1 py-2 text-center text-[10px] font-black uppercase md:py-3 md:text-[11px] ${cluing.guessed[i] ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/25' : 'bg-[#ff3a6d]/10 text-[#ff3a6d] border border-[#ff3a6d]/20'}`}>
-                  <div className="truncate">{w}</div>
-                  <div className="mt-0.5 text-xs md:mt-1 md:text-sm">{cluing.guessed[i] ? '✓' : '✗'}</div>
-                </div>
-              ))}
-            </div>
-          )}
+          <WordRevealList
+            words={revealWords}
+            guessed={revealGuessed}
+            definitions={revealDefinitions}
+            title="Money answers"
+            variant="money"
+          />
 
           <Scoreboard teams={teams} highlight={winnerTeam} compact />
 

@@ -34,6 +34,7 @@ export default function PassToClueGiver({ state, onReady }: Props) {
         className="mb-3 text-center"
         nameClassName="mono-label text-[#ff3a6d] text-xs font-bold"
         playersClassName="mt-1 max-w-sm text-xs font-bold text-white/35"
+        maxChars={34}
       />
       <h2 className="text-5xl font-black text-white text-center leading-[0.9] tracking-normal mb-2 uppercase">
         Guessers,<br />

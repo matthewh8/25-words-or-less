@@ -41,12 +41,20 @@ describe('dealing helpers', () => {
         easy: [' apple ', 'bread'],
         hard: ['gravity', 'fiction'],
       },
+      definitions: {
+        APPLE: 'fruit',
+        BREAD: 'food',
+      },
     })
 
     expect(board).toEqual({
       wordsByStack: {
         easy: ['APPLE', 'BREAD'],
         hard: ['GRAVITY', 'FICTION'],
+      },
+      definitions: {
+        APPLE: 'fruit',
+        BREAD: 'food',
       },
       usedStackIds: [],
       currentTeam: 1,

@@ -18,6 +18,7 @@ function cluing(overrides: Partial<CluingState> = {}): CluingState {
     deckId: 'bidding',
     label: 'The Bid',
     words: ['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE'],
+    definitions: {},
     wordsLeft: 10,
     wordLimit: 10,
     timeLeft: 20,
@@ -293,6 +294,33 @@ describe('phase edges', () => {
     expect(gameReducer(result, { type: 'REFRESH_WORDS', words: ['LATE', 'WORDS'] })).toBe(result)
   })
 
+  it('captures the revealed words, statuses, and dealt definitions when cluing ends', () => {
+    const words = ['ALPHA', 'BRAVO', 'CHARLIE', 'DELTA', 'ECHO']
+    const wordDefinitions = {
+      ALPHA: 'the first letter of the Greek alphabet',
+      BRAVO: 'a cry of approval',
+    }
+    const bidding = gameReducer(initGame('A', 'B'), {
+      type: 'START_BIDDING',
+      firstTeam: 0,
+      words,
+      wordDefinitions,
+    })
+    const cluingState = gameReducer(bidding, { type: 'CONCEDE' })
+    const partiallyCorrect: GameState = {
+      ...cluingState,
+      cluing: cluingState.cluing ? { ...cluingState.cluing, guessed: [true, false, false, false, false] } : null,
+    }
+
+    const result = gameReducer(partiallyCorrect, { type: 'END_CLUING' })
+
+    expect(result.lastReveal).toMatchObject({
+      words,
+      guessed: [true, false, false, false, false],
+      definitions: wordDefinitions,
+    })
+  })
+
   it('ends a clue turn when the timer reaches zero', () => {
     const bidding = gameReducer(initGame('A', 'B'), { type: 'START_BIDDING', firstTeam: 0 })
     const cluingState = gameReducer(bidding, { type: 'CONCEDE' })
@@ -397,6 +425,9 @@ describe('phase edges', () => {
           yellow: ['Y1', 'Y2', 'Y3', 'Y4', 'Y5'],
           red: ['R1', 'R2', 'R3', 'R4', 'R5'],
         },
+        definitions: {
+          Y1: 'yellow one',
+        },
         usedStackIds: ['green'],
         currentTeam: 0,
         turnsLeft: 3,
@@ -431,6 +462,7 @@ describe('phase edges', () => {
       currentRound: 2,
       stackBoard: {
         wordsByStack: { solo: ['S1', 'S2', 'S3', 'S4', 'S5'] },
+        definitions: {},
         usedStackIds: ['solo'],
         currentTeam: 0,
         turnsLeft: 3,

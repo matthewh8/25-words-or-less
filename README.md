@@ -46,17 +46,17 @@ In development, invalid YAML mode definitions throw with schema errors. In produ
 
 Words are organized by no-tag green/yellow/red difficulty decks plus a money-round deck in `data/words/word-bank.json`. Current audited deck sizes:
 
-- green: 16,000
-- yellow: 16,000
-- red: 16,000
+- green: 10,000
+- yellow: 10,000
+- red: 10,000
 - money: 2,000
 
-Source and pipeline notes live in `data/words/README.md`. `npm run build:words` rebuilds the committed 50,000-entry runtime bank from open sources, removes exact and spacing-insensitive duplicates, filters malformed/unsafe/noisy entries, and audits every accepted entry as one distinct word. `npm run audit:words` verifies the final split, duplicate removal, no multi-word entries, and difficulty shape. `npm run organize:words -- <candidate_files...> --output data/words/organized.generated.json` remains available for review-only candidate experiments.
+Source and pipeline notes live in `data/words/README.md`. `npm run build:words` rebuilds the committed 32,000-entry runtime bank from open sources, removes exact and spacing-insensitive duplicates, filters malformed/unsafe/noisy entries, uses wordfreq Zipf frequency as an average-person commonness gate, and stores a short Open English WordNet definition for every playable word. `npm run audit:words` verifies the final split, duplicate removal, no multi-word entries, full definition coverage, the commonness floor, and difficulty shape. `npm run organize:words -- <candidate_files...> --output data/words/organized.generated.json` remains available for review-only candidate experiments.
 
 `validateWordBank()` checks deck IDs, difficulty tiers, source attribution, ISO import dates, within-deck and cross-play-deck duplicates, empty values, malformed entries, over-long entries, lowercase entries, and blocked unsafe terms.
 `getWordBankSummary()` exposes the same inventory in code so deck sizes and source coverage are covered by tests, not only README prose.
 
-The full word bank is imported by server code. The client requests round-sized deals from `/api/deal`, so generated client chunks stay free of the bundled word-bank literals and only receive the words needed for the next screen.
+The full word bank is imported by server code. The client requests round-sized deals from `/api/deal`, so generated client chunks stay free of the bundled word-bank literals and only receive the words and definitions needed for the next screen.
 
 ## Checks
 

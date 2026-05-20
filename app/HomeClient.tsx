@@ -225,7 +225,7 @@ export default function HomeClient({ gameModes }: HomeClientProps) {
                   />
                 </div>
                 <p className="mt-1 truncate text-[10px] font-bold text-white/35">
-                  {teamPlayerLine(teamPlayers[index as TeamIndex], 'No players assigned', 4)}
+                  {teamPlayerLine(teamPlayers[index as TeamIndex], 'No players assigned', 4, 28)}
                 </p>
               </label>
             ))}

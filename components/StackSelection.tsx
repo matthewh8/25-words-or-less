@@ -44,6 +44,7 @@ export default function StackSelection({ state, dispatch }: Props) {
           className="mb-1 md:mb-2"
           nameClassName="mono-label text-[10px] text-white/45"
           playersClassName="mt-0.5 text-[10px] font-bold text-white/30"
+          maxChars={32}
         />
         <h2 className="mb-3 text-4xl font-black uppercase leading-[0.9] text-white md:mb-6 md:text-6xl">Pick a stack</h2>
 

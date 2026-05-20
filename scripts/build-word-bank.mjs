@@ -4,14 +4,21 @@ import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import {
+  MIN_AVERAGE_ZIPF,
+  MIN_MONEY_ZIPF,
+  WORDFREQ_SOURCE_ID,
+  WORDFREQ_VERSION,
+  loadWordfreqScores,
+} from './wordfreq-utils.mjs'
 
 const DEFAULT_OUTPUT_PATH = 'data/words/word-bank.json'
-const DEFAULT_TARGET_TOTAL = 50000
+const DEFAULT_TARGET_TOTAL = 32000
 const DEFAULT_MONEY_TARGET = 2000
 const SINGLE_DECK_TARGET_WEIGHTS = {
-  green: 16000,
-  yellow: 16000,
-  red: 16000,
+  green: 10000,
+  yellow: 10000,
+  red: 10000,
 }
 const SINGLE_DECK_TARGET_WEIGHT_TOTAL = Object.values(SINGLE_DECK_TARGET_WEIGHTS)
   .reduce((total, weight) => total + weight, 0)
@@ -36,25 +43,44 @@ const BLOCKED_WORDS = new Set([
   'ABORTIONS',
   'ABUSE',
   'ABUSED',
+  'ABUSER',
+  'ABUSERS',
   'ABUSES',
   'ABUSING',
   'ABUSIVE',
+  'ABDUCT',
+  'ABDUCTED',
+  'ABDUCTING',
+  'ABDUCTION',
+  'ABDUCTIONS',
   'ASSAULT',
   'ASSAULTED',
   'ASSAULTING',
   'ASSAULTS',
   'ANAL',
   'ANUS',
+  'APARTHEID',
   'AMPHETAMINE',
+  'ASEXUAL',
+  'BISEXUAL',
   'BITCH',
+  'BOMB',
+  'BOMBED',
+  'BOMBING',
+  'BOMBS',
   'COCK',
+  'COCAINE',
+  'COITUS',
   'CUNT',
+  'DARKIE',
   'DICK',
   'DICKHEAD',
   'DICKER',
   'DICKERED',
   'DICKERING',
   'DICKERS',
+  'DILDO',
+  'DILDOS',
   'DISMEMBER',
   'DISMEMBERED',
   'DISMEMBERING',
@@ -68,6 +94,9 @@ const BLOCKED_WORDS = new Set([
   'FASCISM',
   'FASCIST',
   'FASCISTS',
+  'FETUS',
+  'FLEER',
+  'FLEERS',
   'FUCK',
   'FUCKED',
   'FUCKER',
@@ -86,11 +115,18 @@ const BLOCKED_WORDS = new Set([
   'GYPPED',
   'GYPPING',
   'GYPSY',
+  'HELLUVA',
   'HOLOCAUST',
   'HOMICIDE',
+  'HEROIN',
+  'HETEROSEXUAL',
+  'HOMOSEXUAL',
   'INCEST',
   'INTERCOURSE',
   'JIHAD',
+  'LECHER',
+  'LECHEROUS',
+  'LECHERY',
   'MAIM',
   'MAIMED',
   'MAIMING',
@@ -101,6 +137,8 @@ const BLOCKED_WORDS = new Set([
   'MASTURBATES',
   'MASTURBATING',
   'MASTURBATION',
+  'METH',
+  'METHADONE',
   'MOLEST',
   'MOLESTED',
   'MOLESTING',
@@ -113,10 +151,20 @@ const BLOCKED_WORDS = new Set([
   'MURDERS',
   'NAZI',
   'NAZIS',
+  'NARCOTIC',
+  'NARCOTICS',
+  'NEGROID',
   'NIGGA',
   'NIGGER',
+  'OPIATE',
+  'OPIATES',
+  'OPIOID',
+  'OPIOIDS',
   'ORGY',
   'ORGIES',
+  'PANSEXUAL',
+  'PISTOL',
+  'PISTOLS',
   'PORN',
   'PORNO',
   'PORNOGRAPHY',
@@ -138,6 +186,12 @@ const BLOCKED_WORDS = new Set([
   'RACIST',
   'RACISTS',
   'RETARD',
+  'RIFLE',
+  'RIFLES',
+  'CRACKHEAD',
+  'CRACKHEADS',
+  'CUNNILINGUS',
+  'EXCRETE',
   'SEX',
   'CONTRACEPTION',
   'CONTRACEPTIVE',
@@ -145,6 +199,7 @@ const BLOCKED_WORDS = new Set([
   'SEXUAL',
   'SEXUALLY',
   'SHIT',
+  'SHYSTER',
   'SLAVE',
   'SLAVERY',
   'SLUT',
@@ -165,6 +220,9 @@ const BLOCKED_WORDS = new Set([
   'TRAFFICKING',
   'VIBRATOR',
   'VIBRATORS',
+  'WEAPON',
+  'WEAPONRY',
+  'WEAPONS',
   'WHORE',
 ])
 
@@ -369,6 +427,11 @@ function auditDifficultyScore(candidate) {
   if (candidate.seedDecks.has('red')) score += 2
 
   if (EASY_WORDS.has(word)) score -= 4
+  if (candidate.wordfreqZipf >= 4.5) score -= 3
+  else if (candidate.wordfreqZipf >= 3.7) score -= 2
+  else if (candidate.wordfreqZipf >= 3) score -= 1
+  else if (candidate.wordfreqZipf < MIN_AVERAGE_ZIPF) score += 4
+  else if (candidate.wordfreqZipf < 2.8) score += 2
   if (candidate.inDefault) score -= 1
   if (candidate.inLarge && !candidate.inDefault) score += 1.5
   if (!candidate.cmuPhones) score += 2
@@ -417,6 +480,9 @@ function auditDifficultyScore(candidate) {
 function qualityScore(candidate) {
   let score = 0
   if (!candidate.seedDecks.size) score += 1
+  if (candidate.wordfreqZipf < MIN_AVERAGE_ZIPF) score += 8
+  else if (candidate.wordfreqZipf < 2.8) score += 3
+  else if (candidate.wordfreqZipf >= 3.5) score -= 1
   if (!candidate.cmuPhones) score += 4
   if (!candidate.wordNetPos.size) score += 2
   if (!candidate.inDefault) score += 2
@@ -424,6 +490,20 @@ function qualityScore(candidate) {
   if (candidate.word.length < 4 && !EASY_WORDS.has(candidate.word)) score += 5
   if (candidate.word.length > 14) score += 1
   return score
+}
+
+function hasNicheDefinition(candidate) {
+  if (candidate.wordfreqZipf >= 2.8) return false
+  return [
+    /^a member of (?:a|an|the) .* people/i,
+    /^a group of (?:people|languages)/i,
+    /^a language spoken/i,
+    /genus [A-Z]/,
+    /family [A-Z]/,
+    /Vishnu/i,
+    /Hindu deity/i,
+    /Buddhist/i,
+  ].some(pattern => pattern.test(candidate.definition))
 }
 
 async function downloadIfNeeded(targetPath, url) {
@@ -488,8 +568,107 @@ function addPos(map, word, pos) {
   map.set(word, entry)
 }
 
+function cleanDefinition(gloss) {
+  const definition = String(gloss ?? '')
+    .split(';')[0]
+    .replace(/\s+/g, ' ')
+    .replace(/^"|"$/g, '')
+    .trim()
+
+  if (!definition) return ''
+  if (definition.length <= 180) return definition
+
+  const cut = definition.slice(0, 180)
+  const lastSpace = cut.lastIndexOf(' ')
+  return `${cut.slice(0, lastSpace > 120 ? lastSpace : 180).trim()}...`
+}
+
+function sensePosAliases(posNumber) {
+  if (posNumber === '1') return ['n']
+  if (posNumber === '2') return ['v']
+  if (posNumber === '3') return ['a', 's']
+  if (posNumber === '4') return ['r']
+  if (posNumber === '5') return ['s', 'a']
+  return []
+}
+
+function parseSenseRanks(zipPath) {
+  const ranks = new Map()
+  const text = unzipText(zipPath, 'oewn2025/index.sense')
+
+  for (const line of text.split(/\r?\n/)) {
+    const parts = line.trim().split(/\s+/)
+    if (parts.length < 3) continue
+
+    const senseKey = parts[0]
+    const match = senseKey.match(/^(.+)%([1-5]):/)
+    if (!match) continue
+
+    const lemma = match[1]
+    if (!/^[a-z_]+$/.test(lemma)) continue
+    const word = lemma.replace(/_/g, ' ').toUpperCase()
+    if (word.includes(' ') || !isValidEntry(word)) continue
+
+    const offset = parts[1]
+    const senseNumber = Number.parseInt(parts[2], 10)
+    if (!/^\d{8}$/.test(offset) || !Number.isInteger(senseNumber)) continue
+
+    for (const pos of sensePosAliases(match[2])) {
+      const key = `${word}:${offset}:${pos}`
+      const previous = ranks.get(key)
+      if (previous === undefined || senseNumber < previous) ranks.set(key, senseNumber)
+    }
+  }
+
+  return ranks
+}
+
+function addDefinitionCandidate(map, word, offset, posCode, gloss, sequence) {
+  if (word.includes(' ') || !isValidEntry(word)) return
+
+  const definition = cleanDefinition(gloss)
+  if (!definition) return
+
+  const candidates = map.get(word) ?? []
+  candidates.push({ offset, posCode, definition, sequence })
+  map.set(word, candidates)
+}
+
+function derivedLemmaCandidates(word) {
+  const candidates = []
+
+  if (word.endsWith('IES') && word.length > 4) candidates.push(`${word.slice(0, -3)}Y`)
+  if (word.endsWith('ING') && word.length > 5) {
+    const stem = word.slice(0, -3)
+    candidates.push(stem, `${stem}E`)
+    if (stem.length > 2 && stem.at(-1) === stem.at(-2)) candidates.push(stem.slice(0, -1))
+  }
+  if (word.endsWith('ED') && word.length > 4) {
+    const stem = word.slice(0, -2)
+    candidates.push(stem, `${stem}E`)
+    if (stem.length > 2 && stem.at(-1) === stem.at(-2)) candidates.push(stem.slice(0, -1))
+  }
+  if (word.endsWith('ES') && word.length > 4) candidates.push(word.slice(0, -2))
+  if (word.endsWith('S') && word.length > 4) candidates.push(word.slice(0, -1))
+
+  return [...new Set(candidates)].filter(candidate => candidate !== word && isValidEntry(candidate))
+}
+
+function definitionForWord(word, definitions) {
+  const direct = definitions.get(word)
+  if (direct) return direct
+
+  for (const lemma of derivedLemmaCandidates(word)) {
+    const definition = definitions.get(lemma)
+    if (definition) return definition
+  }
+  return ''
+}
+
 function parseOpenEnglishWordNet(zipPath) {
   const words = new Map()
+  const definitionCandidates = new Map()
+  const senseRanks = parseSenseRanks(zipPath)
   const indexFiles = [
     ['index.noun', 'noun'],
     ['index.verb', 'verb'],
@@ -510,7 +689,88 @@ function parseOpenEnglishWordNet(zipPath) {
     }
   }
 
-  return { words }
+  const dataFiles = [
+    ['data.noun', 'noun'],
+    ['data.verb', 'verb'],
+    ['data.adj', 'adj'],
+    ['data.adv', 'adv'],
+  ]
+  let sequence = 0
+
+  for (const [file, pos] of dataFiles) {
+    const text = unzipText(zipPath, `oewn2025/${file}`)
+    for (const line of text.split(/\r?\n/)) {
+      if (!line || line.startsWith(' ')) continue
+
+      const pipeIndex = line.indexOf('|')
+      if (pipeIndex === -1) continue
+
+      const data = line.slice(0, pipeIndex).trim()
+      const gloss = line.slice(pipeIndex + 1).trim()
+      const parts = data.split(/\s+/)
+      if (parts.length < 5) continue
+
+      const [offset,, posCode, wordCountHex] = parts
+      const wordCount = Number.parseInt(wordCountHex, 16)
+      if (!/^\d{8}$/.test(offset) || !Number.isInteger(wordCount) || wordCount <= 0) continue
+
+      for (let i = 0; i < wordCount; i++) {
+        const lemma = parts[4 + i * 2]
+        if (!lemma || !/^[A-Za-z_]+$/.test(lemma)) continue
+
+        const word = lemma.replace(/_/g, ' ').toUpperCase()
+        if (word.includes(' ') || word.length < 3 || word.length > 16 || !isValidEntry(word)) continue
+
+        addPos(words, word, pos)
+        addDefinitionCandidate(definitionCandidates, word, offset, posCode, gloss, sequence)
+      }
+      sequence += 1
+    }
+  }
+
+  const definitions = new Map()
+  for (const [word, candidates] of definitionCandidates.entries()) {
+    candidates.sort((a, b) => {
+      const aRank = senseRanks.get(`${word}:${a.offset}:${a.posCode}`) ?? 999
+      const bRank = senseRanks.get(`${word}:${b.offset}:${b.posCode}`) ?? 999
+      return aRank - bRank
+        || a.definition.length - b.definition.length
+        || a.sequence - b.sequence
+    })
+    definitions.set(word, candidates[0].definition)
+  }
+
+  const exceptionFiles = [
+    ['noun.exc', 'noun'],
+    ['verb.exc', 'verb'],
+    ['adj.exc', 'adj'],
+    ['adv.exc', 'adv'],
+  ]
+  for (const [file, pos] of exceptionFiles) {
+    const text = unzipText(zipPath, `oewn2025/${file}`)
+    for (const line of text.split(/\r?\n/)) {
+      const [headword, ...lemmas] = line.trim().split(/\s+/)
+      if (!headword || !lemmas.length || !/^[a-z_]+$/.test(headword)) continue
+
+      const word = headword.replace(/_/g, ' ').toUpperCase()
+      if (word.includes(' ') || !isValidEntry(word)) continue
+
+      addPos(words, word, pos)
+      if (definitions.has(word)) continue
+
+      for (const lemma of lemmas) {
+        if (!/^[a-z_]+$/.test(lemma)) continue
+        const baseWord = lemma.replace(/_/g, ' ').toUpperCase()
+        const definition = definitions.get(baseWord)
+        if (definition) {
+          definitions.set(word, definition)
+          break
+        }
+      }
+    }
+  }
+
+  return { words, definitions }
 }
 
 function upsertCandidate(candidates, rawWord) {
@@ -530,6 +790,8 @@ function upsertCandidate(candidates, rawWord) {
       inLarge: false,
       cmuPhones: null,
       wordNetPos: new Set(),
+      definition: '',
+      wordfreqZipf: 0,
       difficultyScore: 0,
       qualityScore: 0,
     }
@@ -554,6 +816,7 @@ function deckSourceIds(words) {
     if (candidate.inDefault || candidate.inLarge) ids.add('esdb-en-us-2026-02-25')
     if (candidate.cmuPhones) ids.add('cmudict')
     if (candidate.wordNetPos.size) ids.add('open-english-wordnet-2025')
+    if (candidate.wordfreqZipf > 0) ids.add(WORDFREQ_SOURCE_ID)
   }
   return [...ids]
 }
@@ -567,6 +830,7 @@ function isMoneySingleCandidate(candidate) {
     && !candidate.word.includes(' ')
     && (candidate.word.length >= 5 || EASY_WORDS.has(candidate.word))
     && candidate.word.length <= 12
+    && candidate.wordfreqZipf >= MIN_MONEY_ZIPF
     && candidate.inDefault
     && Boolean(candidate.cmuPhones)
     && candidate.wordNetPos.size > 0
@@ -620,6 +884,7 @@ const scowlCandidates = [
   ...parseScowl(await readFile(rawPaths.esdbDefault, 'utf8'), 'default'),
   ...parseScowl(await readFile(rawPaths.esdbLarge, 'utf8'), 'large'),
 ]
+const scowlWords = scowlCandidates.map(candidate => candidate.word)
 
 const candidates = {
   byWord: new Map(),
@@ -631,6 +896,8 @@ const rejected = {
   duplicateSeed: 0,
   insufficientMoney: 0,
   nearDuplicateSource: 0,
+  nicheDefinition: 0,
+  noDefinition: 0,
   noPronunciationOrWordNet: 0,
 }
 
@@ -655,9 +922,20 @@ for (const sourceCandidate of scowlCandidates) {
   if (sourceCandidate.tier === 'large') candidate.inLarge = true
 }
 
+for (const word of oewn.words.keys()) {
+  const candidate = upsertCandidate(candidates, word)
+  if (!candidate) rejected.nearDuplicateSource += 1
+}
+
+const wordfreqScores = await loadWordfreqScores([
+  ...candidates.byWord.keys(),
+  ...scowlWords,
+])
 for (const candidate of candidates.byWord.values()) {
   candidate.cmuPhones = cmu.get(candidate.word) ?? null
   candidate.wordNetPos = oewn.words.get(candidate.word) ?? new Set()
+  candidate.definition = definitionForWord(candidate.word, oewn.definitions)
+  candidate.wordfreqZipf = wordfreqScores.get(candidate.word) ?? 0
   candidate.difficultyScore = auditDifficultyScore(candidate)
   candidate.qualityScore = qualityScore(candidate)
 }
@@ -666,8 +944,17 @@ const moneyTarget = Math.min(DEFAULT_MONEY_TARGET, targetTotal - 1)
 
 const allEligibleSingles = []
 for (const candidate of candidates.byWord.values()) {
-  if (candidate.seedDecks.size || candidate.cmuPhones || candidate.wordNetPos.size) {
+  if (
+    (candidate.wordfreqZipf >= MIN_AVERAGE_ZIPF || EASY_WORDS.has(candidate.word))
+    && candidate.definition
+    && !hasNicheDefinition(candidate)
+    && (candidate.seedDecks.size || candidate.cmuPhones || candidate.wordNetPos.size)
+  ) {
     allEligibleSingles.push(candidate)
+  } else if (candidate.definition && hasNicheDefinition(candidate)) {
+    rejected.nicheDefinition += 1
+  } else if (!candidate.definition) {
+    rejected.noDefinition += 1
   } else {
     rejected.noPronunciationOrWordNet += 1
   }
@@ -750,7 +1037,15 @@ const sources = [
     url: 'https://en-word.net/',
     licenseNote: 'Released under Creative Commons Attribution 4.0 International (CC-BY 4.0).',
     importedAt: '2026-05-20',
-    transform: 'Used as a part-of-speech and semantic-attestation signal; also fills the remaining single-word target count after CMUdict-filtered ESDB entries.',
+    transform: 'Used as a part-of-speech, semantic-attestation, and short-definition source; playable entries must have an Open English WordNet gloss for reveal screens.',
+  },
+  {
+    id: WORDFREQ_SOURCE_ID,
+    name: `wordfreq ${WORDFREQ_VERSION}`,
+    url: 'https://github.com/rspeer/wordfreq',
+    licenseNote: 'Apache-2.0 code; included frequency data is redistributable with Creative Commons Attribution-ShareAlike 4.0 and related attribution requirements.',
+    importedAt: '2026-05-20',
+    transform: `Used only as a Zipf-frequency signal. Non-seed playable words must score at least ${MIN_AVERAGE_ZIPF}; money-round words must score at least ${MIN_MONEY_ZIPF}.`,
   },
 ]
 
@@ -762,6 +1057,18 @@ const decks = {
   red: asSortedWords(redCandidates),
   money: moneyWords.sort((a, b) => a.localeCompare(b)),
 }
+
+const selectedCandidates = [
+  ...greenCandidates,
+  ...yellowCandidates,
+  ...redCandidates,
+  ...selectedMoneyCandidates,
+]
+const definitions = Object.fromEntries(
+  selectedCandidates
+    .map(candidate => [candidate.word, candidate.definition])
+    .sort(([a], [b]) => a.localeCompare(b))
+)
 
 const deckCounts = Object.fromEntries(Object.entries(decks).map(([deck, words]) => [deck, words.length]))
 const totalPlayableWords = deckCounts.green + deckCounts.yellow + deckCounts.red + deckCounts.money
@@ -808,8 +1115,14 @@ const output = {
       mergedCandidates: candidates.byWord.size,
       cmudictEntries: cmu.size,
       openEnglishWordNetLemmas: oewn.words.size,
+      openEnglishWordNetDefinitions: oewn.definitions.size,
+      wordfreqScoredWords: wordfreqScores.size,
       eligibleMoneySingles: moneyCandidates.length,
       eligibleSingles: eligibleSingles.length,
+    },
+    definitions: {
+      playableWords: totalPlayableWords,
+      coveredWords: Object.keys(definitions).length,
     },
     additions: {
       total: generatedSingles.length,
@@ -823,6 +1136,7 @@ const output = {
     moneyAudit: {
       target: moneyTarget,
       sourceSingles: selectedMoneyCandidates.length,
+      minZipf: Math.min(...selectedMoneyCandidates.map(candidate => candidate.wordfreqZipf)),
       scoreRange: {
         min: Math.min(...selectedMoneyCandidates.map(candidate => candidate.difficultyScore)),
         max: Math.max(...selectedMoneyCandidates.map(candidate => candidate.difficultyScore)),
@@ -831,6 +1145,7 @@ const output = {
     },
   },
   decks,
+  definitions,
 }
 
 if (totalPlayableWords !== targetTotal) {

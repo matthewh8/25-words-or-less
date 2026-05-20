@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
   getWordBankSummary,
+  getWordDefinition,
   getWordDecks,
+  getDefinitionsForWords,
   pickWords,
   validateWordBank,
   WORD_BANK_SOURCES,
@@ -58,15 +60,26 @@ describe('word bank validation', () => {
     const summary = getWordBankSummary()
 
     expect(summary.sourceCount).toBeGreaterThanOrEqual(5)
-    expect(summary.deckCounts.green).toBe(16000)
-    expect(summary.deckCounts.yellow).toBe(16000)
-    expect(summary.deckCounts.red).toBe(16000)
+    expect(summary.deckCounts.green).toBe(10000)
+    expect(summary.deckCounts.yellow).toBe(10000)
+    expect(summary.deckCounts.red).toBe(10000)
     expect(summary.deckCounts.money).toBe(2000)
-    expect(summary.totalPlayableWords).toBe(50000)
+    expect(summary.totalPlayableWords).toBe(32000)
     expect(summary.deckCounts.bidding).toBeGreaterThan(summary.deckCounts.green)
     expect(getWordDecks().every(deck => deck.words.every(word => !word.includes(' ')))).toBe(true)
     expect(summary.decks.find(deck => deck.id === 'green')?.sourceIds).toContain('cefr-j-olp')
     expect(summary.decks.find(deck => deck.id === 'yellow')?.sourceIds).toContain('esdb-en-us-2026-02-25')
+  })
+
+  it('looks up definitions only for dealt words', () => {
+    const firstGreenWord = getWordDecks().find(deck => deck.id === 'green')?.words[0]
+    if (!firstGreenWord) throw new Error('expected a bundled green word')
+
+    const definition = getWordDefinition(firstGreenWord)
+    expect(definition.length).toBeGreaterThan(0)
+    expect(getDefinitionsForWords([firstGreenWord, 'not-a-playable-word'])).toEqual({
+      [firstGreenWord]: definition,
+    })
   })
 
   it('reports schema, attribution, safety, and generated-word errors', () => {

@@ -12,6 +12,7 @@ export interface WordsDealResponse {
   kind: 'words'
   deckId: string
   words: string[]
+  definitions?: Record<string, string>
 }
 
 export interface StackDealResponse extends StackDeal {
@@ -138,6 +139,10 @@ function wordsFromDeal(deal: DealResponse): string[] {
   return deal.words
 }
 
+function definitionsFromDeal(deal: DealResponse): Record<string, string> {
+  return deal.definitions ?? {}
+}
+
 function stackFromDeal(deal: DealResponse): StackDeal {
   if (deal.kind !== 'stack') {
     throw new Error('Expected stack deal response')
@@ -152,19 +157,29 @@ export function actionFromDeal(plan: Exclude<DealPlan, { type: 'direct' }>, deal
         type: 'START_BIDDING',
         firstTeam: plan.firstTeam,
         words: wordsFromDeal(deal),
+        wordDefinitions: definitionsFromDeal(deal),
         roundTime: plan.roundTime,
       }
     case 'advance-stack':
       return { ...plan.action, nextStackDeal: stackFromDeal(deal) }
     case 'start-money':
-      return { type: 'START_MONEY_ROUND', words: wordsFromDeal(deal), moneyTime: plan.moneyTime }
+      return {
+        type: 'START_MONEY_ROUND',
+        words: wordsFromDeal(deal),
+        wordDefinitions: definitionsFromDeal(deal),
+        moneyTime: plan.moneyTime,
+      }
     case 'next-bid':
-      return { type: 'NEXT_AFTER_RESULT', nextBidWords: wordsFromDeal(deal) }
+      return {
+        type: 'NEXT_AFTER_RESULT',
+        nextBidWords: wordsFromDeal(deal),
+        nextBidDefinitions: definitionsFromDeal(deal),
+      }
     case 'next-stack':
       return { type: 'NEXT_AFTER_RESULT', nextStackDeal: stackFromDeal(deal) }
     case 'refresh-bid':
-      return { type: 'REFRESH_BID', words: wordsFromDeal(deal) }
+      return { type: 'REFRESH_BID', words: wordsFromDeal(deal), wordDefinitions: definitionsFromDeal(deal) }
     case 'refresh-words':
-      return { type: 'REFRESH_WORDS', words: wordsFromDeal(deal) }
+      return { type: 'REFRESH_WORDS', words: wordsFromDeal(deal), wordDefinitions: definitionsFromDeal(deal) }
   }
 }

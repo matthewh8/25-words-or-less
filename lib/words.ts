@@ -40,6 +40,7 @@ interface WordBankData {
   sources: WordSource[]
   deckSourceIds: Record<Difficulty | 'money', string[]>
   decks: Record<Difficulty | 'money', string[]>
+  definitions?: Record<string, string>
 }
 
 const wordBank = wordBankData as WordBankData
@@ -52,6 +53,7 @@ export const greenWords: string[] = [...wordBank.decks.green]
 export const yellowWords: string[] = [...wordBank.decks.yellow]
 export const redWords: string[] = [...wordBank.decks.red]
 export const moneyWords: string[] = [...wordBank.decks.money]
+const WORD_DEFINITIONS: Record<string, string> = wordBank.definitions ?? {}
 
 const WORD_POOLS: WordPools = {
   bidding: Array.from(new Set([...greenWords, ...yellowWords])),
@@ -95,25 +97,44 @@ const BLOCKED_WORDS = new Set([
   'ABORTIONS',
   'ABUSE',
   'ABUSED',
+  'ABUSER',
+  'ABUSERS',
   'ABUSES',
   'ABUSING',
   'ABUSIVE',
+  'ABDUCT',
+  'ABDUCTED',
+  'ABDUCTING',
+  'ABDUCTION',
+  'ABDUCTIONS',
   'ASSAULT',
   'ASSAULTED',
   'ASSAULTING',
   'ASSAULTS',
   'ANAL',
   'ANUS',
+  'APARTHEID',
   'AMPHETAMINE',
+  'ASEXUAL',
+  'BISEXUAL',
   'BITCH',
+  'BOMB',
+  'BOMBED',
+  'BOMBING',
+  'BOMBS',
   'COCK',
+  'COCAINE',
+  'COITUS',
   'CUNT',
+  'DARKIE',
   'DICK',
   'DICKHEAD',
   'DICKER',
   'DICKERED',
   'DICKERING',
   'DICKERS',
+  'DILDO',
+  'DILDOS',
   'DISMEMBER',
   'DISMEMBERED',
   'DISMEMBERING',
@@ -127,6 +148,9 @@ const BLOCKED_WORDS = new Set([
   'FASCISM',
   'FASCIST',
   'FASCISTS',
+  'FETUS',
+  'FLEER',
+  'FLEERS',
   'FUCK',
   'FUCKED',
   'FUCKER',
@@ -145,11 +169,18 @@ const BLOCKED_WORDS = new Set([
   'GYPPED',
   'GYPPING',
   'GYPSY',
+  'HELLUVA',
   'HOLOCAUST',
   'HOMICIDE',
+  'HEROIN',
+  'HETEROSEXUAL',
+  'HOMOSEXUAL',
   'INCEST',
   'INTERCOURSE',
   'JIHAD',
+  'LECHER',
+  'LECHEROUS',
+  'LECHERY',
   'MAIM',
   'MAIMED',
   'MAIMING',
@@ -160,6 +191,8 @@ const BLOCKED_WORDS = new Set([
   'MASTURBATES',
   'MASTURBATING',
   'MASTURBATION',
+  'METH',
+  'METHADONE',
   'MOLEST',
   'MOLESTED',
   'MOLESTING',
@@ -172,10 +205,20 @@ const BLOCKED_WORDS = new Set([
   'MURDERS',
   'NAZI',
   'NAZIS',
+  'NARCOTIC',
+  'NARCOTICS',
+  'NEGROID',
   'NIGGA',
   'NIGGER',
+  'OPIATE',
+  'OPIATES',
+  'OPIOID',
+  'OPIOIDS',
   'ORGY',
   'ORGIES',
+  'PANSEXUAL',
+  'PISTOL',
+  'PISTOLS',
   'PORN',
   'PORNO',
   'PORNOGRAPHY',
@@ -197,6 +240,12 @@ const BLOCKED_WORDS = new Set([
   'RACIST',
   'RACISTS',
   'RETARD',
+  'RIFLE',
+  'RIFLES',
+  'CRACKHEAD',
+  'CRACKHEADS',
+  'CUNNILINGUS',
+  'EXCRETE',
   'SEX',
   'CONTRACEPTION',
   'CONTRACEPTIVE',
@@ -204,6 +253,7 @@ const BLOCKED_WORDS = new Set([
   'SEXUAL',
   'SEXUALLY',
   'SHIT',
+  'SHYSTER',
   'SLAVE',
   'SLAVERY',
   'SLUT',
@@ -224,6 +274,9 @@ const BLOCKED_WORDS = new Set([
   'TRAFFICKING',
   'VIBRATOR',
   'VIBRATORS',
+  'WEAPON',
+  'WEAPONRY',
+  'WEAPONS',
   'WHORE',
 ])
 
@@ -243,6 +296,21 @@ function canonicalWordEntry(word: string): string {
 
 function spacingInsensitiveKey(word: string): string {
   return canonicalWordEntry(word).replace(/\s/g, '')
+}
+
+export function getWordDefinition(word: string): string {
+  const canonical = canonicalWordEntry(word).toUpperCase()
+  return WORD_DEFINITIONS[canonical] ?? ''
+}
+
+export function getDefinitionsForWords(words: string[]): Record<string, string> {
+  const definitions: Record<string, string> = {}
+  for (const word of words) {
+    const canonical = canonicalWordEntry(word).toUpperCase()
+    const definition = WORD_DEFINITIONS[canonical]
+    if (definition) definitions[canonical] = definition
+  }
+  return definitions
 }
 
 function isRomanNumeralArtifact(word: string): boolean {

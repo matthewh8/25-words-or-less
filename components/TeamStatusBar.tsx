@@ -39,6 +39,7 @@ export default function TeamStatusBar({ teams, activeTeam, activeLabel = 'Up', c
                     team={team}
                     nameClassName="text-sm font-black uppercase tracking-normal text-white md:text-base"
                     playersClassName={`text-[10px] font-bold leading-snug text-white/45 md:text-[11px] ${compact ? 'max-h-4' : ''}`}
+                    maxChars={compact ? 24 : 34}
                   />
                 </div>
                 <span className={`shrink-0 rounded-sm px-1.5 py-0.5 text-[8px] font-black uppercase ${

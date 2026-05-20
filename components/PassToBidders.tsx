@@ -40,6 +40,7 @@ export default function PassToBidders({ state, onReady }: Props) {
               nameClassName="text-xs font-black uppercase text-white/65"
               playersClassName="mt-1 text-[10px] font-bold text-white/35"
               maxPlayers={3}
+              maxChars={24}
             />
           </div>
         ))}

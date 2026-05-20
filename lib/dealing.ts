@@ -3,6 +3,7 @@ import { FALLBACK_WORD_POOLS, pickWords, type RandomSource } from './wordSelecti
 
 export interface StackBoardState {
   wordsByStack: Record<string, string[]>
+  definitions: Record<string, string>
   usedStackIds: string[]
   currentTeam: 0 | 1
   turnsLeft: number
@@ -11,6 +12,7 @@ export interface StackBoardState {
 
 export interface StackDeal {
   wordsByStack: Record<string, string[]>
+  definitions?: Record<string, string>
   drawnWords?: string[]
 }
 
@@ -61,6 +63,7 @@ export function initialStackBoard(
   return {
     board: {
       wordsByStack,
+      definitions: deal?.definitions ?? {},
       usedStackIds: [],
       currentTeam: round.startTeam,
       turnsLeft: round.turns,

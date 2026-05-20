@@ -1,6 +1,6 @@
 import { getStackRound, type WordDeckId } from '@/lib/gameMode'
 import { loadGameMode } from '@/lib/gameModeServer'
-import { getWordsForDeck } from '@/lib/words'
+import { getDefinitionsForWords, getWordsForDeck } from '@/lib/words'
 
 export const dynamic = 'force-dynamic'
 
@@ -62,19 +62,19 @@ export async function POST(request: Request) {
 
   if (body.kind === 'bidding') {
     const words = getWordsForDeck(gameMode.bidding.wordDeck, gameMode.bidding.wordCount, usedWords)
-    return Response.json({ kind: 'words', deckId: gameMode.bidding.wordDeck, words })
+    return Response.json({ kind: 'words', deckId: gameMode.bidding.wordDeck, words, definitions: getDefinitionsForWords(words) })
   }
 
   if (body.kind === 'money') {
     const words = getWordsForDeck(gameMode.money.wordDeck, gameMode.money.wordCount, usedWords)
-    return Response.json({ kind: 'words', deckId: gameMode.money.wordDeck, words })
+    return Response.json({ kind: 'words', deckId: gameMode.money.wordDeck, words, definitions: getDefinitionsForWords(words) })
   }
 
   if (body.kind === 'deck') {
     const selectedDeck = deckId(body.deckId)
     if (!selectedDeck) return Response.json({ error: 'Invalid deck id' }, { status: 400 })
     const words = getWordsForDeck(selectedDeck, positiveInt(body.count, 5), usedWords)
-    return Response.json({ kind: 'words', deckId: selectedDeck, words })
+    return Response.json({ kind: 'words', deckId: selectedDeck, words, definitions: getDefinitionsForWords(words) })
   }
 
   const round = getStackRound(gameMode, positiveInt(body.roundNumber, gameMode.stacks.rounds[0].number, 99))
@@ -90,5 +90,11 @@ export async function POST(request: Request) {
     used = Array.from(new Set([...used, ...words.map(word => word.toUpperCase())]))
   }
 
-  return Response.json({ kind: 'stack', roundNumber: round.number, wordsByStack, drawnWords })
+  return Response.json({
+    kind: 'stack',
+    roundNumber: round.number,
+    wordsByStack,
+    drawnWords,
+    definitions: getDefinitionsForWords(drawnWords),
+  })
 }

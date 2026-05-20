@@ -33,13 +33,19 @@ describe('/api/deal route', () => {
       modeId: 'classic',
       usedWords: ['ability', 'ABILITY', '  accept  ', null],
     }))
-    const body = await jsonResponse(response) as { kind: string; deckId: string; words: string[] }
+    const body = await jsonResponse(response) as {
+      kind: string
+      deckId: string
+      words: string[]
+      definitions: Record<string, string>
+    }
 
     expect(response.status).toBe(200)
     expect(body).toMatchObject({ kind: 'words', deckId: 'bidding' })
     expect(body.words).toHaveLength(5)
     expect(body.words).not.toContain('ABILITY')
     expect(body.words).not.toContain('ACCEPT')
+    expect(Object.keys(body.definitions)).toEqual(expect.arrayContaining(body.words))
   })
 
   it('caps ad hoc deck deal sizes for refresh requests', async () => {
@@ -50,11 +56,17 @@ describe('/api/deal route', () => {
       count: 999,
       usedWords: [],
     }))
-    const body = await jsonResponse(response) as { kind: string; deckId: string; words: string[] }
+    const body = await jsonResponse(response) as {
+      kind: string
+      deckId: string
+      words: string[]
+      definitions: Record<string, string>
+    }
 
     expect(response.status).toBe(200)
     expect(body).toMatchObject({ kind: 'words', deckId: 'green' })
     expect(body.words).toHaveLength(50)
+    expect(Object.keys(body.definitions)).toHaveLength(50)
   })
 
   it('rejects invalid ad hoc deck ids before dealing refresh words', async () => {
@@ -82,6 +94,7 @@ describe('/api/deal route', () => {
       roundNumber: number
       drawnWords: string[]
       wordsByStack: Record<string, string[]>
+      definitions: Record<string, string>
     }
 
     expect(response.status).toBe(200)
@@ -90,5 +103,6 @@ describe('/api/deal route', () => {
     expect(Object.keys(body.wordsByStack)).toEqual(['green', 'yellow', 'red'])
     expect(body.drawnWords).toHaveLength(15)
     expect(new Set(body.drawnWords).size).toBe(body.drawnWords.length)
+    expect(Object.keys(body.definitions)).toEqual(expect.arrayContaining(body.drawnWords))
   })
 })

@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 
 import { readFile } from 'node:fs/promises'
+import { MIN_AVERAGE_ZIPF, loadWordfreqScores } from './wordfreq-utils.mjs'
 
 const WORD_BANK_PATH = 'data/words/word-bank.json'
 
 const EXPECTED_COUNTS = {
-  green: 16000,
-  yellow: 16000,
-  red: 16000,
+  green: 10000,
+  yellow: 10000,
+  red: 10000,
   money: 2000,
 }
 const EXPECTED_TOTAL = Object.values(EXPECTED_COUNTS).reduce((total, count) => total + count, 0)
@@ -16,32 +17,38 @@ const SOURCE_ID_PATTERN = /^[a-z0-9][a-z0-9-]*$/
 
 const BLOCKED_WORDS = new Set([
   'ABORT', 'ABORTED', 'ABORTING', 'ABORTION', 'ABORTIONS',
-  'ABUSE', 'ABUSED', 'ABUSES', 'ABUSING', 'ABUSIVE',
+  'ABUSE', 'ABUSED', 'ABUSER', 'ABUSERS', 'ABUSES', 'ABUSING', 'ABUSIVE',
+  'ABDUCT', 'ABDUCTED', 'ABDUCTING', 'ABDUCTION', 'ABDUCTIONS',
   'ASSAULT', 'ASSAULTED', 'ASSAULTING', 'ASSAULTS',
-  'ANAL', 'ANUS', 'AMPHETAMINE', 'BITCH', 'COCK', 'CONTRACEPTION',
-  'CONTRACEPTIVE', 'CONTRACEPTIVES', 'CUNT', 'DICK', 'DICKHEAD',
-  'DICKER', 'DICKERED', 'DICKERING', 'DICKERS',
+  'ANAL', 'ANUS', 'APARTHEID', 'AMPHETAMINE', 'ASEXUAL', 'BISEXUAL', 'BITCH',
+  'BOMB', 'BOMBED', 'BOMBING', 'BOMBS', 'COCK', 'COCAINE', 'COITUS', 'CONTRACEPTION',
+  'CONTRACEPTIVE', 'CONTRACEPTIVES', 'CUNT', 'DARKIE', 'DICK', 'DICKHEAD',
+  'DICKER', 'DICKERED', 'DICKERING', 'DICKERS', 'DILDO', 'DILDOS',
   'DISMEMBER', 'DISMEMBERED', 'DISMEMBERING', 'DISMEMBERS',
   'DRUG', 'DRUGGED', 'DRUGGING', 'DRUGS', 'FAG',
-  'FAGGOT', 'FASCISM', 'FASCIST', 'FASCISTS',
+  'FAGGOT', 'FASCISM', 'FASCIST', 'FASCISTS', 'FETUS', 'FLEER', 'FLEERS',
   'FUCK', 'FUCKED', 'FUCKER', 'FUCKING', 'GANGBANGER',
   'GANGBANGERS', 'GENOCIDE', 'GOOK', 'GUN', 'GUNFIGHTER',
   'GUNFIGHTERS', 'GUNMAN', 'GUNMEN', 'GUNS', 'GYP',
-  'GYPPED', 'GYPPING', 'GYPSY',
-  'HOLOCAUST', 'HOMICIDE', 'INCEST', 'INTERCOURSE', 'JIHAD', 'MAIM',
+  'GYPPED', 'GYPPING', 'GYPSY', 'HELLUVA',
+  'HOLOCAUST', 'HOMICIDE', 'HEROIN', 'HETEROSEXUAL', 'HOMOSEXUAL', 'INCEST',
+  'INTERCOURSE', 'JIHAD', 'LECHER', 'LECHEROUS', 'LECHERY', 'MAIM',
   'MAIMED', 'MAIMING', 'MAIMS', 'MASSACRE', 'MASTURBATE',
-  'MASTURBATED', 'MASTURBATES', 'MASTURBATING', 'MASTURBATION',
+  'MASTURBATED', 'MASTURBATES', 'MASTURBATING', 'MASTURBATION', 'METH', 'METHADONE',
   'MOLEST', 'MOLESTED', 'MOLESTING', 'MOLESTS', 'MURDER',
   'MURDERED', 'MURDERER', 'MURDERERS', 'MURDERING', 'MURDERS',
-  'NAZI', 'NAZIS', 'NIGGA', 'NIGGER', 'ORGIES', 'ORGY', 'PISS', 'PISSED',
+  'NAZI', 'NAZIS', 'NARCOTIC', 'NARCOTICS', 'NEGROID', 'NIGGA', 'NIGGER',
+  'OPIATE', 'OPIATES', 'OPIOID', 'OPIOIDS', 'ORGIES', 'ORGY', 'PANSEXUAL',
+  'PISTOL', 'PISTOLS', 'PISS', 'PISSED',
   'PISSING', 'PORN', 'PORNO', 'PORNOGRAPHY', 'PSYCHOSIS',
   'PSYCHOTIC', 'PUBE', 'PUBES', 'PUBIC', 'PUBIS', 'RAPE', 'RAPED', 'RAPIST', 'RAPISTS', 'RAPING',
-  'RACISM', 'RACIST', 'RACISTS', 'RETARD', 'SEX', 'SEXUAL',
-  'SEXUALLY', 'SHIT', 'SLAVE', 'SLAVERY', 'SLUT', 'SUICIDE',
+  'RACISM', 'RACIST', 'RACISTS', 'RETARD', 'RIFLE', 'RIFLES', 'CRACKHEAD',
+  'CRACKHEADS', 'CUNNILINGUS', 'EXCRETE', 'SEX', 'SEXUAL',
+  'SEXUALLY', 'SHIT', 'SHYSTER', 'SLAVE', 'SLAVERY', 'SLUT', 'SUICIDE',
   'SUICIDES', 'SUICIDAL', 'SUPREMACIST', 'SUPREMACISTS',
   'TERRORISM', 'TERRORIST', 'TERRORISTS', 'TORTURE', 'TORTURED',
   'TORTURES', 'TORTURING', 'TRAFFICKER', 'TRAFFICKERS',
-  'TRAFFICKING', 'VIBRATOR', 'VIBRATORS', 'WHORE',
+  'TRAFFICKING', 'VIBRATOR', 'VIBRATORS', 'WEAPON', 'WEAPONRY', 'WEAPONS', 'WHORE',
 ])
 
 const BLOCKED_PATTERNS = [
@@ -85,6 +92,21 @@ function average(values) {
 
 function wordLengths(words) {
   return words.map(word => word.replace(/\s/g, '').length)
+}
+
+function hasNicheDefinition(word, definition, wordfreqScores) {
+  const zipf = wordfreqScores.get(word) ?? 0
+  if (zipf >= 2.8) return false
+  return [
+    /^a member of (?:a|an|the) .* people/i,
+    /^a group of (?:people|languages)/i,
+    /^a language spoken/i,
+    /genus [A-Z]/,
+    /family [A-Z]/,
+    /Vishnu/i,
+    /Hindu deity/i,
+    /Buddhist/i,
+  ].some(pattern => pattern.test(definition))
 }
 
 function auditEntryShape(deck, word, index, errors) {
@@ -158,6 +180,7 @@ for (const [deck, words] of Object.entries(decks)) {
 }
 
 const money = decks.money ?? []
+const definitions = wordBank.definitions ?? {}
 
 const greenLengths = wordLengths(decks.green ?? [])
 const yellowLengths = wordLengths(decks.yellow ?? [])
@@ -175,6 +198,37 @@ const scoreBreaks = wordBank.summary?.audit?.scoreBreaks ?? {}
 assert(scoreBreaks.greenMax <= scoreBreaks.yellowMin, 'green/yellow score break is inverted', errors)
 assert(scoreBreaks.yellowMax <= scoreBreaks.redMin, 'yellow/red score break is inverted', errors)
 
+const allPlayableWords = Object.values(decks).flat()
+const allPlayableSet = new Set(allPlayableWords)
+const missingDefinitions = allPlayableWords.filter(word => typeof definitions[word] !== 'string' || !definitions[word].trim())
+assert(
+  missingDefinitions.length === 0,
+  `found ${missingDefinitions.length} playable words without definitions: ${missingDefinitions.slice(0, 20).join(', ')}`,
+  errors
+)
+for (const [word, definition] of Object.entries(definitions)) {
+  assert(allPlayableSet.has(word), `definition exists for non-playable word: ${word}`, errors)
+  assert(typeof definition === 'string' && definition.trim().length > 0, `definition for ${word} is empty`, errors)
+  assert(String(definition).length <= 183, `definition for ${word} is too long`, errors)
+}
+
+const wordfreqScores = await loadWordfreqScores(allPlayableWords)
+const nicheDefinitions = allPlayableWords.filter(word => hasNicheDefinition(word, definitions[word] ?? '', wordfreqScores))
+assert(
+  nicheDefinitions.length === 0,
+  `found ${nicheDefinitions.length} niche low-frequency definitions: ${nicheDefinitions.slice(0, 20).join(', ')}`,
+  errors
+)
+const lowFrequencyWords = allPlayableWords
+  .map(word => ({ word, zipf: wordfreqScores.get(word) ?? 0 }))
+  .filter(({ zipf }) => zipf < MIN_AVERAGE_ZIPF)
+  .sort((a, b) => a.zipf - b.zipf || a.word.localeCompare(b.word))
+assert(
+  lowFrequencyWords.length === 0,
+  `found ${lowFrequencyWords.length} low-frequency words below Zipf ${MIN_AVERAGE_ZIPF}: ${lowFrequencyWords.slice(0, 20).map(({ word, zipf }) => `${word}:${zipf}`).join(', ')}`,
+  errors
+)
+
 if (errors.length) {
   console.error(`Word-bank audit failed with ${errors.length} issue(s):`)
   for (const error of errors) console.error(`- ${error}`)
@@ -187,6 +241,13 @@ console.log(JSON.stringify({
   deckCounts: computedCounts,
   money: {
     singles: money.length,
+  },
+  definitions: {
+    covered: Object.keys(definitions).length,
+  },
+  frequency: {
+    minZipf: Math.min(...[...wordfreqScores.values()]),
+    threshold: MIN_AVERAGE_ZIPF,
   },
   difficultyShape: {
     averageLetters: {

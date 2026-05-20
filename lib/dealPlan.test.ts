@@ -7,12 +7,19 @@ const bidWords: WordsDealResponse = {
   kind: 'words',
   deckId: 'bidding',
   words: ['ALPHA', 'BRAVO', 'CHARLIE', 'DELTA', 'ECHO'],
+  definitions: {
+    ALPHA: 'the first letter of the Greek alphabet',
+    BRAVO: 'a cry of approval',
+  },
 }
 
 const moneyWords: WordsDealResponse = {
   kind: 'words',
   deckId: 'money',
   words: ['M1', 'M2', 'M3'],
+  definitions: {
+    M1: 'money word one',
+  },
 }
 
 const stackDeal: StackDealResponse = {
@@ -22,6 +29,10 @@ const stackDeal: StackDealResponse = {
   wordsByStack: {
     green: ['G1', 'G2'],
     yellow: ['Y1', 'Y2'],
+  },
+  definitions: {
+    G1: 'green word one',
+    Y1: 'yellow word one',
   },
 }
 
@@ -53,6 +64,7 @@ describe('deal planning', () => {
       type: 'START_BIDDING',
       firstTeam: 1,
       words: bidWords.words,
+      wordDefinitions: bidWords.definitions,
       roundTime: 30,
     })
   })
@@ -97,6 +109,7 @@ describe('deal planning', () => {
     expect(actionFromDeal(plan, moneyWords)).toEqual({
       type: 'START_MONEY_ROUND',
       words: moneyWords.words,
+      wordDefinitions: moneyWords.definitions,
       moneyTime: 45,
     })
   })
@@ -111,6 +124,7 @@ describe('deal planning', () => {
         stackId: 'red',
         label: 'Red',
         words: ['ONE', 'TWO', 'THREE'],
+        definitions: {},
         wordsLeft: 8,
         wordLimit: 8,
         timeLeft: 30,
@@ -128,7 +142,11 @@ describe('deal planning', () => {
       request: { kind: 'deck', deckId: 'red', count: 3 },
     })
     if (plan.type === 'direct') throw new Error('expected refresh deal plan')
-    expect(actionFromDeal(plan, bidWords)).toEqual({ type: 'REFRESH_WORDS', words: bidWords.words })
+    expect(actionFromDeal(plan, bidWords)).toEqual({
+      type: 'REFRESH_WORDS',
+      words: bidWords.words,
+      wordDefinitions: bidWords.definitions,
+    })
   })
 
   it('does not request refresh deals outside active bidding or cluing phases', () => {

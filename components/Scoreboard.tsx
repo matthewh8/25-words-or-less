@@ -32,6 +32,7 @@ export default function Scoreboard({ teams, highlight, compact }: ScoreboardProp
                 playersClassName="mt-0.5 text-[8px] normal-case opacity-70"
                 emptyLabel="No players"
                 maxPlayers={3}
+                maxChars={22}
               />
             </div>
             <div className="text-xl font-black tabular-nums tracking-normal">{t.score.toLocaleString()}</div>
@@ -59,6 +60,7 @@ export default function Scoreboard({ teams, highlight, compact }: ScoreboardProp
               nameClassName="uppercase"
               playersClassName="mt-0.5 text-[9px] normal-case opacity-70"
               emptyLabel="No players"
+              maxChars={34}
             />
           </div>
           <div className="text-5xl font-black tabular-nums tracking-normal">{t.score.toLocaleString()}</div>

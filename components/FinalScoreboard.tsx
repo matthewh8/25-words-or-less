@@ -34,7 +34,7 @@ export default function FinalScoreboard({ state, onRestart }: Props) {
           </h2>
           {!tied && (
             <p className="mt-2 truncate text-xs font-bold text-white/40 md:text-sm">
-              {teamPlayerLine(teams[winner].players)}
+              {teamPlayerLine(teams[winner].players, 'No players assigned', 5, 36)}
             </p>
           )}
           {moneyWon && (
@@ -68,6 +68,7 @@ export default function FinalScoreboard({ state, onRestart }: Props) {
                   team={team}
                   nameClassName={`text-lg font-black uppercase tracking-normal sm:text-xl md:text-2xl ${rank === 0 && !tied ? 'text-[#ffd23f]' : 'text-white'}`}
                   playersClassName="mt-0.5 text-[10px] font-bold text-white/35 md:text-xs"
+                  maxChars={34}
                 />
               </div>
               <span className="shrink-0 text-3xl font-black tabular-nums tracking-normal text-white sm:text-4xl md:text-5xl">{score.toLocaleString()}</span>
