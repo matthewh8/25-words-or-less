@@ -3,7 +3,7 @@
 interface TimerProps {
   timeLeft: number
   total: number
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
 }
 
 export default function Timer({ timeLeft, total, size = 'sm' }: TimerProps) {
@@ -11,8 +11,8 @@ export default function Timer({ timeLeft, total, size = 'sm' }: TimerProps) {
   const pct = Math.max(0, Math.min(100, (timeLeft / safeTotal) * 100))
   const urgent = timeLeft <= 10
   const warning = timeLeft <= 20
-  const ring = size === 'lg' ? 248 : size === 'md' ? 176 : 132
-  const text = size === 'lg' ? 'text-7xl' : size === 'md' ? 'text-5xl' : 'text-4xl'
+  const ring = size === 'lg' ? 248 : size === 'md' ? 176 : size === 'xs' ? 104 : 132
+  const text = size === 'lg' ? 'text-7xl' : size === 'md' ? 'text-5xl' : size === 'xs' ? 'text-3xl' : 'text-4xl'
 
   return (
     <div

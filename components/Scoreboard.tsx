@@ -14,7 +14,7 @@ export default function Scoreboard({ teams, highlight, compact }: ScoreboardProp
 
   if (compact) {
     return (
-      <div className="flex min-w-0 max-w-full flex-1 gap-2 justify-center">
+      <div className="flex w-full min-w-0 max-w-full flex-1 gap-2 justify-center overflow-hidden">
         {teams.map((t, i) => (
           <div
             key={i}

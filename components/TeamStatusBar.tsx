@@ -15,7 +15,7 @@ const TEAM_COLORS = ['#ff3a6d', '#3a8bff'] as const
 
 export default function TeamStatusBar({ teams, activeTeam, activeLabel = 'Up', caption, compact }: TeamStatusBarProps) {
   return (
-    <section className={`rounded-lg border border-white/10 bg-[#101522] ${compact ? 'p-2' : 'p-3 md:p-4'}`} aria-label="Team assignments">
+    <section className={`min-w-0 overflow-hidden rounded-lg border border-white/10 bg-[#101522] ${compact ? 'p-2' : 'p-3 md:p-4'}`} aria-label="Team assignments">
       {caption && (
         <p className="mono-label mb-2 truncate text-[9px] font-bold text-[#ffd23f] md:text-[10px]">{caption}</p>
       )}

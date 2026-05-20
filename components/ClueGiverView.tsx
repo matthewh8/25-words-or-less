@@ -64,6 +64,10 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
   const { words, guessed, wordsLeft, wordLimit, timeLeft, stream, cluingTeam, currentWordIndex } = cluing
   const stack = stream === 'stack' ? getStackOption(state.gameMode, cluing.stackId ?? '') : null
   const accent = stream === 'bidding' || stream === 'money' ? '#ffd23f' : stack?.color ?? '#ffd23f'
+  const moneyStream = stream === 'money'
+  const mobileClueGridRows = stream === 'money'
+    ? 'grid-rows-[minmax(0,0.58fr)_minmax(0,1.42fr)]'
+    : 'grid-rows-[minmax(0,0.92fr)_minmax(0,1.08fr)]'
   const timeTotal = stream === 'money' ? state.moneyTime : state.roundTime
   const allGuessed = guessed.every(Boolean)
   const noWordsLeft = wordsLeft === 0
@@ -214,12 +218,12 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
         />
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-rows-[minmax(0,0.92fr)_minmax(0,1.08fr)] gap-2 overflow-hidden p-2 md:grid-cols-[300px_1fr] md:grid-rows-none md:gap-3 md:p-4 xl:grid-cols-[340px_1fr] xl:gap-4 xl:p-8">
+      <div className={`grid min-h-0 flex-1 ${mobileClueGridRows} gap-2 overflow-hidden p-2 md:grid-cols-[300px_1fr] md:grid-rows-none md:gap-3 md:p-4 xl:grid-cols-[340px_1fr] xl:gap-4 xl:p-8`}>
         {/* Left: timer and controls */}
         <div className="order-2 grid min-h-0 grid-cols-2 gap-2 md:order-1 md:flex md:flex-col md:gap-3 xl:gap-4">
           <div className="flex justify-center rounded-lg border border-white/10 bg-[#101522] p-2 md:p-5">
             <div className="md:hidden">
-              <Timer timeLeft={timeLeft} total={timeTotal} />
+              <Timer timeLeft={timeLeft} total={timeTotal} size={moneyStream ? 'xs' : 'sm'} />
             </div>
             <div className="hidden md:block 2xl:hidden">
               <Timer timeLeft={timeLeft} total={timeTotal} size="md" />
@@ -247,8 +251,8 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
             </div>
           </div>
 
-          <div className="col-span-2 rounded-lg border border-white/10 bg-[#141826] p-2 md:p-3">
-            <div className="mb-2 flex items-center justify-between gap-2">
+          <div className={`col-span-2 rounded-lg border border-white/10 bg-[#141826] md:p-3 ${moneyStream ? 'p-1.5' : 'p-2'}`}>
+            <div className={`flex items-center justify-between gap-2 ${moneyStream ? 'mb-1' : 'mb-2'}`}>
               <div className="min-w-0">
                 <p className="mono-label text-[9px] text-white/35">Controls</p>
                 <p className="mt-0.5 truncate text-[11px] text-white/45 md:text-xs">
@@ -280,16 +284,16 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className={`grid grid-cols-2 ${moneyStream ? 'gap-1' : 'gap-1.5'}`}>
               <button
                 onClick={() => dispatchClueAction({ type: 'WORD_REFUND' }, 'word')}
                 disabled={!canRefund}
                 aria-label="Add one word back to the clue budget"
                 aria-keyshortcuts="ArrowUp"
-                className="min-h-14 rounded-md border border-[#ffd23f]/30 bg-[#0a0d14] px-2 py-2 text-sm font-black text-[#ffd23f] transition-all hover:bg-[#ffd23f]/10 active:scale-95 disabled:opacity-25 md:min-h-16 md:text-base"
+                className={`rounded-md border border-[#ffd23f]/30 bg-[#0a0d14] px-2 font-black text-[#ffd23f] transition-all hover:bg-[#ffd23f]/10 active:scale-95 disabled:opacity-25 md:min-h-16 md:py-2 md:text-base ${moneyStream ? 'min-h-9 py-1 text-xs' : 'min-h-14 py-2 text-sm'}`}
               >
                 +1 Word
-                <span className="block text-[9px] font-normal text-white/25">Arrow up</span>
+                <span className={`text-[9px] font-normal text-white/25 ${moneyStream ? 'hidden md:block' : 'block'}`}>Arrow up</span>
               </button>
 
               <button
@@ -297,10 +301,10 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
                 disabled={dead}
                 aria-label={noWordsLeft ? 'End turn with no clue words left' : 'Spend one clue word'}
                 aria-keyshortcuts="ArrowDown"
-                className="min-h-14 rounded-md border border-white/10 bg-[#0a0d14] px-2 py-2 text-sm font-black text-white transition-all hover:border-white/20 active:scale-95 disabled:opacity-25 md:min-h-16 md:text-base"
+                className={`rounded-md border border-white/10 bg-[#0a0d14] px-2 font-black text-white transition-all hover:border-white/20 active:scale-95 disabled:opacity-25 md:min-h-16 md:py-2 md:text-base ${moneyStream ? 'min-h-9 py-1 text-xs' : 'min-h-14 py-2 text-sm'}`}
               >
                 -1 Word
-                <span className="block text-[9px] font-normal text-white/25">Arrow down</span>
+                <span className={`text-[9px] font-normal text-white/25 ${moneyStream ? 'hidden md:block' : 'block'}`}>Arrow down</span>
               </button>
 
               <button
@@ -308,10 +312,10 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
                 disabled={dead}
                 aria-label="Mark current word correct"
                 aria-keyshortcuts="ArrowRight"
-                className="min-h-14 rounded-md bg-[#2de584] px-2 py-2 text-sm font-black text-[#0a0d14] transition-all hover:bg-[#6df0aa] active:scale-95 disabled:opacity-25 md:min-h-16 md:text-base"
+                className={`rounded-md bg-[#2de584] px-2 font-black text-[#0a0d14] transition-all hover:bg-[#6df0aa] active:scale-95 disabled:opacity-25 md:min-h-16 md:py-2 md:text-base ${moneyStream ? 'min-h-9 py-1 text-xs' : 'min-h-14 py-2 text-sm'}`}
               >
                 Correct
-                <span className="block text-[9px] font-normal text-[#0a0d14]/50">Arrow right</span>
+                <span className={`text-[9px] font-normal text-[#0a0d14]/50 ${moneyStream ? 'hidden md:block' : 'block'}`}>Arrow right</span>
               </button>
 
               <button
@@ -319,16 +323,16 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
                 disabled={!canSkip}
                 aria-label="Skip current word"
                 aria-keyshortcuts="ArrowLeft"
-                className="min-h-14 rounded-md border border-white/10 bg-white/[0.04] px-2 py-2 text-sm font-black text-white/70 transition-all hover:border-white/20 active:scale-95 disabled:opacity-25 md:min-h-16 md:text-base"
+                className={`rounded-md border border-white/10 bg-white/[0.04] px-2 font-black text-white/70 transition-all hover:border-white/20 active:scale-95 disabled:opacity-25 md:min-h-16 md:py-2 md:text-base ${moneyStream ? 'min-h-9 py-1 text-xs' : 'min-h-14 py-2 text-sm'}`}
               >
                 Skip
-                <span className="block text-[9px] font-normal text-white/25">Arrow left</span>
+                <span className={`text-[9px] font-normal text-white/25 ${moneyStream ? 'hidden md:block' : 'block'}`}>Arrow left</span>
               </button>
             </div>
 
             <button
               onClick={() => dispatchClueAction({ type: 'END_CLUING' }, 'end')}
-              className="mt-1.5 h-9 w-full rounded-md border border-white/10 px-2 text-[11px] font-bold text-white/35 transition-colors hover:text-white/55"
+              className={`w-full rounded-md border border-white/10 px-2 text-[11px] font-bold text-white/35 transition-colors hover:text-white/55 ${moneyStream ? 'mt-1 h-7 md:mt-1.5 md:h-9' : 'mt-1.5 h-9'}`}
             >
               End
             </button>
