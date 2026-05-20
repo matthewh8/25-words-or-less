@@ -3,7 +3,6 @@
 import { readFile } from 'node:fs/promises'
 
 const WORD_BANK_PATH = 'data/words/word-bank.json'
-const SEED_PATH = 'data/words/seed-decks.json'
 
 const EXPECTED_COUNTS = {
   green: 16000,
@@ -12,17 +11,16 @@ const EXPECTED_COUNTS = {
   money: 2000,
 }
 const EXPECTED_TOTAL = Object.values(EXPECTED_COUNTS).reduce((total, count) => total + count, 0)
-const EXPECTED_OPEN_WORDNET_MONEY = 1840
-const MAX_MONEY_COMPONENT_REPEAT = 120
-const WORD_ENTRY_PATTERN = /^[A-Z0-9][A-Z0-9 ]*$/
+const WORD_ENTRY_PATTERN = /^[A-Z0-9]+$/
 const SOURCE_ID_PATTERN = /^[a-z0-9][a-z0-9-]*$/
 
 const BLOCKED_WORDS = new Set([
   'ABORT', 'ABORTED', 'ABORTING', 'ABORTION', 'ABORTIONS',
   'ABUSE', 'ABUSED', 'ABUSES', 'ABUSING', 'ABUSIVE',
   'ASSAULT', 'ASSAULTED', 'ASSAULTING', 'ASSAULTS',
-  'ANAL', 'AMPHETAMINE', 'BITCH', 'COCK', 'CONTRACEPTION',
+  'ANAL', 'ANUS', 'AMPHETAMINE', 'BITCH', 'COCK', 'CONTRACEPTION',
   'CONTRACEPTIVE', 'CONTRACEPTIVES', 'CUNT', 'DICK', 'DICKHEAD',
+  'DICKER', 'DICKERED', 'DICKERING', 'DICKERS',
   'DISMEMBER', 'DISMEMBERED', 'DISMEMBERING', 'DISMEMBERS',
   'DRUG', 'DRUGGED', 'DRUGGING', 'DRUGS', 'FAG',
   'FAGGOT', 'FASCISM', 'FASCIST', 'FASCISTS',
@@ -30,14 +28,14 @@ const BLOCKED_WORDS = new Set([
   'GANGBANGERS', 'GENOCIDE', 'GOOK', 'GUN', 'GUNFIGHTER',
   'GUNFIGHTERS', 'GUNMAN', 'GUNMEN', 'GUNS', 'GYP',
   'GYPPED', 'GYPPING', 'GYPSY',
-  'HOLOCAUST', 'HOMICIDE', 'INCEST', 'INTERCOURSE', 'MAIM',
+  'HOLOCAUST', 'HOMICIDE', 'INCEST', 'INTERCOURSE', 'JIHAD', 'MAIM',
   'MAIMED', 'MAIMING', 'MAIMS', 'MASSACRE', 'MASTURBATE',
   'MASTURBATED', 'MASTURBATES', 'MASTURBATING', 'MASTURBATION',
   'MOLEST', 'MOLESTED', 'MOLESTING', 'MOLESTS', 'MURDER',
   'MURDERED', 'MURDERER', 'MURDERERS', 'MURDERING', 'MURDERS',
   'NAZI', 'NAZIS', 'NIGGA', 'NIGGER', 'ORGIES', 'ORGY', 'PISS', 'PISSED',
   'PISSING', 'PORN', 'PORNO', 'PORNOGRAPHY', 'PSYCHOSIS',
-  'PSYCHOTIC', 'RAPE', 'RAPED', 'RAPIST', 'RAPISTS', 'RAPING',
+  'PSYCHOTIC', 'PUBE', 'PUBES', 'PUBIC', 'PUBIS', 'RAPE', 'RAPED', 'RAPIST', 'RAPISTS', 'RAPING',
   'RACISM', 'RACIST', 'RACISTS', 'RETARD', 'SEX', 'SEXUAL',
   'SEXUALLY', 'SHIT', 'SLAVE', 'SLAVERY', 'SLUT', 'SUICIDE',
   'SUICIDES', 'SUICIDAL', 'SUPREMACIST', 'SUPREMACISTS',
@@ -48,12 +46,6 @@ const BLOCKED_WORDS = new Set([
 
 const BLOCKED_PATTERNS = [
   /^PEDOPHIL/,
-]
-
-const BAD_MONEY_PATTERNS = [
-  /\b(AEROSOL|ATOMIC|BRIEFCASE|CARPET BOMBING|CRIMINAL|GUNNER|MEGATON|NUCLEAR|PHALLIC|PISTOL|RIFLE|SUPREMACIST|WARHEAD)\b/,
-  /\b(CALIPER|CASSOCK|CLINCH|DIPOLE|DUDGEON|FRANKING|GYPSUM|LIEN|PARDON|REACTOR|SIMPLEX|SURGERY|TELEX|WARPING)\b/,
-  /\bCOMFORT WOMAN\b/,
 ]
 
 function cleanWord(value) {
@@ -103,12 +95,8 @@ function auditEntryShape(deck, word, index, errors) {
   assert(!isBlocked(word), `${label} is blocked: ${word}`, errors)
 }
 
-const [wordBankRaw, seedRaw] = await Promise.all([
-  readFile(WORD_BANK_PATH, 'utf8'),
-  readFile(SEED_PATH, 'utf8'),
-])
+const wordBankRaw = await readFile(WORD_BANK_PATH, 'utf8')
 const wordBank = JSON.parse(wordBankRaw)
-const seedBank = JSON.parse(seedRaw)
 const errors = []
 
 const decks = wordBank.decks ?? {}
@@ -163,27 +151,13 @@ for (const [deck, words] of Object.entries(decks)) {
   })
 }
 
-for (const deck of ['green', 'yellow', 'red']) {
-  for (const word of decks[deck] ?? []) assert(!word.includes(' '), `${deck} contains phrase: ${word}`, errors)
+for (const [deck, words] of Object.entries(decks)) {
+  for (const word of words ?? []) {
+    assert(!word.includes(' '), `${deck} contains phrase: ${word}`, errors)
+  }
 }
 
 const money = decks.money ?? []
-const seedMoney = new Set((seedBank.decks?.money ?? []).map(cleanWord))
-const moneyComponents = new Map()
-let seedMoneyCount = 0
-for (const phrase of money) {
-  const words = phrase.split(' ')
-  assert(words.length >= 2 && words.length <= 4, `money phrase must have 2-4 words: ${phrase}`, errors)
-  assert(!BAD_MONEY_PATTERNS.some(pattern => pattern.test(phrase)), `money phrase failed final review pattern: ${phrase}`, errors)
-  if (seedMoney.has(phrase)) seedMoneyCount += 1
-  for (const word of words) moneyComponents.set(word, (moneyComponents.get(word) ?? 0) + 1)
-}
-for (const phrase of seedMoney) assert(money.includes(phrase), `money deck dropped seed phrase: ${phrase}`, errors)
-const openWordNetMoneyCount = money.length - seedMoneyCount
-assert(openWordNetMoneyCount === EXPECTED_OPEN_WORDNET_MONEY, `expected ${EXPECTED_OPEN_WORDNET_MONEY} Open English WordNet money phrases, found ${openWordNetMoneyCount}`, errors)
-for (const [word, count] of moneyComponents) {
-  assert(count <= MAX_MONEY_COMPONENT_REPEAT, `money component repeats too often (${count}): ${word}`, errors)
-}
 
 const greenLengths = wordLengths(decks.green ?? [])
 const yellowLengths = wordLengths(decks.yellow ?? [])
@@ -212,9 +186,7 @@ console.log(JSON.stringify({
   total: computedTotal,
   deckCounts: computedCounts,
   money: {
-    seed: seedMoneyCount,
-    openEnglishWordNet: openWordNetMoneyCount,
-    maxComponentRepeat: Math.max(...moneyComponents.values()),
+    singles: money.length,
   },
   difficultyShape: {
     averageLetters: {

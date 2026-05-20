@@ -28,10 +28,10 @@ The builder writes `data/words/word-bank.json` with exactly 50,000 playable entr
 - starts from the safe hand-reviewed seed entries in `data/words/seed-decks.json`
 - downloads ESDB / SCOWL `en_US` and `en_US-large` 2026.02.25 from `en-wl/wordlist-diff`
 - uses CMUdict as the primary pronounceability filter
-- uses Open English WordNet 2025 for semantically attested fill words and for a curated final-round phrase allowlist
+- uses Open English WordNet 2025 for semantically attested fill words
 - removes exact duplicates, spacing-insensitive near duplicates, malformed entries, unsafe or party-awkward words, roman-numeral artifacts, proper-name capitalization, apostrophes, punctuation, and most too-short abbreviation-like entries
-- audits every accepted single word into a 25/50/25 easy/medium/hard split based on clueability under 5-word boards, tight clue-word budgets, stack point risk, pronunciation evidence, source commonness, length, syllables, abstract morphology, inflection noise, and part of speech
-- keeps the money deck small and phrase-only because it draws 10 words per game and unreviewed dictionary phrases get noisy quickly
+- audits every accepted single word into a green/yellow/red/money split based on clueability under 5-word boards, tight clue-word budgets, stack point risk, pronunciation evidence, source commonness, length, syllables, abstract morphology, inflection noise, and part of speech
+- keeps the money deck smaller than the color decks, but every money entry is still one distinct word
 
 Raw downloads are cached under `data/words/raw/` and ignored by git. Use `npm run build:words -- --refresh` to force fresh downloads.
 
@@ -40,7 +40,7 @@ Current generated mix:
 - `green`: 16,000 easiest single words
 - `yellow`: 16,000 broad standard words used for default bidding
 - `red`: 16,000 longer, abstract, inflected, obscure, or harder-to-clue words
-- `money`: 2,000 reviewed phrases, including the original curated party-game seed plus curated Open English WordNet phrases
+- `money`: 2,000 clean, common, pronounceable single words reserved for the money round
 
 Run the repeatable final audit with:
 

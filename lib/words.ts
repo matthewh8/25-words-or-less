@@ -45,7 +45,7 @@ interface WordBankData {
 const wordBank = wordBankData as WordBankData
 
 // Runtime decks are pooled, no-tag difficulty buckets.
-// Green/yellow/red are single-word decks; money is phrase-based.
+// Every playable entry is a single distinct word, including money.
 export const WORD_BANK_SOURCES: WordSource[] = wordBank.sources.map(source => ({ ...source }))
 
 export const greenWords: string[] = [...wordBank.decks.green]
@@ -103,12 +103,17 @@ const BLOCKED_WORDS = new Set([
   'ASSAULTING',
   'ASSAULTS',
   'ANAL',
+  'ANUS',
   'AMPHETAMINE',
   'BITCH',
   'COCK',
   'CUNT',
   'DICK',
   'DICKHEAD',
+  'DICKER',
+  'DICKERED',
+  'DICKERING',
+  'DICKERS',
   'DISMEMBER',
   'DISMEMBERED',
   'DISMEMBERING',
@@ -144,6 +149,7 @@ const BLOCKED_WORDS = new Set([
   'HOMICIDE',
   'INCEST',
   'INTERCOURSE',
+  'JIHAD',
   'MAIM',
   'MAIMED',
   'MAIMING',
@@ -178,6 +184,10 @@ const BLOCKED_WORDS = new Set([
   'PISSING',
   'PSYCHOSIS',
   'PSYCHOTIC',
+  'PUBE',
+  'PUBES',
+  'PUBIC',
+  'PUBIS',
   'RAPE',
   'RAPED',
   'RAPIST',
@@ -223,9 +233,9 @@ const BLOCKED_PATTERNS = [
 
 const VALID_WORD_DECK_IDS = new Set<WordDeckId>(['bidding', 'green', 'yellow', 'red', 'money'])
 const VALID_DIFFICULTIES = new Set<WordDeck['difficulty']>(['green', 'yellow', 'red', 'money'])
-const WORD_ENTRY_PATTERN = /^[A-Z0-9][A-Z0-9 ]*$/
+const WORD_ENTRY_PATTERN = /^[A-Z0-9]+$/
 const SOURCE_ID_PATTERN = /^[a-z0-9][a-z0-9-]*$/
-const SINGLE_WORD_DECK_IDS = new Set<WordDeckId>(['bidding', 'green', 'yellow', 'red'])
+const SINGLE_WORD_DECK_IDS = new Set<WordDeckId>(['bidding', 'green', 'yellow', 'red', 'money'])
 
 function canonicalWordEntry(word: string): string {
   return word.trim().replace(/\s+/g, ' ')
@@ -391,9 +401,6 @@ export function validateWordBank(
       if (!WORD_ENTRY_PATTERN.test(canonical)) errors.push(`${label} has invalid characters: ${canonical}`)
       if (isBlockedWord(canonical)) errors.push(`${label} is blocked by safety filter: ${canonical}`)
       const wordCount = canonical.split(' ').length
-      if (deck.id === 'money' && (wordCount < 2 || wordCount > 4)) {
-        errors.push(`${label} must be a 2-4 word money phrase: ${canonical}`)
-      }
       if (SINGLE_WORD_DECK_IDS.has(deck.id) && wordCount !== 1) {
         errors.push(`${label} must be a single word for ${deck.id}: ${canonical}`)
       }

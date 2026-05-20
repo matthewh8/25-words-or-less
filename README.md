@@ -51,7 +51,7 @@ Words are organized by no-tag green/yellow/red difficulty decks plus a money-rou
 - red: 16,000
 - money: 2,000
 
-Source and pipeline notes live in `data/words/README.md`. `npm run build:words` rebuilds the committed 50,000-entry runtime bank from open sources, removes exact and spacing-insensitive duplicates, filters malformed/unsafe/noisy entries, and audits every accepted single word into green/yellow/red based on how the stack and bidding rules use difficulty. `npm run audit:words` verifies the final split, duplicate removal, money phrase quality gates, and difficulty shape. `npm run organize:words -- <candidate_files...> --output data/words/organized.generated.json` remains available for review-only candidate experiments.
+Source and pipeline notes live in `data/words/README.md`. `npm run build:words` rebuilds the committed 50,000-entry runtime bank from open sources, removes exact and spacing-insensitive duplicates, filters malformed/unsafe/noisy entries, and audits every accepted entry as one distinct word. `npm run audit:words` verifies the final split, duplicate removal, no multi-word entries, and difficulty shape. `npm run organize:words -- <candidate_files...> --output data/words/organized.generated.json` remains available for review-only candidate experiments.
 
 `validateWordBank()` checks deck IDs, difficulty tiers, source attribution, ISO import dates, within-deck and cross-play-deck duplicates, empty values, malformed entries, over-long entries, lowercase entries, and blocked unsafe terms.
 `getWordBankSummary()` exposes the same inventory in code so deck sizes and source coverage are covered by tests, not only README prose.

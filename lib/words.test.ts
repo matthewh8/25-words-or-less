@@ -64,6 +64,7 @@ describe('word bank validation', () => {
     expect(summary.deckCounts.money).toBe(2000)
     expect(summary.totalPlayableWords).toBe(50000)
     expect(summary.deckCounts.bidding).toBeGreaterThan(summary.deckCounts.green)
+    expect(getWordDecks().every(deck => deck.words.every(word => !word.includes(' ')))).toBe(true)
     expect(summary.decks.find(deck => deck.id === 'green')?.sourceIds).toContain('cefr-j-olp')
     expect(summary.decks.find(deck => deck.id === 'yellow')?.sourceIds).toContain('esdb-en-us-2026-02-25')
   })
@@ -177,27 +178,27 @@ describe('word bank validation', () => {
         id: 'green',
         difficulty: 'green',
         sourceIds: ['curated-party'],
-        words: ['AIR GUITAR'],
+        words: ['AIRGUITAR'],
       },
       {
         id: 'money',
         difficulty: 'money',
         sourceIds: ['curated-party'],
-        words: ['AIR GUITAR'],
+        words: ['AIRGUITAR'],
       },
       {
         id: 'bidding',
         difficulty: 'yellow',
         sourceIds: ['curated-party'],
-        words: ['AIR GUITAR'],
+        words: ['AIRGUITAR'],
       },
     ], WORD_BANK_SOURCES)
 
-    expect(errors.some(error => error.includes('money duplicates AIR GUITAR from green'))).toBe(true)
-    expect(errors.some(error => error.includes('bidding duplicates AIR GUITAR'))).toBe(false)
+    expect(errors.some(error => error.includes('money duplicates AIRGUITAR from green'))).toBe(true)
+    expect(errors.some(error => error.includes('bidding duplicates AIRGUITAR'))).toBe(false)
   })
 
-  it('reports non-normalized spacing and spacing-insensitive near duplicates', () => {
+  it('reports non-normalized spacing, multi-word entries, and spacing-insensitive near duplicates', () => {
     const errors = validateWordBank([
       {
         id: 'green',
@@ -221,6 +222,8 @@ describe('word bank validation', () => {
 
     expect(errors.some(error => error.includes('green contains near-duplicate word: AIRGUITAR matches AIR GUITAR'))).toBe(true)
     expect(errors.some(error => error.includes('green[2] must use normalized spacing'))).toBe(true)
+    expect(errors.some(error => error.includes('green[0] must be a single word for green'))).toBe(true)
+    expect(errors.some(error => error.includes('yellow[0] must be a single word for yellow'))).toBe(true)
     expect(errors.some(error => error.includes('yellow near-duplicates STUDY BREAK from money (STUDYBREAK)'))).toBe(true)
   })
 })
