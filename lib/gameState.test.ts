@@ -6,6 +6,7 @@ import {
   clampTurnSeconds,
   gameReducer,
   initGame,
+  winningBidAmount,
   type CluingState,
   type GameState,
 } from './gameState'
@@ -32,8 +33,10 @@ describe('bid validation', () => {
   it('allows only lower bids at or above the minimum', () => {
     expect(canPlaceBid(24, 25)).toBe(true)
     expect(canPlaceBid(25, 25)).toBe(false)
-    expect(canPlaceBid(5, 25)).toBe(false)
+    expect(canPlaceBid(5, 25)).toBe(true)
+    expect(canPlaceBid(4, 25)).toBe(false)
     expect(canPlaceBid(12.5, 25)).toBe(false)
+    expect(winningBidAmount()).toBe(5)
   })
 
   it('ignores invalid bids in the reducer', () => {
@@ -47,6 +50,32 @@ describe('bid validation', () => {
     expect(valid.bid?.currentBid).toBe(20)
     expect(valid.bid?.activeBidder).toBe(1)
     expect(valid.bid?.biddingTeam).toBe(0)
+  })
+
+  it('starts cluing immediately when a team bids all the way to five', () => {
+    const started = gameReducer(initGame('A', 'B'), { type: 'START_BIDDING', firstTeam: 0 })
+
+    const wonBid = gameReducer(started, { type: 'PLACE_BID', amount: 5 })
+
+    expect(wonBid.phase).toBe('round1_cluing')
+    expect(wonBid.bid?.currentBid).toBe(5)
+    expect(wonBid.bid?.biddingTeam).toBe(0)
+    expect(wonBid.cluing?.cluingTeam).toBe(0)
+    expect(wonBid.cluing?.wordLimit).toBe(5)
+  })
+
+  it('does not auto-concede when the bidding timer reaches zero', () => {
+    const started = gameReducer(initGame('A', 'B'), { type: 'START_BIDDING', firstTeam: 0 })
+    const almostExpired: GameState = {
+      ...started,
+      bid: started.bid ? { ...started.bid, biddingTimeLeft: 1 } : null,
+    }
+
+    const expired = gameReducer(almostExpired, { type: 'BIDDING_TICK' })
+
+    expect(expired.phase).toBe('round1_bidding')
+    expect(expired.bid?.biddingTimeLeft).toBe(0)
+    expect(expired.cluing).toBeNull()
   })
 
   it('ignores stale bidding actions after bidding has ended', () => {

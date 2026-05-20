@@ -14,6 +14,10 @@
 /coverage
 /screenshots/
 
+# generated word-bank review output
+/data/words/*.generated.json
+/data/word-bank.generated.json
+
 # next.js
 /.next/
 /out/

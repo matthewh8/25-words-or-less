@@ -2,6 +2,7 @@
 
 import type { GameState, GameAction } from '@/lib/gameState'
 import Scoreboard from './Scoreboard'
+import TeamStatusBar from './TeamStatusBar'
 
 interface Props {
   state: GameState
@@ -30,6 +31,13 @@ export default function RoundResult({ state, dispatch }: Props) {
   return (
     <div className="flex h-dvh flex-col items-center justify-center overflow-hidden bg-[#0a0d14] p-3 text-white md:p-8">
       <div className="grid h-full w-full max-w-5xl grid-rows-[1fr_auto] gap-2 fade-in-up md:h-auto md:gap-5">
+        <TeamStatusBar
+          teams={teams}
+          activeTeam={points > 0 ? awardTeam : lastResult.team}
+          activeLabel={points > 0 ? 'Scored' : 'Last up'}
+          caption={points > 0 ? `${teams[awardTeam].name} receives this result` : `${teams[lastResult.team].name} just played`}
+          compact
+        />
 
         <div className="grid min-h-0 gap-2 lg:grid-cols-[0.95fr_1.05fr] lg:gap-5">
         {/* Result hero */}

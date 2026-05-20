@@ -1,0 +1,100 @@
+{
+  "updatedAt": "2026-05-20",
+  "notes": [
+    "Use these as candidate/enrichment sources, not as direct playable dumps.",
+    "Bundled app data should keep source attribution and license notes beside every generated deck.",
+    "ShareAlike sources are useful for research, but keep them separate unless the project intentionally accepts ShareAlike obligations."
+  ],
+  "sources": [
+    {
+      "id": "scowl-esdb",
+      "name": "SCOWL / English Speller Database",
+      "url": "https://wordlist.aspell.net/",
+      "license": "SCOWLv2 permissive terms with attribution/copyright notice",
+      "licenseUrl": "https://wordlist.aspell.net/hunspell-readme/",
+      "recommendedUse": "Primary bulk single-word candidate source",
+      "signals": ["commonness", "dialect", "variant", "part-of-speech", "inflection"],
+      "risk": "Low. Some larger dictionaries include uncommon or misspelled entries, so keep size thresholds conservative."
+    },
+    {
+      "id": "cefr-j-olp",
+      "name": "Open Language Profiles English datasets from CEFR-J",
+      "url": "https://github.com/openlanguageprofiles/olp-en-cefrj",
+      "license": "Research/commercial use with citation for CEFR-J A1-B2; C1/C2 Octanove data is CC-BY-SA 4.0",
+      "licenseUrl": "https://github.com/openlanguageprofiles/olp-en-cefrj#terms-of-use",
+      "recommendedUse": "Difficulty signal for green/yellow/red organization",
+      "signals": ["cefr-level", "lemma"],
+      "risk": "Low for A1-B2 with citation. Keep C1/C2 data source-separated because of ShareAlike terms."
+    },
+    {
+      "id": "open-english-wordnet",
+      "name": "Open English WordNet",
+      "url": "https://en-word.net/",
+      "license": "CC-BY 4.0",
+      "licenseUrl": "https://en-word.net/",
+      "recommendedUse": "Semantic/POS enrichment and ambiguity checks",
+      "signals": ["part-of-speech", "synsets", "semantic-relations", "definitions"],
+      "risk": "Low with attribution. Avoid unreviewed proper-name expansion unless a mode needs it."
+    },
+    {
+      "id": "princeton-wordnet",
+      "name": "Princeton WordNet",
+      "url": "https://wordnet.princeton.edu/license-and-commercial-use",
+      "license": "WordNet 3.0 license",
+      "licenseUrl": "https://wordnet.princeton.edu/license-and-commercial-use",
+      "recommendedUse": "Fallback lexical/POS enrichment",
+      "signals": ["part-of-speech", "synsets", "semantic-relations"],
+      "risk": "Low with required notices. Older resource than Open English WordNet."
+    },
+    {
+      "id": "cmudict",
+      "name": "CMU Pronouncing Dictionary",
+      "url": "https://www.speech.cs.cmu.edu/cgi-bin/cmudict",
+      "license": "Open-source machine-readable pronunciation dictionary; current releases use BSD-style terms",
+      "licenseUrl": "https://www.speech.cs.cmu.edu/cgi-bin/cmudict",
+      "recommendedUse": "Pronunciation, syllable, and awkward-word filters",
+      "signals": ["pronunciation", "syllable-count"],
+      "risk": "Low. Useful for filtering, not for semantic quality."
+    },
+    {
+      "id": "wordfreq",
+      "name": "wordfreq",
+      "url": "https://github.com/rspeer/wordfreq",
+      "license": "Apache-2.0 code; bundled data includes CC-BY-SA and attribution requirements",
+      "licenseUrl": "https://github.com/rspeer/wordfreq#license",
+      "recommendedUse": "Frequency scoring during generation, not direct CSV extraction",
+      "signals": ["zipf-frequency"],
+      "risk": "Medium. Respect attribution and avoid flattening its data into attribution-free CSV."
+    },
+    {
+      "id": "datamuse",
+      "name": "Datamuse API",
+      "url": "https://www.datamuse.com/api/",
+      "license": "Public read-only API with requested acknowledgment for public apps",
+      "licenseUrl": "https://www.datamuse.com/api/",
+      "recommendedUse": "Brainstorm related words and phrase candidates for review",
+      "signals": ["related-words", "synonyms", "triggers", "soundalikes", "context"],
+      "risk": "Medium. Treat as candidate generation, then review/source generated entries separately."
+    },
+    {
+      "id": "conceptnet",
+      "name": "ConceptNet",
+      "url": "https://conceptnet.io/",
+      "license": "CC-BY-SA 4.0",
+      "licenseUrl": "https://conceptnet.io/",
+      "recommendedUse": "Research-only semantic association graph unless ShareAlike is acceptable",
+      "signals": ["commonsense-relations", "related-terms"],
+      "risk": "High for bundling because ShareAlike terms need project-level handling."
+    },
+    {
+      "id": "wiktionary-dumps",
+      "name": "Wiktionary Dumps",
+      "url": "https://dumps.wikimedia.org/legal.html",
+      "license": "GFDL and CC-BY-SA 4.0 for text; Wikidata structured data is CC0",
+      "licenseUrl": "https://dumps.wikimedia.org/legal.html",
+      "recommendedUse": "Research-only lexical reference unless ShareAlike/GFDL obligations are intentionally accepted",
+      "signals": ["definitions", "part-of-speech", "phrases", "translations"],
+      "risk": "High for bundled word-bank data because of ShareAlike/GFDL obligations."
+    }
+  ]
+}

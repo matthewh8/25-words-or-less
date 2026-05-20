@@ -58,9 +58,9 @@ describe('word bank validation', () => {
     const summary = getWordBankSummary()
 
     expect(summary.sourceCount).toBeGreaterThanOrEqual(2)
-    expect(summary.deckCounts.green).toBe(2054)
-    expect(summary.deckCounts.yellow).toBe(1925)
-    expect(summary.deckCounts.red).toBe(2092)
+    expect(summary.deckCounts.green).toBe(1536)
+    expect(summary.deckCounts.yellow).toBe(3406)
+    expect(summary.deckCounts.red).toBe(1129)
     expect(summary.deckCounts.money).toBe(160)
     expect(summary.totalPlayableWords).toBe(6231)
     expect(summary.deckCounts.bidding).toBeGreaterThan(summary.deckCounts.green)
@@ -72,7 +72,6 @@ describe('word bank validation', () => {
       {
         id: 'expert',
         difficulty: 'black',
-        tags: ['campus', 'bad-tag'],
         sourceIds: ['missing-source'],
         words: ['APPLE', 'APPLE', '', 'GOOK', 'lowercase', 'TOO-LONG-WITH-HYPHEN-AND-INVALID-CHARACTER'],
       } as unknown as WordDeck,
@@ -80,7 +79,6 @@ describe('word bank validation', () => {
 
     expect(errors.some(error => error.includes('invalid id'))).toBe(true)
     expect(errors.some(error => error.includes('invalid difficulty'))).toBe(true)
-    expect(errors.some(error => error.includes('invalid tag'))).toBe(true)
     expect(errors.some(error => error.includes('unknown source'))).toBe(true)
     expect(errors.some(error => error.includes('duplicate'))).toBe(true)
     expect(errors.some(error => error.includes('empty'))).toBe(true)
@@ -95,14 +93,13 @@ describe('word bank validation', () => {
       {
         id: 'green',
         difficulty: 'green',
-        tags: [],
         sourceIds: [],
         words: ['APPLE'],
       },
     ], [{
       id: 'generated',
       name: 'Generated import',
-      url: 'local:data/word-bank.generated.json',
+      url: 'local:data/generated-source.json',
       licenseNote: 'reviewed import',
       importedAt: 'May 19, 2026',
       transform: 'test transform',
@@ -110,7 +107,6 @@ describe('word bank validation', () => {
 
     expect(errors.some(error => error.includes('source generated has invalid import date'))).toBe(true)
     expect(errors.some(error => error.includes('must include source attribution'))).toBe(true)
-    expect(errors.some(error => error.includes('must include at least one tag'))).toBe(true)
   })
 
   it('reports duplicate deck ids, duplicate source ids, and malformed source URLs', () => {
@@ -118,7 +114,7 @@ describe('word bank validation', () => {
       {
         id: 'generated',
         name: 'Generated import',
-        url: 'data/word-bank.generated.json',
+        url: 'data/generated-source.json',
         licenseNote: 'reviewed import',
         importedAt: '2026-05-19',
         transform: 'test transform',
@@ -126,7 +122,7 @@ describe('word bank validation', () => {
       {
         id: 'generated',
         name: 'Generated import copy',
-        url: 'local:data/word-bank.generated.json',
+        url: 'local:data/generated-source.json',
         licenseNote: 'reviewed import',
         importedAt: '2026-05-19',
         transform: 'test transform',
@@ -136,21 +132,19 @@ describe('word bank validation', () => {
       {
         id: 'green',
         difficulty: 'green',
-        tags: ['campus'],
         sourceIds: ['generated'],
         words: ['APPLE'],
       },
       {
         id: 'green',
         difficulty: 'green',
-        tags: ['food'],
         sourceIds: ['generated'],
         words: ['BANANA'],
       },
     ], sources)
 
     expect(errors.some(error => error.includes('source generated is duplicated'))).toBe(true)
-    expect(errors.some(error => error.includes('source generated has invalid url data/word-bank.generated.json'))).toBe(true)
+    expect(errors.some(error => error.includes('source generated has invalid url data/generated-source.json'))).toBe(true)
     expect(errors.some(error => error.includes('green deck id is duplicated'))).toBe(true)
   })
 
@@ -159,7 +153,6 @@ describe('word bank validation', () => {
       {
         id: 'green',
         difficulty: 'green',
-        tags: ['campus'],
         sourceIds: ['bad source', 'bad source'],
         words: ['APPLE'],
       },
@@ -182,21 +175,18 @@ describe('word bank validation', () => {
       {
         id: 'green',
         difficulty: 'green',
-        tags: ['campus'],
         sourceIds: ['curated-party'],
         words: ['AIR GUITAR'],
       },
       {
         id: 'money',
         difficulty: 'money',
-        tags: ['party'],
         sourceIds: ['curated-party'],
         words: ['AIR GUITAR'],
       },
       {
         id: 'bidding',
         difficulty: 'yellow',
-        tags: ['party'],
         sourceIds: ['curated-party'],
         words: ['AIR GUITAR'],
       },
@@ -211,21 +201,18 @@ describe('word bank validation', () => {
       {
         id: 'green',
         difficulty: 'green',
-        tags: ['campus'],
         sourceIds: ['curated-party'],
         words: ['AIR GUITAR', 'AIRGUITAR', 'DOUBLE  SPACE'],
       },
       {
         id: 'money',
         difficulty: 'money',
-        tags: ['party'],
         sourceIds: ['curated-party'],
         words: ['STUDYBREAK'],
       },
       {
         id: 'yellow',
         difficulty: 'yellow',
-        tags: ['campus'],
         sourceIds: ['curated-party'],
         words: ['STUDY BREAK'],
       },

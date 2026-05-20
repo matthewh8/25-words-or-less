@@ -100,9 +100,13 @@ export function canPlaceBid(
   gameMode: GameMode = DEFAULT_GAME_MODE
 ): boolean {
   return Number.isInteger(amount)
-    && amount >= gameMode.bidding.minBid
+    && amount >= winningBidAmount(gameMode)
     && amount < currentBid
     && currentBid <= gameMode.bidding.maxBid
+}
+
+export function winningBidAmount(gameMode: GameMode = DEFAULT_GAME_MODE): number {
+  return gameMode.bidding.wordCount
 }
 
 function nextUnguessed(guessed: boolean[], from: number): number {
@@ -116,6 +120,27 @@ function nextUnguessed(guessed: boolean[], from: number): number {
 
 function isCluingPhase(phase: Phase): boolean {
   return phase === 'round1_cluing' || phase === 'round23_cluing' || phase === 'money_cluing'
+}
+
+function startBiddingClue(state: GameState, bid: BidState, mode: GameMode): GameState {
+  return {
+    ...state,
+    bid,
+    phase: 'round1_cluing',
+    cluing: {
+      stream: 'bidding',
+      deckId: mode.bidding.wordDeck,
+      label: mode.bidding.title,
+      words: bid.words,
+      wordsLeft: bid.currentBid,
+      wordLimit: bid.currentBid,
+      timeLeft: state.roundTime,
+      guessed: Array(bid.words.length).fill(false),
+      skipCount: 0,
+      cluingTeam: bid.biddingTeam,
+      currentWordIndex: 0,
+    },
+  }
 }
 
 export function canSkipCurrentWord(cluing: CluingState): boolean {
@@ -202,38 +227,25 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       if (state.phase !== 'round1_bidding') return state
       if (!canPlaceBid(action.amount, state.bid.currentBid, mode)) return state
       const next: 0 | 1 = state.bid.activeBidder === 0 ? 1 : 0
+      const bid: BidState = {
+        ...state.bid,
+        currentBid: action.amount,
+        activeBidder: next,
+        biddingTeam: state.bid.activeBidder,
+      }
+      if (action.amount === winningBidAmount(mode)) {
+        return startBiddingClue(state, bid, mode)
+      }
       return {
         ...state,
-        bid: {
-          ...state.bid,
-          currentBid: action.amount,
-          activeBidder: next,
-          biddingTeam: state.bid.activeBidder,
-        },
+        bid,
       }
     }
 
     case 'CONCEDE': {
       if (!state.bid) return state
       if (state.phase !== 'round1_bidding') return state
-      return {
-        ...state,
-        bid: { ...state.bid, conceded: true },
-        phase: 'round1_cluing',
-        cluing: {
-          stream: 'bidding',
-          deckId: mode.bidding.wordDeck,
-          label: mode.bidding.title,
-          words: state.bid.words,
-          wordsLeft: state.bid.currentBid,
-          wordLimit: state.bid.currentBid,
-          timeLeft: state.roundTime,
-          guessed: Array(state.bid.words.length).fill(false),
-          skipCount: 0,
-          cluingTeam: state.bid.biddingTeam,
-          currentWordIndex: 0,
-        },
-      }
+      return startBiddingClue(state, { ...state.bid, conceded: true }, mode)
     }
 
     case 'WORD_REFUND': {
@@ -498,10 +510,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       if (!state.bid || state.bid.biddingTimeLeft <= 0) return state
       if (state.phase !== 'round1_bidding') return state
       const newTime = state.bid.biddingTimeLeft - 1
-      if (newTime <= 0) {
-        return gameReducer({ ...state, bid: { ...state.bid, biddingTimeLeft: 0 } }, { type: 'CONCEDE' })
-      }
-      return { ...state, bid: { ...state.bid, biddingTimeLeft: newTime } }
+      return { ...state, bid: { ...state.bid, biddingTimeLeft: Math.max(0, newTime) } }
     }
 
     case 'REFRESH_BID': {

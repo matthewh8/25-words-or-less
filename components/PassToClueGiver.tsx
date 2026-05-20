@@ -1,6 +1,7 @@
 'use client'
 
 import type { GameState } from '@/lib/gameState'
+import TeamStatusBar from './TeamStatusBar'
 
 interface Props {
   state: GameState
@@ -41,6 +42,16 @@ export default function PassToClueGiver({ state, onReady }: Props) {
           {roster.join(' / ')}
         </p>
       )}
+
+      <div className="mt-4 w-full">
+        <TeamStatusBar
+          teams={teams}
+          activeTeam={cluing.cluingTeam}
+          activeLabel="Cluing"
+          caption={`${teamName} is up`}
+          compact
+        />
+      </div>
 
       <div className="mt-5 grid w-full max-w-xs grid-cols-3 gap-3 rounded-md border border-white/10 bg-[#141826] p-3 text-center">
         <div>

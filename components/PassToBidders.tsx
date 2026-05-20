@@ -1,6 +1,7 @@
 'use client'
 
 import type { GameState } from '@/lib/gameState'
+import TeamStatusBar from './TeamStatusBar'
 
 interface Props {
   state: GameState
@@ -30,6 +31,10 @@ export default function PassToBidders({ state, onReady }: Props) {
       <p className="text-white/40 text-sm text-center mt-4 max-w-xs">
         One captain from <strong className="text-white/60">{teams[0].name}</strong> and <strong className="text-white/60">{teams[1].name}</strong> stays at the screen. Everyone else looks away.
       </p>
+
+      <div className="mt-5 w-full">
+        <TeamStatusBar teams={teams} caption="Captains from both teams stay at the screen" compact />
+      </div>
 
       <button
         onClick={onReady}

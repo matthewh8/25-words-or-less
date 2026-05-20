@@ -18,7 +18,7 @@ bidding:
   contests: 2
   wordDeck: green
   wordCount: 5
-  minBid: 7
+  minBid: 5
   maxBid: 25
   successPoints: 8
   failurePoints: 3

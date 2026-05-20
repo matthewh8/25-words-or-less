@@ -1,6 +1,7 @@
 'use client'
 
 import type { GameState } from '@/lib/gameState'
+import TeamStatusBar from './TeamStatusBar'
 
 interface Props {
   state: GameState
@@ -33,6 +34,16 @@ export default function FinalScoreboard({ state, onRestart }: Props) {
           {moneyWon && (
             <p className="text-[#ffd23f]/80 text-sm mt-3">Money Round jackpot</p>
           )}
+        </div>
+
+        <div className="mb-4 md:mb-6">
+          <TeamStatusBar
+            teams={teams}
+            activeTeam={tied ? undefined : winner}
+            activeLabel="Winner"
+            caption={tied ? 'Final teams' : `${teams[winner].name} wins`}
+            compact
+          />
         </div>
 
         <div className="mb-4 grid gap-2 md:mb-8 md:grid-cols-2 md:gap-3">

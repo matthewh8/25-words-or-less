@@ -44,16 +44,16 @@ In development, invalid YAML mode definitions throw with schema errors. In produ
 
 ## Word Bank
 
-Words are organized by green/yellow/red difficulty decks plus a money-round deck in `lib/words.ts`. Current curated deck sizes:
+Words are organized by no-tag green/yellow/red difficulty decks plus a money-round deck in `lib/words.ts`. Current auto-organized deck sizes:
 
-- green: 2,054
-- yellow: 1,925
-- red: 2,092
+- green: 1,536
+- yellow: 3,406
+- red: 1,129
 - money: 160
 
-Source and pipeline notes live in `data/word-bank-sources.md`. `npm run import:words -- <cefr_csv> data/word-bank.generated.json --source-id <slug-id> --source-name "<name>" --source-url <https-or-local-url> --license-note "<license note>"` generates a cleaned, attributed expansion file from a compatible CEFR CSV for review before integrating a larger bank.
+Source and pipeline notes live in `data/words/README.md`. `npm run organize:words -- <candidate_files...> --output data/words/organized.generated.json` pools every candidate together and auto-classifies into only `green`, `yellow`, `red`, and `money`. It does not use tags. It accepts TXT, CSV, JSON, JSONL, and current `lib/words.ts` style arrays, then filters unsafe/malformed entries, dedupes exact and spacing-insensitive duplicates, routes two-to-four-word phrases to `money`, and scores single words by CEFR, frequency, length, syllables, and abstract/hard suffixes.
 
-`validateWordBank()` checks deck IDs, difficulty tiers, source attribution, tag validity, ISO import dates, within-deck and cross-play-deck duplicates, empty values, malformed entries, over-long entries, lowercase entries, and blocked unsafe terms.
+`validateWordBank()` checks deck IDs, difficulty tiers, source attribution, ISO import dates, within-deck and cross-play-deck duplicates, empty values, malformed entries, over-long entries, lowercase entries, and blocked unsafe terms.
 `getWordBankSummary()` exposes the same inventory in code so deck sizes and source coverage are covered by tests, not only README prose.
 
 The full word bank is imported by server code. The client requests round-sized deals from `/api/deal`, so generated client chunks stay free of the bundled word-bank literals and only receive the words needed for the next screen.

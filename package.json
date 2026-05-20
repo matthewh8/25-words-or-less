@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "audit": "npm audit --audit-level=moderate",
-    "import:words": "node scripts/import-word-bank.mjs",
+    "organize:words": "node scripts/organize-word-pool.mjs",
     "check": "npm run lint && npm run typecheck && npm run test && npm run build"
   },
   "dependencies": {

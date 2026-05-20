@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { GameState, GameAction } from '@/lib/gameState'
 import Scoreboard from './Scoreboard'
+import TeamStatusBar from './TeamStatusBar'
 import TimeConfigurator from './TimeConfigurator'
 
 interface Props {
@@ -58,6 +59,16 @@ export default function MoneyRound({ state, dispatch }: Props) {
             <p className="truncate text-lg font-black text-white">{teams[winnerTeam].name}</p>
           </div>
 
+          <div className="mb-2 md:mb-4">
+            <TeamStatusBar
+              teams={teams}
+              activeTeam={winnerTeam}
+              activeLabel="Money"
+              caption={`${teams[winnerTeam].name} is up for the final`}
+              compact
+            />
+          </div>
+
           <Scoreboard teams={teams} highlight={winnerTeam} compact />
 
           <button
@@ -90,6 +101,14 @@ export default function MoneyRound({ state, dispatch }: Props) {
               }
             </div>
           </div>
+
+          <TeamStatusBar
+            teams={teams}
+            activeTeam={winnerTeam}
+            activeLabel="Finalist"
+            caption={`${teams[winnerTeam].name} played the money round`}
+            compact
+          />
 
           {cluing && (
             <div className="grid min-h-0 grid-cols-2 gap-1.5 sm:grid-cols-5">

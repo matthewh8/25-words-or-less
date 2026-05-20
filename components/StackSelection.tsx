@@ -2,6 +2,7 @@
 
 import type { GameState, GameAction } from '@/lib/gameState'
 import Scoreboard from './Scoreboard'
+import TeamStatusBar from './TeamStatusBar'
 
 interface Props {
   state: GameState
@@ -25,6 +26,16 @@ export default function StackSelection({ state, dispatch }: Props) {
             <p className="text-white/40 text-xs">{turnsLeft} turn{turnsLeft !== 1 ? 's' : ''} left</p>
           </div>
           <Scoreboard teams={teams} compact />
+        </div>
+
+        <div className="mb-3 md:mb-5">
+          <TeamStatusBar
+            teams={teams}
+            activeTeam={team}
+            activeLabel="Pick now"
+            caption={`${teams[team].name} is up for stack selection`}
+            compact
+          />
         </div>
 
         <p className="mono-label mb-1 text-[10px] text-white/45 md:mb-2">{teams[team].name}</p>

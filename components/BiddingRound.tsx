@@ -2,9 +2,11 @@
 
 import { useState } from 'react'
 import type { GameState, GameAction } from '@/lib/gameState'
+import { winningBidAmount } from '@/lib/gameState'
 import { useActionInterval } from '@/lib/useActionInterval'
 import Scoreboard from './Scoreboard'
 import Timer from './Timer'
+import TeamStatusBar from './TeamStatusBar'
 
 interface Props {
   state: GameState
@@ -28,13 +30,14 @@ export default function BiddingRound({ state, dispatch }: Props) {
   const { words, currentBid, activeBidder, biddingTeam, biddingTimeLeft } = bid
   const activeName = teams[activeBidder].name
   const concedeName = teams[biddingTeam].name
-  const minBid = mode.bidding.minBid
+  const winBid = winningBidAmount(mode)
+  const timeExpired = biddingTimeLeft <= 0
 
   function placeBid(raw: string) {
     const n = parseInt(raw, 10)
     if (isNaN(n)) { setError('Enter a number'); return }
     if (n >= currentBid) { setError(`Must be less than ${currentBid}`); return }
-    if (n < minBid) { setError(`Minimum is ${minBid}`); return }
+    if (n < winBid) { setError(`Win the bid at ${winBid}`); return }
     setError('')
     setInput('')
     setHistory(prev => [...prev.slice(-7), { team: activeBidder, amount: n }])
@@ -46,7 +49,7 @@ export default function BiddingRound({ state, dispatch }: Props) {
     if (e.key === 'ArrowDown') {
       e.preventDefault()
       const current = parseInt(input, 10)
-      const next = isNaN(current) ? currentBid - 1 : Math.max(minBid, current - 1)
+      const next = isNaN(current) ? currentBid - 1 : Math.max(winBid, current - 1)
       setInput(String(next))
       setError('')
     }
@@ -70,6 +73,14 @@ export default function BiddingRound({ state, dispatch }: Props) {
           </span>
           <Scoreboard teams={teams} compact />
         </div>
+
+        <TeamStatusBar
+          teams={teams}
+          activeTeam={activeBidder}
+          activeLabel="Bid now"
+          caption={`${teams[biddingTeam].name} holds ${currentBid}; ${teams[activeBidder].name} lowers or concedes`}
+          compact
+        />
 
         <div className="grid min-h-0 gap-2 lg:grid-cols-[1fr_260px_1fr] lg:gap-4">
           {/* Words */}
@@ -96,12 +107,17 @@ export default function BiddingRound({ state, dispatch }: Props) {
             <p className="mono-label mb-1 text-[10px] text-white/45 md:mb-2">Current bid</p>
             <div className="text-5xl font-black leading-[0.8] tracking-normal text-[#ffd23f] tabular-nums md:text-[9rem]">{currentBid}</div>
             <p className="mt-1 text-xs text-white/45 md:mt-3 md:text-sm">
-              <span className="font-semibold text-white">{activeName}</span> bids lower or concedes
+              <span className="font-semibold text-white">{activeName}</span> bids lower, bids {winBid}, or concedes
             </p>
-            <div className="mono-label mt-1 text-[10px] text-white/45 md:hidden">{biddingTimeLeft}s left</div>
+            <div className={`mono-label mt-1 text-[10px] md:hidden ${timeExpired ? 'text-[#ff3a6d]' : 'text-white/45'}`}>
+              {timeExpired ? 'timer expired' : `${biddingTimeLeft}s left`}
+            </div>
             <div className="mt-2 hidden justify-center md:mt-5 md:flex">
               <Timer timeLeft={biddingTimeLeft} total={mode.timing.biddingSeconds} />
             </div>
+            {timeExpired && (
+              <p className="mt-3 text-xs font-bold text-[#ff3a6d]">No automatic move. Bid {winBid} or concede.</p>
+            )}
           </div>
 
           <div className="rounded-lg border border-white/10 bg-[#141826] p-3 md:p-5">
@@ -126,8 +142,8 @@ export default function BiddingRound({ state, dispatch }: Props) {
                   value={input}
                   onChange={e => { setInput(e.target.value); setError('') }}
                   onKeyDown={handleKey}
-                  placeholder={`${minBid}–${currentBid - 1}`}
-                  min={minBid}
+                  placeholder={`${winBid}–${currentBid - 1}`}
+                  min={winBid}
                   max={currentBid - 1}
                   autoFocus
                   aria-label={`Bid lower than ${currentBid}`}
@@ -167,7 +183,7 @@ export default function BiddingRound({ state, dispatch }: Props) {
             </button>
 
             <p className="mt-3 hidden text-center text-xs text-white/25 md:block">
-              <strong className="text-white/50">{concedeName}</strong> clues all {words.length} using {currentBid} words.
+              <strong className="text-white/50">{concedeName}</strong> clues all {words.length} using {currentBid} words if the other team concedes.
             </p>
           </div>
         </div>

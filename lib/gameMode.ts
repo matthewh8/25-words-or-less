@@ -134,7 +134,7 @@ export const DEFAULT_GAME_MODE: GameMode = {
     contests: 2,
     wordDeck: 'bidding',
     wordCount: 5,
-    minBid: 6,
+    minBid: 5,
     maxBid: 25,
     successPoints: 10,
     failurePoints: 5,

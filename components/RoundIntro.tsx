@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 import type { GameState, GameAction } from '@/lib/gameState'
+import { winningBidAmount } from '@/lib/gameState'
 import Scoreboard from './Scoreboard'
+import TeamStatusBar from './TeamStatusBar'
 import TimeConfigurator from './TimeConfigurator'
 
 interface Props {
@@ -14,6 +16,8 @@ export default function RoundIntro({ state, dispatch }: Props) {
   const { teams, currentRound, gameMode } = state
   const [time, setTime] = useState(state.roundTime)
   const isBiddingRound = currentRound === 1
+  const stackRound = gameMode.stacks.rounds.find(round => round.number === currentRound)
+  const activeTeam = isBiddingRound ? undefined : stackRound?.startTeam
   const info = isBiddingRound
     ? {
         number: '01',
@@ -21,7 +25,7 @@ export default function RoundIntro({ state, dispatch }: Props) {
         icon: 'BID',
         bullets: [
           `Both teams see ${gameMode.bidding.wordCount} words`,
-          `Bid down from ${gameMode.bidding.maxBid}; minimum bid is ${gameMode.bidding.minBid}`,
+          `Bid down from ${gameMode.bidding.maxBid}; bidding ends when someone takes ${winningBidAmount(gameMode)} or the other team concedes`,
           `All correct gives ${gameMode.bidding.successPoints.toLocaleString()} pts; a miss gives ${gameMode.bidding.failurePoints.toLocaleString()} pts to the configured failure side`,
         ],
       }
@@ -30,7 +34,7 @@ export default function RoundIntro({ state, dispatch }: Props) {
         title: gameMode.stacks.title,
         icon: 'STK',
         bullets: [
-          `Teams alternate across ${gameMode.stacks.rounds.find(round => round.number === currentRound)?.turns ?? 3} turns`,
+          `Teams alternate across ${stackRound?.turns ?? 3} turns`,
           gameMode.stacks.options.map(stack => `${stack.label} ${stack.pointsPerWord.toLocaleString()}`).join(' / '),
           `All ${gameMode.stacks.wordCount} correct adds ${gameMode.stacks.allCorrectBonus.toLocaleString()} pts; clue limit is ${gameMode.stacks.wordLimit}`,
         ],
@@ -72,6 +76,16 @@ export default function RoundIntro({ state, dispatch }: Props) {
         </div>
 
         <div className="mt-2 md:mt-5">
+          <TeamStatusBar
+            teams={teams}
+            activeTeam={activeTeam}
+            activeLabel="Starts"
+            caption={isBiddingRound ? 'Both team captains bid this round' : `${activeTeam !== undefined ? teams[activeTeam].name : 'Starting team'} picks first`}
+            compact
+          />
+        </div>
+
+        <div className="mt-2 md:mt-3">
           <Scoreboard teams={teams} compact />
         </div>
 

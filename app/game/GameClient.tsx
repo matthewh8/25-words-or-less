@@ -60,7 +60,6 @@ function biddingReadyKey(state: GameState): string | null {
   return [
     state.phase,
     state.round1Contests,
-    state.bid.biddingTeam,
     state.bid.words.join('|'),
   ].join(':')
 }
