@@ -17,6 +17,7 @@
 # generated word-bank review output
 /data/words/*.generated.json
 /data/word-bank.generated.json
+/data/words/raw/
 
 # next.js
 /.next/

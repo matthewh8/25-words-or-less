@@ -103,7 +103,7 @@ if (options['source-name'] === '' || options['license-note'] === '') {
   process.exit(1)
 }
 
-const inputPaths = inputs.length ? inputs : ['lib/words.ts']
+const inputPaths = inputs.length ? inputs : ['data/words/word-bank.json']
 const outputPath = options.output ?? DEFAULT_OUTPUT_PATH
 const sourceId = options['source-id'] ?? DEFAULT_SOURCE_ID
 

@@ -44,14 +44,14 @@ In development, invalid YAML mode definitions throw with schema errors. In produ
 
 ## Word Bank
 
-Words are organized by no-tag green/yellow/red difficulty decks plus a money-round deck in `lib/words.ts`. Current auto-organized deck sizes:
+Words are organized by no-tag green/yellow/red difficulty decks plus a money-round deck in `data/words/word-bank.json`. Current audited deck sizes:
 
-- green: 1,536
-- yellow: 3,406
-- red: 1,129
-- money: 160
+- green: 6,000
+- yellow: 27,000
+- red: 16,680
+- money: 320
 
-Source and pipeline notes live in `data/words/README.md`. `npm run organize:words -- <candidate_files...> --output data/words/organized.generated.json` pools every candidate together and auto-classifies into only `green`, `yellow`, `red`, and `money`. It does not use tags. It accepts TXT, CSV, JSON, JSONL, and current `lib/words.ts` style arrays, then filters unsafe/malformed entries, dedupes exact and spacing-insensitive duplicates, routes two-to-four-word phrases to `money`, and scores single words by CEFR, frequency, length, syllables, and abstract/hard suffixes.
+Source and pipeline notes live in `data/words/README.md`. `npm run build:words` rebuilds the committed 50,000-entry runtime bank from open sources, removes exact and spacing-insensitive duplicates, filters malformed/unsafe/noisy entries, and audits every accepted single word into green/yellow/red based on how the stack and bidding rules use difficulty. `npm run audit:words` verifies the final split, duplicate removal, money phrase quality gates, and difficulty shape. `npm run organize:words -- <candidate_files...> --output data/words/organized.generated.json` remains available for review-only candidate experiments.
 
 `validateWordBank()` checks deck IDs, difficulty tiers, source attribution, ISO import dates, within-deck and cross-play-deck duplicates, empty values, malformed entries, over-long entries, lowercase entries, and blocked unsafe terms.
 `getWordBankSummary()` exposes the same inventory in code so deck sizes and source coverage are covered by tests, not only README prose.
@@ -65,6 +65,7 @@ npm run lint
 npm run typecheck
 npm test
 npm run audit
+npm run audit:words
 npm run build
 npm run check
 ```

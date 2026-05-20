@@ -1,39 +1,56 @@
 # Word Research Pipeline
 
-This folder is for source research and generated review files. The runtime game still uses `lib/words.ts` until generated output is deliberately applied.
+This folder is for source research, source seeds, and generated runtime word-bank data. The runtime game loads `data/words/word-bank.json` through `lib/words.ts`.
 
 ## Source Strategy
 
-Use open sources as candidate pools, not direct playable dumps:
+Use open sources as candidate pools, not blind playable dumps:
 
-- SCOWL / English Speller Database for broad single-word candidates.
+- ESDB / SCOWL American English wordlists for broad single-word candidates.
+- CMUdict for pronunciation and syllable checks.
+- Open English WordNet for semantically attested fallback words when pronunciation-filtered ESDB does not meet the target.
 - CEFR-J / Open Language Profiles for level hints.
 - Open English WordNet or Princeton WordNet for part-of-speech and semantic checks.
-- CMUdict for pronounceability and syllable checks.
 - wordfreq for frequency hints when its attribution/licensing constraints are acceptable.
 
 Current source notes live in `open-word-sources.json`.
 
-## Path To 20,000 Words
+## Runtime 50,000-Entry Bank
 
-The practical expansion path is SCOWL / English Speller Database first. It can export American English lists by size; size 50/60 is the useful range for party-game candidates, while larger sizes add too many obscure words. Feed that export into the no-tag organizer with any CEFR/frequency columns available:
+The committed runtime bank is generated with:
 
 ```bash
-npm run organize:words -- data/words/raw/scowl-us-60.txt data/words/raw/cefr.csv --output data/words/organized.generated.json
+npm run build:words
 ```
 
-Target mix for a 20,000-word bank:
+The builder writes `data/words/word-bank.json` with exactly 50,000 playable entries:
 
-- `green`: 5,000-6,000 short/common/concrete words
-- `yellow`: 9,000-10,000 broad middle words
-- `red`: 4,000-5,000 long/abstract/technical words
-- `money`: 500-1,000 reviewed phrases
+- starts from the safe hand-reviewed seed entries in `data/words/seed-decks.json`
+- downloads ESDB / SCOWL `en_US` and `en_US-large` 2026.02.25 from `en-wl/wordlist-diff`
+- uses CMUdict as the primary pronounceability filter
+- uses Open English WordNet 2025 for semantically attested fill words and for a curated final-round phrase allowlist
+- removes exact duplicates, spacing-insensitive near duplicates, malformed entries, unsafe or party-awkward words, roman-numeral artifacts, proper-name capitalization, apostrophes, punctuation, and most too-short abbreviation-like entries
+- audits every accepted single word into a 25/50/25 easy/medium/hard split based on clueability under 5-word boards, tight clue-word budgets, stack point risk, pronunciation evidence, source commonness, length, syllables, abstract morphology, inflection noise, and part of speech
+- keeps the money deck small and phrase-only because it draws 10 words per game and unreviewed dictionary phrases get noisy quickly
 
-Do not integrate the full generated file blindly. Review summary counts, sample each deck, then apply the generated `decks` arrays to `lib/words.ts`.
+Raw downloads are cached under `data/words/raw/` and ignored by git. Use `npm run build:words -- --refresh` to force fresh downloads.
+
+Current generated mix:
+
+- `green`: 6,000 easiest single words
+- `yellow`: 27,000 broad standard words used for default bidding
+- `red`: 16,680 longer, abstract, inflected, obscure, or harder-to-clue words
+- `money`: 320 reviewed phrases, split evenly between the original curated party-game seed and curated Open English WordNet phrases
+
+Run the repeatable final audit with:
+
+```bash
+npm run audit:words
+```
 
 ## No-Tag Organization
 
-The active organizer ignores tags. It pools every candidate together, dedupes, filters, and emits only four buckets:
+The review organizer ignores tags. It pools every candidate together, dedupes, filters, and emits only four buckets:
 
 - `green`
 - `yellow`
@@ -46,7 +63,7 @@ Run:
 npm run organize:words -- path/to/candidates.csv path/to/more.txt --output data/words/organized.generated.json
 ```
 
-If no input file is passed, it reorganizes the current bundled bank from `lib/words.ts`.
+If no input file is passed, it reorganizes the current bundled bank from `data/words/word-bank.json`.
 
 Supported input shapes:
 

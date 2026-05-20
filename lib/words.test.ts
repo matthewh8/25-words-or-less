@@ -57,14 +57,15 @@ describe('word bank validation', () => {
   it('summarizes bundled deck counts without double-counting the bidding deck', () => {
     const summary = getWordBankSummary()
 
-    expect(summary.sourceCount).toBeGreaterThanOrEqual(2)
-    expect(summary.deckCounts.green).toBe(1536)
-    expect(summary.deckCounts.yellow).toBe(3406)
-    expect(summary.deckCounts.red).toBe(1129)
-    expect(summary.deckCounts.money).toBe(160)
-    expect(summary.totalPlayableWords).toBe(6231)
+    expect(summary.sourceCount).toBeGreaterThanOrEqual(5)
+    expect(summary.deckCounts.green).toBe(6000)
+    expect(summary.deckCounts.yellow).toBe(27000)
+    expect(summary.deckCounts.red).toBe(16680)
+    expect(summary.deckCounts.money).toBe(320)
+    expect(summary.totalPlayableWords).toBe(50000)
     expect(summary.deckCounts.bidding).toBeGreaterThan(summary.deckCounts.green)
     expect(summary.decks.find(deck => deck.id === 'green')?.sourceIds).toContain('cefr-j-olp')
+    expect(summary.decks.find(deck => deck.id === 'yellow')?.sourceIds).toContain('esdb-en-us-2026-02-25')
   })
 
   it('reports schema, attribution, safety, and generated-word errors', () => {
