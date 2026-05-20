@@ -13,12 +13,12 @@ import {
 } from './wordfreq-utils.mjs'
 
 const DEFAULT_OUTPUT_PATH = 'data/words/word-bank.json'
-const DEFAULT_TARGET_TOTAL = 32000
+const DEFAULT_TARGET_TOTAL = 20000
 const DEFAULT_MONEY_TARGET = 2000
 const SINGLE_DECK_TARGET_WEIGHTS = {
-  green: 10000,
-  yellow: 10000,
-  red: 10000,
+  green: 1,
+  yellow: 1,
+  red: 1,
 }
 const SINGLE_DECK_TARGET_WEIGHT_TOTAL = Object.values(SINGLE_DECK_TARGET_WEIGHTS)
   .reduce((total, weight) => total + weight, 0)
@@ -223,11 +223,81 @@ const BLOCKED_WORDS = new Set([
   'WEAPON',
   'WEAPONRY',
   'WEAPONS',
+  'ARSE',
+  'BOMBARDED',
+  'BOMBARDMENT',
+  'BOMBER',
+  'BOMBERS',
+  'BOMBSHELL',
+  'BLOODBATH',
+  'BLOODED',
+  'BLOODSHED',
+  'BREAST',
+  'BREASTED',
+  'BREASTFEEDING',
+  'BREASTS',
+  'BUGGER',
+  'BULLSHIT',
+  'CERVIX',
+  'COLORECTAL',
+  'ARSENAL',
+  'ARSENIC',
+  'DICKENS',
+  'ENSLAVED',
+  'ESKIMO',
+  'FELON',
+  'FELONIES',
+  'FELONY',
+  'GUNFIRE',
+  'GUNNER',
+  'GUNPOINT',
+  'GUNPOWDER',
+  'GUNSHOT',
+  'GUNSHOTS',
+  'HANDGUN',
+  'HANDGUNS',
+  'HEMORRHAGE',
+  'JERKING',
+  'GUILLOTINE',
+  'KILL',
+  'KILLED',
+  'KILLER',
+  'KILLERS',
+  'KILLING',
+  'KILLINGS',
+  'KILLS',
+  'MURDEROUS',
+  'NUCLEAR',
+  'ORGASM',
+  'ORGASMS',
+  'ORIENTAL',
+  'PAINKILLERS',
+  'RAPES',
+  'RETARDED',
+  'SEXIEST',
+  'SEXISM',
+  'SEXIST',
+  'SEXUALITY',
+  'SEXY',
+  'SHITTING',
+  'SHITTY',
+  'SHOTGUN',
+  'SHOTGUNS',
+  'SLAVES',
+  'SEXTON',
+  'SPANK',
+  'SPANKING',
+  'UNISEX',
   'WHORE',
 ])
 
 const BLOCKED_PATTERNS = [
   /^PEDOPHIL/,
+  /FUCK/,
+  /PORN/,
+  /SHIT/,
+  /^HOMOSEXUAL/,
+  /^RETARD/,
 ]
 
 const EASY_WORDS = new Set([
@@ -431,7 +501,7 @@ function auditDifficultyScore(candidate) {
   else if (candidate.wordfreqZipf >= 3.7) score -= 2
   else if (candidate.wordfreqZipf >= 3) score -= 1
   else if (candidate.wordfreqZipf < MIN_AVERAGE_ZIPF) score += 4
-  else if (candidate.wordfreqZipf < 2.8) score += 2
+  else if (candidate.wordfreqZipf < MIN_AVERAGE_ZIPF + 0.3) score += 2
   if (candidate.inDefault) score -= 1
   if (candidate.inLarge && !candidate.inDefault) score += 1.5
   if (!candidate.cmuPhones) score += 2
@@ -462,7 +532,7 @@ function auditDifficultyScore(candidate) {
 
   if (suffixHit(word, ABSTRACT_SUFFIXES)) score += 3
   if (suffixHit(word, HARD_SUFFIXES)) score += 4
-  if (!candidate.seedDecks.size && word.length <= 5 && word.endsWith('S')) score += 1.5
+  if (!candidate.seedDecks.size && word.length <= 5 && word.endsWith('S')) score += 0.25
   if (word.endsWith('LY') && word.length > 5) score += 1.5
   if (word.endsWith('OUS') && word.length > 6) score += 1
   if (word.endsWith('IVE') && word.length > 6) score += 1
@@ -481,7 +551,7 @@ function qualityScore(candidate) {
   let score = 0
   if (!candidate.seedDecks.size) score += 1
   if (candidate.wordfreqZipf < MIN_AVERAGE_ZIPF) score += 8
-  else if (candidate.wordfreqZipf < 2.8) score += 3
+  else if (candidate.wordfreqZipf < MIN_AVERAGE_ZIPF + 0.3) score += 1
   else if (candidate.wordfreqZipf >= 3.5) score -= 1
   if (!candidate.cmuPhones) score += 4
   if (!candidate.wordNetPos.size) score += 2
@@ -500,10 +570,15 @@ function hasNicheDefinition(candidate) {
     /^a language spoken/i,
     /genus [A-Z]/,
     /family [A-Z]/,
+    /\bbreed of\b/i,
     /Vishnu/i,
     /Hindu deity/i,
     /Buddhist/i,
   ].some(pattern => pattern.test(candidate.definition))
+}
+
+function hasCommonSource(candidate) {
+  return candidate.inDefault || EASY_WORDS.has(candidate.word)
 }
 
 async function downloadIfNeeded(targetPath, url) {
@@ -581,6 +656,21 @@ function cleanDefinition(gloss) {
   const cut = definition.slice(0, 180)
   const lastSpace = cut.lastIndexOf(' ')
   return `${cut.slice(0, lastSpace > 120 ? lastSpace : 180).trim()}...`
+}
+
+function technicalDefinitionPenalty(definition) {
+  return [
+    /^a member of (?:a|an|the) .* people/i,
+    /^a group of (?:people|languages)/i,
+    /^a language spoken/i,
+    /genus [A-Z]/,
+    /family [A-Z]/,
+    /\bbreed of\b/i,
+    /\bspecies\b/i,
+    /Vishnu/i,
+    /Hindu deity/i,
+    /Buddhist/i,
+  ].filter(pattern => pattern.test(definition)).length
 }
 
 function sensePosAliases(posNumber) {
@@ -733,7 +823,8 @@ function parseOpenEnglishWordNet(zipPath) {
     candidates.sort((a, b) => {
       const aRank = senseRanks.get(`${word}:${a.offset}:${a.posCode}`) ?? 999
       const bRank = senseRanks.get(`${word}:${b.offset}:${b.posCode}`) ?? 999
-      return aRank - bRank
+      return technicalDefinitionPenalty(a.definition) - technicalDefinitionPenalty(b.definition)
+        || aRank - bRank
         || a.definition.length - b.definition.length
         || a.sequence - b.sequence
     })
@@ -946,6 +1037,7 @@ const allEligibleSingles = []
 for (const candidate of candidates.byWord.values()) {
   if (
     (candidate.wordfreqZipf >= MIN_AVERAGE_ZIPF || EASY_WORDS.has(candidate.word))
+    && hasCommonSource(candidate)
     && candidate.definition
     && !hasNicheDefinition(candidate)
     && (candidate.seedDecks.size || candidate.cmuPhones || candidate.wordNetPos.size)
@@ -1045,7 +1137,7 @@ const sources = [
     url: 'https://github.com/rspeer/wordfreq',
     licenseNote: 'Apache-2.0 code; included frequency data is redistributable with Creative Commons Attribution-ShareAlike 4.0 and related attribution requirements.',
     importedAt: '2026-05-20',
-    transform: `Used only as a Zipf-frequency signal. Non-seed playable words must score at least ${MIN_AVERAGE_ZIPF}; money-round words must score at least ${MIN_MONEY_ZIPF}.`,
+    transform: `Used only as a Zipf-frequency signal. Playable words must score at least ${MIN_AVERAGE_ZIPF}; money-round words must score at least ${MIN_MONEY_ZIPF}.`,
   },
 ]
 

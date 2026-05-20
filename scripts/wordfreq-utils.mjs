@@ -5,8 +5,8 @@ import path from 'node:path'
 
 export const WORDFREQ_VERSION = '3.1.1'
 export const WORDFREQ_SOURCE_ID = 'wordfreq-3-1-1'
-export const MIN_AVERAGE_ZIPF = 2.5
-export const MIN_MONEY_ZIPF = 2.8
+export const MIN_AVERAGE_ZIPF = 3
+export const MIN_MONEY_ZIPF = 3.15
 
 const RAW_DIR = 'data/words/raw'
 const WORDFREQ_PACKAGE_DIR = path.join(RAW_DIR, `wordfreq-python-${WORDFREQ_VERSION}`)

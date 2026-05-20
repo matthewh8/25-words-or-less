@@ -67,6 +67,16 @@
       "risk": "Medium. Respect attribution and avoid flattening its data into attribution-free CSV."
     },
     {
+      "id": "word-prevalence-62k",
+      "name": "Word prevalence norms for 62K English lemmas",
+      "url": "https://osf.io/g4xrt/",
+      "license": "CC BY-NC-SA 4.0",
+      "licenseUrl": "https://osf.io/download/z7fgj/",
+      "recommendedUse": "Research-only commonness validation unless the project intentionally accepts NonCommercial and ShareAlike restrictions",
+      "signals": ["percentage-known", "age-group-prevalence"],
+      "risk": "High for bundled runtime data because the published OSF materials are NonCommercial ShareAlike."
+    },
+    {
       "id": "datamuse",
       "name": "Datamuse API",
       "url": "https://www.datamuse.com/api/",

@@ -15,7 +15,9 @@ Use open sources as candidate pools, not blind playable dumps:
 
 Current source notes live in `open-word-sources.json`.
 
-## Runtime 32,000-Entry Bank
+Research note: word prevalence norms are the closest published signal for "would an average person know this word," because they measure recognition across many participants. The available 62K English lemma dataset is useful for manual research, but its OSF distribution is CC BY-NC-SA 4.0, so this committed runtime bank does not ingest it. The repeatable build instead uses redistributable source-list membership plus wordfreq Zipf thresholds: generated color-deck words must be at least Zipf 3.0, and money-round words must be at least Zipf 3.15.
+
+## Runtime 20,000-Entry Bank
 
 The committed runtime bank is generated with:
 
@@ -23,13 +25,14 @@ The committed runtime bank is generated with:
 npm run build:words
 ```
 
-The builder writes `data/words/word-bank.json` with exactly 32,000 playable entries:
+The builder writes `data/words/word-bank.json` with exactly 20,000 playable entries:
 
 - starts from the safe hand-reviewed seed entries in `data/words/seed-decks.json`
 - downloads ESDB / SCOWL `en_US` and `en_US-large` 2026.02.25 from `en-wl/wordlist-diff`
 - uses CMUdict as the primary pronounceability filter
 - uses Open English WordNet 2025 for semantically attested fill words and short gloss definitions
 - uses wordfreq Zipf frequency as a commonness gate so generated words should be recognizable to an average player
+- requires generated playable words to appear in the default American English source list unless they are one of the tiny hand-reviewed easy words
 - removes exact duplicates, spacing-insensitive near duplicates, malformed entries, unsafe or party-awkward words, niche low-frequency definition patterns, roman-numeral artifacts, proper-name capitalization, apostrophes, punctuation, and most too-short abbreviation-like entries
 - audits every accepted single word into a green/yellow/red/money split based on clueability under 5-word boards, tight clue-word budgets, stack point risk, pronunciation evidence, source commonness, length, syllables, abstract morphology, inflection noise, and part of speech
 - keeps the money deck smaller than the color decks, but every money entry is still one distinct word
@@ -38,9 +41,9 @@ Raw downloads are cached under `data/words/raw/` and ignored by git. Use `npm ru
 
 Current generated mix:
 
-- `green`: 10,000 easiest single words
-- `yellow`: 10,000 broad standard words used for default bidding
-- `red`: 10,000 longer, abstract, inflected, or harder-to-clue words
+- `green`: 6,000 easiest single words
+- `yellow`: 6,000 broad standard words used for default bidding
+- `red`: 6,000 longer, abstract, inflected, or harder-to-clue words
 - `money`: 2,000 clean, common, pronounceable single words reserved for the money round
 
 Every generated playable word also has a short Open English WordNet definition stored under the top-level `definitions` object in `word-bank.json`. The deal API sends only the definitions for the words in the current deal.

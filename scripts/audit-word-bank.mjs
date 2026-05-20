@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 import { readFile } from 'node:fs/promises'
-import { MIN_AVERAGE_ZIPF, loadWordfreqScores } from './wordfreq-utils.mjs'
+import { MIN_AVERAGE_ZIPF, MIN_MONEY_ZIPF, loadWordfreqScores } from './wordfreq-utils.mjs'
 
 const WORD_BANK_PATH = 'data/words/word-bank.json'
 
 const EXPECTED_COUNTS = {
-  green: 10000,
-  yellow: 10000,
-  red: 10000,
+  green: 6000,
+  yellow: 6000,
+  red: 6000,
   money: 2000,
 }
 const EXPECTED_TOTAL = Object.values(EXPECTED_COUNTS).reduce((total, count) => total + count, 0)
@@ -48,11 +48,26 @@ const BLOCKED_WORDS = new Set([
   'SUICIDES', 'SUICIDAL', 'SUPREMACIST', 'SUPREMACISTS',
   'TERRORISM', 'TERRORIST', 'TERRORISTS', 'TORTURE', 'TORTURED',
   'TORTURES', 'TORTURING', 'TRAFFICKER', 'TRAFFICKERS',
-  'TRAFFICKING', 'VIBRATOR', 'VIBRATORS', 'WEAPON', 'WEAPONRY', 'WEAPONS', 'WHORE',
+  'TRAFFICKING', 'VIBRATOR', 'VIBRATORS', 'WEAPON', 'WEAPONRY', 'WEAPONS',
+  'ARSE', 'ARSENAL', 'ARSENIC', 'BOMBARDED', 'BOMBARDMENT', 'BOMBER', 'BOMBERS', 'BOMBSHELL',
+  'BLOODBATH', 'BLOODED', 'BLOODSHED',
+  'BREAST', 'BREASTED', 'BREASTFEEDING', 'BREASTS', 'BUGGER', 'BULLSHIT',
+  'CERVIX', 'COLORECTAL', 'DICKENS', 'ENSLAVED', 'ESKIMO', 'FELON',
+  'FELONIES', 'FELONY', 'GUNFIRE', 'GUNNER', 'GUNPOINT', 'GUNPOWDER',
+  'GUNSHOT', 'GUNSHOTS', 'GUILLOTINE', 'HANDGUN', 'HANDGUNS', 'HEMORRHAGE', 'JERKING',
+  'KILL', 'KILLED', 'KILLER', 'KILLERS', 'KILLING', 'KILLINGS', 'KILLS',
+  'MURDEROUS', 'NUCLEAR', 'ORGASM', 'ORGASMS', 'ORIENTAL', 'PAINKILLERS',
+  'RAPES', 'RETARDED', 'SEXIEST', 'SEXISM', 'SEXIST', 'SEXUALITY', 'SEXY',
+  'SHITTING', 'SHITTY', 'SHOTGUN', 'SHOTGUNS', 'SLAVES', 'SEXTON', 'SPANK', 'SPANKING', 'UNISEX', 'WHORE',
 ])
 
 const BLOCKED_PATTERNS = [
   /^PEDOPHIL/,
+  /FUCK/,
+  /PORN/,
+  /SHIT/,
+  /^HOMOSEXUAL/,
+  /^RETARD/,
 ]
 
 function cleanWord(value) {
@@ -103,6 +118,7 @@ function hasNicheDefinition(word, definition, wordfreqScores) {
     /^a language spoken/i,
     /genus [A-Z]/,
     /family [A-Z]/,
+    /\bbreed of\b/i,
     /Vishnu/i,
     /Hindu deity/i,
     /Buddhist/i,
@@ -228,6 +244,15 @@ assert(
   `found ${lowFrequencyWords.length} low-frequency words below Zipf ${MIN_AVERAGE_ZIPF}: ${lowFrequencyWords.slice(0, 20).map(({ word, zipf }) => `${word}:${zipf}`).join(', ')}`,
   errors
 )
+const lowFrequencyMoneyWords = money
+  .map(word => ({ word, zipf: wordfreqScores.get(word) ?? 0 }))
+  .filter(({ zipf }) => zipf < MIN_MONEY_ZIPF)
+  .sort((a, b) => a.zipf - b.zipf || a.word.localeCompare(b.word))
+assert(
+  lowFrequencyMoneyWords.length === 0,
+  `found ${lowFrequencyMoneyWords.length} money words below Zipf ${MIN_MONEY_ZIPF}: ${lowFrequencyMoneyWords.slice(0, 20).map(({ word, zipf }) => `${word}:${zipf}`).join(', ')}`,
+  errors
+)
 
 if (errors.length) {
   console.error(`Word-bank audit failed with ${errors.length} issue(s):`)
@@ -248,6 +273,8 @@ console.log(JSON.stringify({
   frequency: {
     minZipf: Math.min(...[...wordfreqScores.values()]),
     threshold: MIN_AVERAGE_ZIPF,
+    moneyThreshold: MIN_MONEY_ZIPF,
+    moneyMinZipf: Math.min(...money.map(word => wordfreqScores.get(word) ?? 0)),
   },
   difficultyShape: {
     averageLetters: {
