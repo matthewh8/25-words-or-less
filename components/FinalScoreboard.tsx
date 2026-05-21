@@ -1,8 +1,7 @@
 'use client'
 
 import type { GameState } from '@/lib/gameState'
-import TeamNameBlock, { teamDisplayName, teamPlayerLine } from './TeamNameBlock'
-import TeamStatusBar from './TeamStatusBar'
+import TeamNameBlock from './TeamNameBlock'
 
 interface Props {
   state: GameState
@@ -27,52 +26,48 @@ export default function FinalScoreboard({ state, onRestart }: Props) {
           <h2 className="text-4xl font-black uppercase leading-[0.9] tracking-normal text-white md:text-6xl">
             {tied ? "It's a tie!" : (
               <>
-                <span className="block truncate">{teamDisplayName(teams[winner], 32)}</span>
+                <span className="block truncate">{teams[winner].name}</span>
                 <span className="block">wins!</span>
               </>
             )}
           </h2>
-          {!tied && teamDisplayName(teams[winner], 32) === teams[winner].name && (
-            <p className="mt-2 truncate text-xs font-bold text-white/40 md:text-sm">
-              {teamPlayerLine(teams[winner].players, 'No players assigned', 5, 36)}
-            </p>
-          )}
           {moneyWon && (
             <p className="text-[#ffd23f]/80 text-sm mt-3">Money Round jackpot</p>
           )}
         </div>
 
-        <div className="mb-4 md:mb-6">
-          <TeamStatusBar
-            teams={teams}
-            activeTeam={tied ? undefined : winner}
-            activeLabel="Winner"
-            compact
-          />
-        </div>
-
         <div className="mb-4 grid gap-2 md:mb-8 md:grid-cols-2 md:gap-3">
-          {sorted.map(({ score, index, ...team }, rank) => (
-            <div
-              key={index}
-              className={`flex min-w-0 items-center justify-between gap-3 rounded-lg px-3 py-3 transition-all sm:px-4 sm:py-4 md:px-5 md:py-6 ${
-                rank === 0 && !tied
-                  ? 'bg-[#ffd23f]/10 border border-[#ffd23f]/30'
-                  : 'bg-[#141826] border border-white/10'
-              }`}
-            >
-              <div className="flex min-w-0 items-center gap-3">
-                <span className={`h-3 w-3 rounded-full ${index === 0 ? 'bg-[#ff3a6d]' : 'bg-[#3a8bff]'}`} />
-                <TeamNameBlock
-                  team={team}
-                  nameClassName={`text-lg font-black uppercase tracking-normal sm:text-xl md:text-2xl ${rank === 0 && !tied ? 'text-[#ffd23f]' : 'text-white'}`}
-                  playersClassName="mt-0.5 text-[10px] font-bold text-white/35 md:text-xs"
-                  maxChars={34}
-                />
+          {sorted.map(({ score, index, ...team }, rank) => {
+            const isWinner = rank === 0 && !tied
+            return (
+              <div
+                key={index}
+                className={`flex min-w-0 items-center justify-between gap-3 rounded-lg px-3 py-3 transition-all sm:px-4 sm:py-4 md:px-5 md:py-6 ${
+                  isWinner
+                    ? 'bg-[#ffd23f]/10 border border-[#ffd23f]/30'
+                    : 'bg-[#141826] border border-white/10'
+                }`}
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className={`h-3 w-3 rounded-full ${index === 0 ? 'bg-[#ff3a6d]' : 'bg-[#3a8bff]'}`} />
+                  <TeamNameBlock
+                    team={team}
+                    nameClassName={`text-lg font-black uppercase tracking-normal sm:text-xl md:text-2xl ${isWinner ? 'text-[#ffd23f]' : 'text-white'}`}
+                    playersClassName="mt-0.5 text-[10px] font-bold text-white/35 md:text-xs"
+                    maxChars={34}
+                  />
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  {isWinner && (
+                    <span className="rounded-sm bg-[#ffd23f] px-1.5 py-0.5 text-[8px] font-black uppercase text-[#0a0d14]">
+                      Winner
+                    </span>
+                  )}
+                  <span className="text-3xl font-black tabular-nums tracking-normal text-white sm:text-4xl md:text-5xl">{score.toLocaleString()}</span>
+                </div>
               </div>
-              <span className="shrink-0 text-3xl font-black tabular-nums tracking-normal text-white sm:text-4xl md:text-5xl">{score.toLocaleString()}</span>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         <button

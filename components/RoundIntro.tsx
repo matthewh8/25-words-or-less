@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import type { GameState, GameAction } from '@/lib/gameState'
 import { winningBidAmount } from '@/lib/gameState'
-import Scoreboard from './Scoreboard'
 import TeamStatusBar from './TeamStatusBar'
 import TimeConfigurator from './TimeConfigurator'
 
@@ -83,10 +82,6 @@ export default function RoundIntro({ state, dispatch }: Props) {
             caption={isBiddingRound ? 'Both captains bid this round' : 'Picks first this round'}
             compact
           />
-        </div>
-
-        <div className="mt-2 md:mt-3">
-          <Scoreboard teams={teams} compact />
         </div>
 
         <button

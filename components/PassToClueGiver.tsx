@@ -2,7 +2,6 @@
 
 import type { GameState } from '@/lib/gameState'
 import TeamStatusBar from './TeamStatusBar'
-import TeamNameBlock from './TeamNameBlock'
 
 interface Props {
   state: GameState
@@ -28,13 +27,6 @@ export default function PassToClueGiver({ state, onReady }: Props) {
         </div>
       </div>
 
-      <TeamNameBlock
-        team={teams[cluing.cluingTeam]}
-        className="mb-3 text-center"
-        nameClassName="mono-label text-[#ff3a6d] text-xs font-bold"
-        playersClassName="mt-1 max-w-sm text-xs font-bold text-white/35"
-        maxChars={34}
-      />
       <h2 className="text-5xl font-black text-white text-center leading-[0.9] tracking-normal mb-2 uppercase">
         Guessers,<br />
         <span className="text-[#ff3a6d]">eyes closed</span>

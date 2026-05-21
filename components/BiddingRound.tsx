@@ -4,10 +4,9 @@ import { useState } from 'react'
 import type { GameState, GameAction } from '@/lib/gameState'
 import { winningBidAmount } from '@/lib/gameState'
 import { useActionInterval } from '@/lib/useActionInterval'
-import Scoreboard from './Scoreboard'
 import Timer from './Timer'
 import TeamStatusBar from './TeamStatusBar'
-import TeamNameBlock, { teamDisplayName } from './TeamNameBlock'
+import TeamNameBlock from './TeamNameBlock'
 
 interface Props {
   state: GameState
@@ -29,8 +28,8 @@ export default function BiddingRound({ state, dispatch }: Props) {
   if (!bid) return null
 
   const { words, currentBid, activeBidder, biddingTeam, biddingTimeLeft } = bid
-  const activeName = teamDisplayName(teams[activeBidder])
-  const concedeName = teamDisplayName(teams[biddingTeam])
+  const activeName = teams[activeBidder].name
+  const concedeName = teams[biddingTeam].name
   const winBid = winningBidAmount(mode)
   const timeExpired = biddingTimeLeft <= 0
 
@@ -67,12 +66,10 @@ export default function BiddingRound({ state, dispatch }: Props) {
     <div className="flex h-dvh flex-col items-center justify-center overflow-hidden bg-[#0a0d14] p-2 text-white md:p-8">
       <div className="grid h-full w-full max-w-6xl grid-rows-[auto_1fr] gap-2 fade-in-up md:h-auto md:gap-4">
 
-        {/* Header */}
         <div className="flex items-center justify-between gap-3">
           <span className="mono-label text-[#ffd23f] text-xs font-bold">
             Bidding {state.round1Contests + 1}/{mode.bidding.contests}
           </span>
-          <Scoreboard teams={teams} compact />
         </div>
 
         <TeamStatusBar
@@ -178,7 +175,7 @@ export default function BiddingRound({ state, dispatch }: Props) {
                 <div className="flex flex-wrap gap-1.5">
                   {history.map((h, i) => (
                     <span key={`${h.team}-${h.amount}-${i}`} className="rounded-full border border-white/10 px-2 py-1 font-mono text-[10px] text-white/55">
-                      {teamDisplayName(teams[h.team]).slice(0, 1).toUpperCase()} / {h.amount}
+                      {teams[h.team].name.slice(0, 1).toUpperCase()} / {h.amount}
                     </span>
                   ))}
                 </div>

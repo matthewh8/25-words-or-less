@@ -2,8 +2,6 @@
 
 import { useState } from 'react'
 import type { GameState, GameAction } from '@/lib/gameState'
-import Scoreboard from './Scoreboard'
-import TeamNameBlock, { teamDisplayName } from './TeamNameBlock'
 import TeamStatusBar from './TeamStatusBar'
 import TimeConfigurator from './TimeConfigurator'
 import WordRevealList from './WordRevealList'
@@ -35,7 +33,7 @@ export default function MoneyRound({ state, dispatch }: Props) {
           </div>
 
           <div className="grid gap-2 md:gap-5 lg:grid-cols-[1fr_360px]">
-            <div className="space-y-2 rounded-lg border border-white/10 bg-[#141826] p-3 md:space-y-3 md:p-5">
+            <div className="rounded-lg border border-white/10 bg-[#141826] p-3 md:p-5">
               <div className="grid grid-cols-2 gap-2 text-center md:gap-3">
                 <div className="rounded-md border border-white/10 bg-[#0f1320] p-2 md:p-3">
                   <div className="text-2xl font-black text-white md:text-3xl">{mode.money.wordCount}</div>
@@ -45,17 +43,6 @@ export default function MoneyRound({ state, dispatch }: Props) {
                   <div className="text-2xl font-black text-white md:text-3xl">{mode.money.wordLimit}</div>
                   <div className="text-[10px] text-white/35 md:text-xs">clue word limit</div>
                 </div>
-              </div>
-
-              <div className="rounded-md border border-[#ffd23f]/20 bg-[#ffd23f]/10 p-2 text-center md:p-3">
-                <p className="mono-label mb-1 text-[9px] text-[#ffd23f]/80 md:text-[10px]">Playing for</p>
-                <TeamNameBlock
-                  team={teams[winnerTeam]}
-                  nameClassName="text-base font-black text-white md:text-lg"
-                  playersClassName="mt-1 text-[10px] font-bold leading-tight text-white/45 md:text-xs"
-                  maxPlayers={4}
-                  maxChars={32}
-                />
               </div>
             </div>
 
@@ -75,12 +62,9 @@ export default function MoneyRound({ state, dispatch }: Props) {
               teams={teams}
               activeTeam={winnerTeam}
               activeLabel="Money"
+              caption="Playing for the jackpot"
               compact
             />
-          </div>
-
-          <div className="mt-2 md:mt-3">
-            <Scoreboard teams={teams} highlight={winnerTeam} compact />
           </div>
 
           <button
@@ -102,15 +86,8 @@ export default function MoneyRound({ state, dispatch }: Props) {
     const correct = revealGuessed.filter(Boolean).length
     return (
       <div className={`flex h-dvh flex-col items-center justify-center overflow-hidden p-3 text-white md:p-8 ${won ? 'bg-[#07130d]' : 'bg-[#0a0d14]'}`}>
-        <div className="grid h-full w-full max-w-5xl grid-rows-[1fr_auto] gap-2 fade-in-up md:h-auto md:gap-5">
-          <TeamStatusBar
-            teams={teams}
-            activeTeam={winnerTeam}
-            activeLabel="Money"
-            compact
-          />
-
-          <div className="grid min-h-0 gap-2 lg:grid-cols-[0.95fr_1.05fr] lg:gap-5">
+        <div className="w-full max-w-5xl fade-in-up">
+          <div className="grid gap-2 md:gap-5 lg:grid-cols-[0.95fr_1.05fr]">
             <div className={`rounded-lg p-3 md:p-8 ${won ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-[#141826] border border-white/10'}`}>
               <p className="mono-label mb-2 text-[10px] text-white/45 md:mb-4">Money result</p>
               <div className={`mb-2 text-4xl font-black uppercase leading-[0.85] md:mb-4 md:text-8xl ${won ? 'text-[#2de584]' : 'text-white'}`}>
@@ -118,21 +95,9 @@ export default function MoneyRound({ state, dispatch }: Props) {
               </div>
               <div className="text-sm text-white/55 md:text-lg">
                 {won
-                  ? `${teamDisplayName(teams[winnerTeam])} got all ${mode.money.wordCount}!`
-                  : `${correct}/${mode.money.wordCount} words / ${teamDisplayName(teams[winnerTeam])} still wins`
+                  ? `${teams[winnerTeam].name} got all ${mode.money.wordCount}!`
+                  : `${correct}/${mode.money.wordCount} words / ${teams[winnerTeam].name} still wins`
                 }
-              </div>
-              {teamDisplayName(teams[winnerTeam], 32) === teams[winnerTeam].name && (
-                <TeamNameBlock
-                  team={teams[winnerTeam]}
-                  className="mt-2"
-                  nameClassName="sr-only"
-                  playersClassName="text-xs font-bold text-white/35"
-                  maxChars={32}
-                />
-              )}
-              <div className="mt-3 md:mt-6">
-                <Scoreboard teams={teams} highlight={winnerTeam} compact />
               </div>
             </div>
 
@@ -145,9 +110,18 @@ export default function MoneyRound({ state, dispatch }: Props) {
             />
           </div>
 
+          <div className="mt-2 md:mt-5">
+            <TeamStatusBar
+              teams={teams}
+              activeTeam={winnerTeam}
+              activeLabel="Money"
+              compact
+            />
+          </div>
+
           <button
             onClick={() => dispatch({ type: 'NEXT_AFTER_RESULT' })}
-            className="w-full rounded-md bg-[#ffd23f] py-3.5 text-base font-black uppercase tracking-normal text-[#0a0d14] transition-all hover:bg-[#ffe071] active:scale-95 md:py-4"
+            className="mt-2 w-full rounded-md bg-[#ffd23f] py-3.5 text-base font-black uppercase tracking-normal text-[#0a0d14] transition-all hover:bg-[#ffe071] active:scale-95 md:mt-5 md:py-4"
           >
             Final Scores
           </button>

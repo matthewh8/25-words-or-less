@@ -10,8 +10,6 @@ import { matchSpeechToTarget, shouldAutoAcceptSpeechMatch } from '@/lib/speech'
 import { getSpeechRecognitionConstructor, isSpeechRecognitionSupported, stopSpeechRecognitionSafely } from '@/lib/speechBrowser'
 import { useActionInterval } from '@/lib/useActionInterval'
 import Timer from './Timer'
-import Scoreboard from './Scoreboard'
-import TeamNameBlock from './TeamNameBlock'
 import TeamStatusBar from './TeamStatusBar'
 
 interface Props {
@@ -199,16 +197,11 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-[#0a0d14] text-white">
 
-      {/* Top bar */}
-      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-3 pb-2 pt-3 md:gap-4 md:px-8 md:pb-3 md:pt-4">
-        <div className="flex items-center gap-2">
+      <div className="shrink-0 border-b border-white/10 px-3 pb-2 pt-3 md:px-8 md:pb-3 md:pt-4">
+        <div className="mb-2 flex items-center gap-2">
           <div className="h-2 w-2 rounded-full" style={{ background: accent }} />
           <span className="mono-label text-white/45 text-[10px] font-semibold">{cluing.label}</span>
         </div>
-        <Scoreboard teams={teams} compact />
-      </div>
-
-      <div className="shrink-0 border-b border-white/10 px-2 py-2 md:px-8">
         <TeamStatusBar
           teams={teams}
           activeTeam={cluingTeam}
@@ -344,18 +337,10 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
 
         {/* Right: current word */}
         <div className="order-1 flex min-h-0 flex-col rounded-lg border border-white/10 bg-[#141826] p-3 md:order-2 md:min-h-[320px] md:p-6 xl:min-h-[360px] xl:p-8">
-          <div className="mb-2 flex min-w-0 items-center justify-between gap-3 md:mb-6">
+          <div className="mb-2 flex min-w-0 items-center gap-3 md:mb-6">
             <p className="mono-label shrink-0 text-white/35 text-[10px]">
               {Math.min(currentWordIndex + 1, words.length)} of {words.length}
             </p>
-            <TeamNameBlock
-              team={teams[cluingTeam]}
-              className="text-right"
-              nameClassName="mono-label text-white/35 text-[10px]"
-              playersClassName="mt-0.5 text-[9px] font-bold text-white/25"
-              maxPlayers={3}
-              maxChars={24}
-            />
           </div>
 
           <div className="flex flex-1 flex-col items-center justify-center text-center">

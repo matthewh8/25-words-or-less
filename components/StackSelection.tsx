@@ -1,8 +1,6 @@
 'use client'
 
 import type { GameState, GameAction } from '@/lib/gameState'
-import Scoreboard from './Scoreboard'
-import TeamNameBlock from './TeamNameBlock'
 import TeamStatusBar from './TeamStatusBar'
 
 interface Props {
@@ -21,15 +19,8 @@ export default function StackSelection({ state, dispatch }: Props) {
     <div className="flex h-dvh flex-col items-center justify-center overflow-hidden bg-[#0a0d14] p-3 text-white md:p-8">
       <div className="w-full max-w-4xl fade-in-up">
 
-        <div className="mb-4 flex items-center justify-between gap-4 md:mb-8">
-          <div>
-            <p className="mono-label text-[#ffd23f] text-xs font-bold">Round {currentRound}</p>
-            <p className="text-white/40 text-xs">{turnsLeft} turn{turnsLeft !== 1 ? 's' : ''} left</p>
-          </div>
-          <Scoreboard teams={teams} compact />
-        </div>
-
         <div className="mb-3 md:mb-5">
+          <p className="mono-label mb-2 text-[#ffd23f] text-xs font-bold">Round {currentRound} / {turnsLeft} turn{turnsLeft !== 1 ? 's' : ''} left</p>
           <TeamStatusBar
             teams={teams}
             activeTeam={team}
@@ -38,13 +29,6 @@ export default function StackSelection({ state, dispatch }: Props) {
           />
         </div>
 
-        <TeamNameBlock
-          team={teams[team]}
-          className="mb-1 md:mb-2"
-          nameClassName="mono-label text-[10px] text-white/45"
-          playersClassName="mt-0.5 text-[10px] font-bold text-white/30"
-          maxChars={32}
-        />
         <h2 className="mb-3 text-4xl font-black uppercase leading-[0.9] text-white md:mb-6 md:text-6xl">Pick a stack</h2>
 
         <div className="grid grid-cols-3 gap-2 md:gap-3">

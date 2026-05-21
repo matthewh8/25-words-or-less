@@ -1,7 +1,6 @@
 'use client'
 
 import type { GameState } from '@/lib/gameState'
-import TeamNameBlock from './TeamNameBlock'
 import TeamStatusBar from './TeamStatusBar'
 
 interface Props {
@@ -32,19 +31,6 @@ export default function PassToBidders({ state, onReady }: Props) {
       <p className="text-white/40 text-sm text-center mt-4 max-w-xs">
         One captain from each team stays at the screen. Everyone else looks away.
       </p>
-      <div className="mt-3 grid w-full grid-cols-2 gap-2">
-        {teams.map((team, index) => (
-          <div key={`${team.name}-${index}`} className="min-w-0 rounded-md border border-white/10 bg-white/[0.03] p-2 text-center">
-            <TeamNameBlock
-              team={team}
-              nameClassName="text-xs font-black uppercase text-white/65"
-              playersClassName="mt-1 text-[10px] font-bold text-white/35"
-              maxPlayers={3}
-              maxChars={24}
-            />
-          </div>
-        ))}
-      </div>
 
       <div className="mt-5 w-full">
         <TeamStatusBar teams={teams} caption="Captains from both teams stay at the screen" compact />

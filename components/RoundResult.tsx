@@ -1,8 +1,6 @@
 'use client'
 
 import type { GameState, GameAction } from '@/lib/gameState'
-import Scoreboard from './Scoreboard'
-import TeamNameBlock, { teamDisplayName } from './TeamNameBlock'
 import TeamStatusBar from './TeamStatusBar'
 import WordRevealList from './WordRevealList'
 
@@ -28,46 +26,22 @@ export default function RoundResult({ state, dispatch }: Props) {
     ? allCorrect ? 'Done!' : "Didn't make it"
     : allCorrect ? 'Perfect!' : `${correct} of ${total}`
 
-  const awardName = teamDisplayName(teams[awardTeam])
   const subline = isBid
     ? allCorrect
-      ? `${awardName} gets +${points.toLocaleString()} pts`
-      : points > 0 ? `${awardName} gets +${points.toLocaleString()} pts` : 'No points awarded'
-    : `+${points.toLocaleString()} pts for ${awardName}`
+      ? `${teams[awardTeam].name} gets +${points.toLocaleString()} pts`
+      : points > 0 ? `${teams[awardTeam].name} gets +${points.toLocaleString()} pts` : 'No points awarded'
+    : `+${points.toLocaleString()} pts for ${teams[awardTeam].name}`
 
   return (
     <div className="flex h-dvh flex-col items-center justify-center overflow-hidden bg-[#0a0d14] p-3 text-white md:p-8">
-      <div className="grid h-full w-full max-w-5xl grid-rows-[1fr_auto] gap-2 fade-in-up md:h-auto md:gap-5">
-        <TeamStatusBar
-          teams={teams}
-          activeTeam={points > 0 ? awardTeam : lastResult.team}
-          activeLabel={points > 0 ? 'Scored' : 'Last up'}
-          compact
-        />
-
-        <div className="grid min-h-0 gap-2 lg:grid-cols-[0.95fr_1.05fr] lg:gap-5">
+      <div className="w-full max-w-5xl fade-in-up">
+        <div className="grid gap-2 md:gap-5 lg:grid-cols-[0.95fr_1.05fr]">
           <div className={`rounded-lg p-3 md:p-8 ${
             allCorrect ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-[#141826] border border-white/10'
           }`}>
             <p className="mono-label mb-2 text-[10px] text-white/45 md:mb-4">{isBid ? 'Bid result' : 'Round result'}</p>
             <div className={`mb-2 text-4xl font-black uppercase leading-[0.85] md:mb-4 md:text-8xl ${allCorrect ? 'text-[#2de584]' : 'text-white'}`}>{headline}</div>
             <div className="text-sm text-white/55 md:text-lg">{subline}</div>
-            {(() => {
-              const focusTeam = teams[points > 0 ? awardTeam : lastResult.team]
-              if (teamDisplayName(focusTeam, 32) !== focusTeam.name) return null
-              return (
-                <TeamNameBlock
-                  team={focusTeam}
-                  className="mt-2"
-                  nameClassName="sr-only"
-                  playersClassName="text-xs font-bold text-white/35"
-                  maxChars={32}
-                />
-              )
-            })()}
-            <div className="mt-3 md:mt-6">
-              <Scoreboard teams={teams} highlight={points > 0 ? awardTeam : undefined} compact />
-            </div>
           </div>
 
           <WordRevealList
@@ -78,9 +52,18 @@ export default function RoundResult({ state, dispatch }: Props) {
           />
         </div>
 
+        <div className="mt-2 md:mt-5">
+          <TeamStatusBar
+            teams={teams}
+            activeTeam={points > 0 ? awardTeam : lastResult.team}
+            activeLabel={points > 0 ? 'Scored' : 'Last up'}
+            compact
+          />
+        </div>
+
         <button
           onClick={() => dispatch({ type: 'NEXT_AFTER_RESULT' })}
-          className="w-full rounded-md bg-[#ffd23f] py-3.5 text-base font-black uppercase tracking-normal text-[#0a0d14] transition-all hover:bg-[#ffe071] active:scale-95 md:py-4"
+          className="mt-2 w-full rounded-md bg-[#ffd23f] py-3.5 text-base font-black uppercase tracking-normal text-[#0a0d14] transition-all hover:bg-[#ffe071] active:scale-95 md:mt-5 md:py-4"
         >
           Continue
         </button>

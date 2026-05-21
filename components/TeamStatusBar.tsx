@@ -1,7 +1,7 @@
 'use client'
 
 import type { TeamState } from '@/lib/gameState'
-import TeamNameBlock from './TeamNameBlock'
+import { teamPlayerLine } from './TeamNameBlock'
 
 interface TeamStatusBarProps {
   teams: [TeamState, TeamState]
@@ -9,11 +9,19 @@ interface TeamStatusBarProps {
   activeLabel?: string
   caption?: string
   compact?: boolean
+  showScores?: boolean
 }
 
 const TEAM_COLORS = ['#ff3a6d', '#3a8bff'] as const
 
-export default function TeamStatusBar({ teams, activeTeam, activeLabel = 'Up', caption, compact }: TeamStatusBarProps) {
+export default function TeamStatusBar({
+  teams,
+  activeTeam,
+  activeLabel = 'Up',
+  caption,
+  compact,
+  showScores = true,
+}: TeamStatusBarProps) {
   return (
     <section className={`min-w-0 overflow-hidden rounded-lg border border-white/10 bg-[#101522] ${compact ? 'p-2' : 'p-3 md:p-4'}`} aria-label="Team assignments">
       {caption && (
@@ -23,6 +31,7 @@ export default function TeamStatusBar({ teams, activeTeam, activeLabel = 'Up', c
         {teams.map((team, index) => {
           const teamIndex = index as 0 | 1
           const active = activeTeam === teamIndex
+          const playerLine = teamPlayerLine(team.players, 'No players assigned', compact ? 3 : 4, compact ? 24 : 32)
           return (
             <div
               key={`${team.name}-${index}`}
@@ -32,15 +41,13 @@ export default function TeamStatusBar({ teams, activeTeam, activeLabel = 'Up', c
                   : 'border-white/10 bg-white/[0.03]'
               }`}
             >
-              <div className="mb-1 flex min-w-0 items-center justify-between gap-2">
+              <div className="flex min-w-0 items-center justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-1.5">
                   <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: TEAM_COLORS[teamIndex] }} />
-                  <TeamNameBlock
-                    team={team}
-                    nameClassName="text-base font-black uppercase tracking-normal text-white md:text-lg"
-                    playersClassName={`text-[10px] font-bold leading-snug text-white/45 md:text-[11px] ${compact ? 'max-h-4' : ''}`}
-                    maxChars={compact ? 24 : 34}
-                  />
+                  <div className="min-w-0">
+                    <div className="min-w-0 truncate text-sm font-black uppercase tracking-normal text-white md:text-base">{team.name}</div>
+                    <div className={`min-w-0 truncate text-[10px] font-bold leading-snug text-white/45 md:text-[11px]`}>{playerLine}</div>
+                  </div>
                 </div>
                 {active && (
                   <span className="shrink-0 rounded-sm bg-[#ffd23f] px-1.5 py-0.5 text-[8px] font-black uppercase text-[#0a0d14]">
@@ -48,6 +55,11 @@ export default function TeamStatusBar({ teams, activeTeam, activeLabel = 'Up', c
                   </span>
                 )}
               </div>
+              {showScores && (
+                <div className={`mt-1 text-xl font-black tabular-nums tracking-normal ${active ? 'text-[#ffd23f]' : 'text-white'} md:text-2xl`}>
+                  {team.score.toLocaleString()}
+                </div>
+              )}
             </div>
           )
         })}
