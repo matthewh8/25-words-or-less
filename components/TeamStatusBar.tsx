@@ -42,24 +42,26 @@ export default function TeamStatusBar({
               }`}
             >
               <div className="flex min-w-0 items-center justify-between gap-2">
-                <div className="flex min-w-0 items-center gap-1.5">
+                <div className="flex min-w-0 flex-1 items-center gap-1.5">
                   <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: TEAM_COLORS[teamIndex] }} />
-                  <div className="min-w-0">
-                    <div className="min-w-0 truncate text-sm font-black uppercase tracking-normal text-white md:text-base">{team.name}</div>
-                    <div className={`min-w-0 truncate text-[10px] font-bold leading-snug text-white/45 md:text-[11px]`}>{playerLine}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex min-w-0 items-center gap-1.5">
+                      <div className="min-w-0 flex-1 truncate text-sm font-black uppercase tracking-normal text-white md:text-base">{team.name}</div>
+                      {active && (
+                        <span className="shrink-0 rounded-sm bg-[#ffd23f] px-1.5 py-0.5 text-[8px] font-black uppercase text-[#0a0d14]">
+                          {activeLabel}
+                        </span>
+                      )}
+                    </div>
+                    <div className="min-w-0 truncate text-[10px] font-bold leading-snug text-white/45 md:text-[11px]">{playerLine}</div>
                   </div>
                 </div>
-                {active && (
-                  <span className="shrink-0 rounded-sm bg-[#ffd23f] px-1.5 py-0.5 text-[8px] font-black uppercase text-[#0a0d14]">
-                    {activeLabel}
-                  </span>
+                {showScores && (
+                  <div className={`shrink-0 text-xl font-black tabular-nums tracking-normal ${active ? 'text-[#ffd23f]' : 'text-white'} md:text-2xl`}>
+                    {team.score.toLocaleString()}
+                  </div>
                 )}
               </div>
-              {showScores && (
-                <div className={`mt-1 text-xl font-black tabular-nums tracking-normal ${active ? 'text-[#ffd23f]' : 'text-white'} md:text-2xl`}>
-                  {team.score.toLocaleString()}
-                </div>
-              )}
             </div>
           )
         })}
