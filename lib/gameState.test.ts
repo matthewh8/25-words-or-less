@@ -93,9 +93,12 @@ describe('bid validation', () => {
     expect(gameReducer(cluingState, { type: 'BIDDING_TICK' })).toBe(cluingState)
   })
 
-  it('ignores CONCEDE before any bid has been placed', () => {
+  it('passes cluing to the opponent when the opener concedes before bidding', () => {
     const started = gameReducer(initGame('A', 'B'), { type: 'START_BIDDING', firstTeam: 0 })
-    expect(gameReducer(started, { type: 'CONCEDE' })).toBe(started)
+    const conceded = gameReducer(started, { type: 'CONCEDE' })
+    expect(conceded.phase).toBe('round1_cluing')
+    expect(conceded.cluing?.cluingTeam).toBe(1)
+    expect(conceded.cluing?.wordLimit).toBe(started.gameMode.bidding.maxBid)
   })
 })
 

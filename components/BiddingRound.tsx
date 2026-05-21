@@ -32,8 +32,10 @@ export default function BiddingRound({ state, dispatch }: Props) {
   const winBid = winningBidAmount(mode)
   const maxBid = mode.bidding.maxBid
   const noBidsYet = currentBid >= maxBid
+  const opponentIndex: 0 | 1 = activeBidder === 0 ? 1 : 0
   const activeTeam = teams[activeBidder]
   const holderTeam = teams[biddingTeam]
+  const opponentTeam = teams[opponentIndex]
   const activeColor = TEAM_COLORS[activeBidder]
   const holderColor = TEAM_COLORS[biddingTeam]
   const maxBidAllowed = noBidsYet ? maxBid - 1 : currentBid - 1
@@ -183,21 +185,19 @@ export default function BiddingRound({ state, dispatch }: Props) {
 
               {error && <p className="text-center text-[11px] text-[#ff3a6d] md:text-xs">{error}</p>}
 
-              <div className={`grid gap-2 ${noBidsYet ? '' : 'sm:grid-cols-2'}`}>
+              <div className="grid gap-2 sm:grid-cols-2">
                 <button
                   onClick={takeFloor}
                   className="rounded-md bg-[#ffd23f] py-2.5 text-sm font-black uppercase tracking-normal text-[#0a0d14] transition-all hover:bg-[#ffe071] active:scale-95 md:py-3 md:text-base"
                 >
                   Take {winBid} · auto-win
                 </button>
-                {!noBidsYet && (
-                  <button
-                    onClick={() => dispatch({ type: 'CONCEDE' })}
-                    className="rounded-md border border-white/15 bg-white/[0.04] py-2.5 text-sm font-black uppercase tracking-normal text-white/80 transition-all hover:border-white/30 hover:bg-white/[0.08] active:scale-95 md:py-3 md:text-base"
-                  >
-                    Concede · {holderTeam.name} at {currentBid}
-                  </button>
-                )}
+                <button
+                  onClick={() => dispatch({ type: 'CONCEDE' })}
+                  className="rounded-md border border-white/15 bg-white/[0.04] py-2.5 text-sm font-black uppercase tracking-normal text-white/80 transition-all hover:border-white/30 hover:bg-white/[0.08] active:scale-95 md:py-3 md:text-base"
+                >
+                  Concede · {opponentTeam.name} at {currentBid}
+                </button>
               </div>
 
               {history.length > 0 && (

@@ -287,8 +287,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'CONCEDE': {
       if (!state.bid) return state
       if (state.phase !== 'round1_bidding') return state
-      if (state.bid.currentBid >= mode.bidding.maxBid) return state
-      return startBiddingClue(state, state.bid, mode)
+      const cluer: 0 | 1 = state.bid.activeBidder === 0 ? 1 : 0
+      return startBiddingClue(state, { ...state.bid, biddingTeam: cluer }, mode)
     }
 
     case 'WORD_REFUND': {
