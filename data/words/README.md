@@ -1,81 +1,52 @@
-# Word Research Pipeline
+# Word Pipeline
 
-This folder is for source research, source seeds, and generated runtime word-bank data. The runtime game loads `data/words/word-bank.json` through `lib/words.ts`.
+The runtime game loads `data/words/word-bank.json` through `lib/words.ts`. This folder also holds the seed list, source notes, and cached raw downloads.
 
-## Source Strategy
-
-Use open sources as candidate pools, not blind playable dumps:
-
-- ESDB / SCOWL American English wordlists for broad single-word candidates.
-- CMUdict for pronunciation and syllable checks.
-- Open English WordNet for semantically attested fallback words and reveal-screen definitions.
-- CEFR-J / Open Language Profiles for level hints.
-- Open English WordNet or Princeton WordNet for part-of-speech and semantic checks.
-- wordfreq for frequency hints when its attribution/licensing constraints are acceptable.
-
-Current source notes live in `open-word-sources.json`.
-
-Research note: word prevalence norms are the closest published signal for "would an average person know this word," because they measure recognition across many participants. The available 62K English lemma dataset is useful for manual research, but its OSF distribution is CC BY-NC-SA 4.0, so this committed runtime bank does not ingest it. The repeatable build instead uses redistributable source-list membership plus wordfreq Zipf thresholds: generated color-deck words must be at least Zipf 3.0, and money-round words must be at least Zipf 3.15.
-
-## Runtime 20,000-Entry Bank
-
-The committed runtime bank is generated with:
+## Build
 
 ```bash
-npm run build:words
+npm run build:words            # uses cached raw downloads when available
+npm run build:words -- --refresh   # force fresh downloads
 ```
 
-The builder writes `data/words/word-bank.json` with exactly 20,000 playable entries:
+The builder writes exactly 20,000 single-word entries split into `green` (6,000), `yellow` (6,000), `red` (6,000), and `money` (2,000), plus a short Open English WordNet gloss for every entry under `definitions`.
 
-- starts from the safe hand-reviewed seed entries in `data/words/seed-decks.json`
-- downloads ESDB / SCOWL `en_US` and `en_US-large` 2026.02.25 from `en-wl/wordlist-diff`
-- uses CMUdict as the primary pronounceability filter
-- uses Open English WordNet 2025 for semantically attested fill words and short gloss definitions
-- uses wordfreq Zipf frequency as a commonness gate so generated words should be recognizable to an average player
-- requires generated playable words to appear in the default American English source list unless they are one of the tiny hand-reviewed easy words
-- removes exact duplicates, spacing-insensitive near duplicates, malformed entries, unsafe or party-awkward words, niche low-frequency definition patterns, roman-numeral artifacts, proper-name capitalization, apostrophes, punctuation, and most too-short abbreviation-like entries
-- audits every accepted single word into a green/yellow/red/money split based on clueability under 5-word boards, tight clue-word budgets, stack point risk, pronunciation evidence, source commonness, length, syllables, abstract morphology, inflection noise, and part of speech
-- keeps the money deck smaller than the color decks, but every money entry is still one distinct word
+Inputs used:
 
-Raw downloads are cached under `data/words/raw/` and ignored by git. Use `npm run build:words -- --refresh` to force fresh downloads.
+- `data/words/seed-decks.json` — hand-reviewed seed entries.
+- ESDB / SCOWL `en_US` and `en_US-large` 2026.02.25 (`en-wl/wordlist-diff`) — single-word candidate pool. Generated words must appear in the default `en_US` list unless they are in the small hand-reviewed `EASY_WORDS` set.
+- CMUdict — pronounceability and syllable signal.
+- Open English WordNet 2025 — semantic attestation and gloss definitions.
+- wordfreq 3.1.1 — Zipf-frequency gate (≥3.0 for color decks, ≥3.15 for money).
+- CEFR-J / Open Language Profiles — CEFR-level hint for difficulty scoring.
 
-Current generated mix:
+Raw downloads cache under `data/words/raw/` and are gitignored.
 
-- `green`: 6,000 easiest single words
-- `yellow`: 6,000 broad standard words used for default bidding
-- `red`: 6,000 longer, abstract, inflected, or harder-to-clue words
-- `money`: 2,000 clean, common, pronounceable single words reserved for the money round
+The builder removes exact and spacing-insensitive duplicates, malformed entries, unsafe or party-awkward words, niche definition patterns (e.g. Roman numerals, proper-name capitalization, apostrophes), and most short abbreviation-like entries.
 
-Every generated playable word also has a short Open English WordNet definition stored under the top-level `definitions` object in `word-bank.json`. The deal API sends only the definitions for the words in the current deal.
-
-Run the repeatable final audit with:
+## Audit
 
 ```bash
 npm run audit:words
 ```
 
-## No-Tag Organization
+Verifies the four-deck split, single-word-only enforcement, exact and cross-deck duplicate removal, full definition coverage, Zipf floors, and the difficulty shape (length, syllables, abstract morphology, source-list membership).
 
-The review organizer ignores tags. It pools every candidate together, dedupes, filters, and emits only four buckets:
+## Sources and licensing
 
-- `green`
-- `yellow`
-- `red`
-- `money`
+`open-word-sources.json` lists every candidate source with its license, recommended use, and risk note. ShareAlike or NonCommercial sources (Word Prevalence 62K, ConceptNet, Wiktionary, Princeton WordNet C1/C2 splits) are documented but **not** ingested into the committed runtime bank.
 
-Run:
+## Review-only organizer
 
 ```bash
-npm run organize:words -- path/to/candidates.csv path/to/more.txt --output data/words/organized.generated.json
+npm run organize:words -- <inputs...> --output data/words/organized.generated.json
 ```
 
-If no input file is passed, it reorganizes the current bundled bank from `data/words/word-bank.json`.
+Pools every candidate without tags, dedupes, filters, and emits `green` / `yellow` / `red` / `money` plus score/reason records. With no input file, it reorganizes the current bundled bank. Supported inputs:
 
-Supported input shapes:
+- TXT — one candidate per line
+- CSV — `word`/`headword`/`lemma`/`text`/`term`/`phrase` column; optional `cefr`/`level`, `zipf`/`frequency`, `deck`
+- JSON — arrays of strings, arrays of objects, `{ words: [...] }`, `{ records: [...] }`, or `{ decks: { ... } }`
+- JSONL — raw words or one JSON object per line
 
-- TXT: one candidate per line
-- CSV: `word`, `headword`, `lemma`, `text`, `term`, or `phrase`; optional `cefr`/`level`, `zipf`/`frequency`, and `deck`
-- JSON: arrays of strings, arrays of objects, `{ "words": [...] }`, `{ "records": [...] }`, or `{ "decks": { ... } }`
-- JSONL: raw words or one JSON object per line
-
-The generated file includes `decks` plus score/reason records. It intentionally does not include tags. Generated JSON files are ignored by git so stale review artifacts do not linger in the repo.
+Output files match `*.generated.json` and are gitignored.
