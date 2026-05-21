@@ -447,7 +447,7 @@ describe('phase edges', () => {
 
     const selected = gameReducer(state, { type: 'SELECT_STACK', stackId: 'yellow' })
     expect(selected.phase).toBe('round23_cluing')
-    expect(selected.cluing?.wordLimit).toBe(20)
+    expect(selected.cluing?.wordLimit).toBe(25)
   })
 
   it('advances when a stack round has turns left but no unused stacks', () => {

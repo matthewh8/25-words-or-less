@@ -27,7 +27,7 @@ bidding:
 stacks:
   title: Color Stacks
   wordCount: 5
-  wordLimit: 20
+  wordLimit: 25
   allCorrectBonus: 5
   rounds:
     - number: 2

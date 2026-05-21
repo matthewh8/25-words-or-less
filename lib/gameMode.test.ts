@@ -12,7 +12,7 @@ describe('game mode constructor', () => {
     expect(mode).toMatchObject({
       id: 'classic',
       bidding: { wordCount: 5, minBid: 5, maxBid: 25 },
-      stacks: { wordLimit: 20, allCorrectBonus: 5 },
+      stacks: { wordLimit: 25, allCorrectBonus: 5 },
       money: { wordCount: 10, wordLimit: 25, jackpotPoints: 25 },
     })
   })

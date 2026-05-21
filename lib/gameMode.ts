@@ -143,7 +143,7 @@ export const DEFAULT_GAME_MODE: GameMode = {
   stacks: {
     title: 'Color Stacks',
     wordCount: 5,
-    wordLimit: 20,
+    wordLimit: 25,
     allCorrectBonus: 5,
     rounds: [
       { number: 2, turns: 3, startTeam: 0 },
