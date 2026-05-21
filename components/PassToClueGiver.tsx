@@ -13,7 +13,6 @@ export default function PassToClueGiver({ state, onReady }: Props) {
   const { teams, cluing } = state
   if (!cluing) return null
 
-  const teamName = teams[cluing.cluingTeam].name
   const limit = cluing.wordLimit
   const wordCount = cluing.words.length
   const seconds = cluing.timeLeft
@@ -41,7 +40,7 @@ export default function PassToClueGiver({ state, onReady }: Props) {
         <span className="text-[#ff3a6d]">eyes closed</span>
       </h2>
       <p className="text-white/40 text-sm text-center mt-2 max-w-xs">
-        Everyone on <strong className="text-white/70">{teamName}</strong> except the clue giver looks away
+        Everyone on the cluing team except the clue giver looks away
       </p>
 
       <div className="mt-4 w-full">

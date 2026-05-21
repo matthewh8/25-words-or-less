@@ -1,7 +1,7 @@
 'use client'
 
 import type { GameState } from '@/lib/gameState'
-import TeamNameBlock, { teamPlayerLine } from './TeamNameBlock'
+import TeamNameBlock, { teamDisplayName, teamPlayerLine } from './TeamNameBlock'
 import TeamStatusBar from './TeamStatusBar'
 
 interface Props {
@@ -27,12 +27,12 @@ export default function FinalScoreboard({ state, onRestart }: Props) {
           <h2 className="text-4xl font-black uppercase leading-[0.9] tracking-normal text-white md:text-6xl">
             {tied ? "It's a tie!" : (
               <>
-                <span className="block truncate">{teams[winner].name}</span>
+                <span className="block truncate">{teamDisplayName(teams[winner], 32)}</span>
                 <span className="block">wins!</span>
               </>
             )}
           </h2>
-          {!tied && (
+          {!tied && teamDisplayName(teams[winner], 32) === teams[winner].name && (
             <p className="mt-2 truncate text-xs font-bold text-white/40 md:text-sm">
               {teamPlayerLine(teams[winner].players, 'No players assigned', 5, 36)}
             </p>

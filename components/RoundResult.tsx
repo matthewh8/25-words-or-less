@@ -2,7 +2,7 @@
 
 import type { GameState, GameAction } from '@/lib/gameState'
 import Scoreboard from './Scoreboard'
-import TeamNameBlock from './TeamNameBlock'
+import TeamNameBlock, { teamDisplayName } from './TeamNameBlock'
 import TeamStatusBar from './TeamStatusBar'
 import WordRevealList from './WordRevealList'
 
@@ -28,11 +28,12 @@ export default function RoundResult({ state, dispatch }: Props) {
     ? allCorrect ? 'Done!' : "Didn't make it"
     : allCorrect ? 'Perfect!' : `${correct} of ${total}`
 
+  const awardName = teamDisplayName(teams[awardTeam])
   const subline = isBid
     ? allCorrect
-      ? `${teams[awardTeam].name} gets +${points.toLocaleString()} pts`
-      : points > 0 ? `${teams[awardTeam].name} gets +${points.toLocaleString()} pts` : 'No points awarded'
-    : `+${points.toLocaleString()} pts for ${teams[awardTeam].name}`
+      ? `${awardName} gets +${points.toLocaleString()} pts`
+      : points > 0 ? `${awardName} gets +${points.toLocaleString()} pts` : 'No points awarded'
+    : `+${points.toLocaleString()} pts for ${awardName}`
 
   return (
     <div className="flex h-dvh flex-col items-center justify-center overflow-hidden bg-[#0a0d14] p-3 text-white md:p-8">
@@ -51,13 +52,19 @@ export default function RoundResult({ state, dispatch }: Props) {
             <p className="mono-label mb-2 text-[10px] text-white/45 md:mb-4">{isBid ? 'Bid result' : 'Round result'}</p>
             <div className={`mb-2 text-4xl font-black uppercase leading-[0.85] md:mb-4 md:text-8xl ${allCorrect ? 'text-[#2de584]' : 'text-white'}`}>{headline}</div>
             <div className="text-sm text-white/55 md:text-lg">{subline}</div>
-            <TeamNameBlock
-              team={teams[points > 0 ? awardTeam : lastResult.team]}
-              className="mt-2"
-              nameClassName="sr-only"
-              playersClassName="text-xs font-bold text-white/35"
-              maxChars={32}
-            />
+            {(() => {
+              const focusTeam = teams[points > 0 ? awardTeam : lastResult.team]
+              if (teamDisplayName(focusTeam, 32) !== focusTeam.name) return null
+              return (
+                <TeamNameBlock
+                  team={focusTeam}
+                  className="mt-2"
+                  nameClassName="sr-only"
+                  playersClassName="text-xs font-bold text-white/35"
+                  maxChars={32}
+                />
+              )
+            })()}
             <div className="mt-3 md:mt-6">
               <Scoreboard teams={teams} highlight={points > 0 ? awardTeam : undefined} compact />
             </div>

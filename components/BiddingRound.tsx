@@ -7,7 +7,7 @@ import { useActionInterval } from '@/lib/useActionInterval'
 import Scoreboard from './Scoreboard'
 import Timer from './Timer'
 import TeamStatusBar from './TeamStatusBar'
-import TeamNameBlock from './TeamNameBlock'
+import TeamNameBlock, { teamDisplayName } from './TeamNameBlock'
 
 interface Props {
   state: GameState
@@ -29,8 +29,8 @@ export default function BiddingRound({ state, dispatch }: Props) {
   if (!bid) return null
 
   const { words, currentBid, activeBidder, biddingTeam, biddingTimeLeft } = bid
-  const activeName = teams[activeBidder].name
-  const concedeName = teams[biddingTeam].name
+  const activeName = teamDisplayName(teams[activeBidder])
+  const concedeName = teamDisplayName(teams[biddingTeam])
   const winBid = winningBidAmount(mode)
   const timeExpired = biddingTimeLeft <= 0
 
@@ -178,7 +178,7 @@ export default function BiddingRound({ state, dispatch }: Props) {
                 <div className="flex flex-wrap gap-1.5">
                   {history.map((h, i) => (
                     <span key={`${h.team}-${h.amount}-${i}`} className="rounded-full border border-white/10 px-2 py-1 font-mono text-[10px] text-white/55">
-                      {teams[h.team].name.slice(0, 1)} / {h.amount}
+                      {teamDisplayName(teams[h.team]).slice(0, 1).toUpperCase()} / {h.amount}
                     </span>
                   ))}
                 </div>

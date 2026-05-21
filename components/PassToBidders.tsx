@@ -30,7 +30,7 @@ export default function PassToBidders({ state, onReady }: Props) {
         <span className="text-[#ffd23f]">look away</span>
       </h2>
       <p className="text-white/40 text-sm text-center mt-4 max-w-xs">
-        One captain from <strong className="text-white/60">{teams[0].name}</strong> and <strong className="text-white/60">{teams[1].name}</strong> stays at the screen. Everyone else looks away.
+        One captain from each team stays at the screen. Everyone else looks away.
       </p>
       <div className="mt-3 grid w-full grid-cols-2 gap-2">
         {teams.map((team, index) => (

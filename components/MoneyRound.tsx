@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import type { GameState, GameAction } from '@/lib/gameState'
 import Scoreboard from './Scoreboard'
-import TeamNameBlock from './TeamNameBlock'
+import TeamNameBlock, { teamDisplayName } from './TeamNameBlock'
 import TeamStatusBar from './TeamStatusBar'
 import TimeConfigurator from './TimeConfigurator'
 import WordRevealList from './WordRevealList'
@@ -118,17 +118,19 @@ export default function MoneyRound({ state, dispatch }: Props) {
               </div>
               <div className="text-sm text-white/55 md:text-lg">
                 {won
-                  ? `${teams[winnerTeam].name} got all ${mode.money.wordCount}!`
-                  : `${correct}/${mode.money.wordCount} words / ${teams[winnerTeam].name} still wins`
+                  ? `${teamDisplayName(teams[winnerTeam])} got all ${mode.money.wordCount}!`
+                  : `${correct}/${mode.money.wordCount} words / ${teamDisplayName(teams[winnerTeam])} still wins`
                 }
               </div>
-              <TeamNameBlock
-                team={teams[winnerTeam]}
-                className="mt-2"
-                nameClassName="sr-only"
-                playersClassName="text-xs font-bold text-white/35"
-                maxChars={32}
-              />
+              {teamDisplayName(teams[winnerTeam], 32) === teams[winnerTeam].name && (
+                <TeamNameBlock
+                  team={teams[winnerTeam]}
+                  className="mt-2"
+                  nameClassName="sr-only"
+                  playersClassName="text-xs font-bold text-white/35"
+                  maxChars={32}
+                />
+              )}
               <div className="mt-3 md:mt-6">
                 <Scoreboard teams={teams} highlight={winnerTeam} compact />
               </div>
