@@ -21,7 +21,7 @@ export default function Timer({ timeLeft, total, size = 'sm' }: TimerProps) {
         width: ring,
         height: ring,
         borderRadius: ring / 2,
-        background: `conic-gradient(${urgent ? '#ff3a6d' : warning ? '#ffd23f' : '#ffd23f'} ${pct}%, rgba(255,255,255,0.08) 0)`,
+        background: `conic-gradient(${urgent ? '#ff3a6d' : '#ffd23f'} ${pct}%, rgba(255,255,255,0.08) 0)`,
       }}
       aria-label={`${timeLeft} seconds left`}
     >

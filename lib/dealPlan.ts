@@ -1,12 +1,11 @@
-import { getNextStackRound, type WordDeckId } from './gameMode'
+import { getNextStackRound } from './gameMode'
 import type { StackDeal } from './dealing'
-import type { GameAction, GameState } from './gameState'
+import { biddingExhausted, stackRoundDone, type GameAction, type GameState } from './gameState'
 
 export type DealRequest =
   | { kind: 'bidding'; modeId: string; usedWords: string[] }
   | { kind: 'money'; modeId: string; usedWords: string[] }
   | { kind: 'stack'; modeId: string; usedWords: string[]; roundNumber: number }
-  | { kind: 'deck'; modeId: string; usedWords: string[]; deckId: WordDeckId; count: number }
 
 export interface WordsDealResponse {
   kind: 'words'
@@ -31,17 +30,12 @@ export type DealPlan =
   | { type: 'next-bid'; request: DealRequest }
   | { type: 'next-stack'; request: DealRequest }
   | { type: 'refresh-bid'; request: DealRequest }
-  | { type: 'refresh-words'; request: DealRequest }
 
 function dealBase(state: GameState): { modeId: string; usedWords: string[] } {
   return {
     modeId: state.gameMode.id,
     usedWords: state.usedWords,
   }
-}
-
-function isCluingPhase(phase: GameState['phase']): boolean {
-  return phase === 'round1_cluing' || phase === 'round23_cluing' || phase === 'money_cluing'
 }
 
 export function randomTeam(): 0 | 1 {
@@ -81,28 +75,21 @@ export function planDeal(
   }
 
   if (action.type === 'NEXT_AFTER_RESULT' && state.phase === 'round1_result') {
-    const newContests = state.round1Contests + 1
-    if (newContests >= state.gameMode.bidding.contests) {
-      const firstStackRound = state.gameMode.stacks.rounds[0]
+    if (biddingExhausted(state)) {
       return {
         type: 'next-stack',
-        request: { ...base, kind: 'stack', roundNumber: firstStackRound.number },
+        request: { ...base, kind: 'stack', roundNumber: state.gameMode.stacks.rounds[0].number },
       }
     }
-
     return {
       type: 'next-bid',
       request: { ...base, kind: 'bidding' },
     }
   }
 
-  if (action.type === 'NEXT_AFTER_RESULT' && state.phase === 'round23_result' && state.stackBoard) {
-    const board = state.stackBoard
-    const newTurns = board.turnsLeft - 1
-    const stacksExhausted = board.usedStackIds.length >= state.gameMode.stacks.options.length
+  if (action.type === 'NEXT_AFTER_RESULT' && state.phase === 'round23_result' && stackRoundDone(state)) {
     const nextStackRound = getNextStackRound(state.gameMode, state.currentRound)
-
-    if ((newTurns <= 0 || stacksExhausted) && nextStackRound) {
+    if (nextStackRound) {
       return {
         type: 'next-stack',
         request: { ...base, kind: 'stack', roundNumber: nextStackRound.number },
@@ -114,18 +101,6 @@ export function planDeal(
     return {
       type: 'refresh-bid',
       request: { ...base, kind: 'bidding' },
-    }
-  }
-
-  if (action.type === 'REFRESH_WORDS' && state.cluing && isCluingPhase(state.phase)) {
-    return {
-      type: 'refresh-words',
-      request: {
-        ...base,
-        kind: 'deck',
-        deckId: state.cluing.deckId,
-        count: state.cluing.words.length,
-      },
     }
   }
 
@@ -179,7 +154,5 @@ export function actionFromDeal(plan: Exclude<DealPlan, { type: 'direct' }>, deal
       return { type: 'NEXT_AFTER_RESULT', nextStackDeal: stackFromDeal(deal) }
     case 'refresh-bid':
       return { type: 'REFRESH_BID', words: wordsFromDeal(deal), wordDefinitions: definitionsFromDeal(deal) }
-    case 'refresh-words':
-      return { type: 'REFRESH_WORDS', words: wordsFromDeal(deal), wordDefinitions: definitionsFromDeal(deal) }
   }
 }

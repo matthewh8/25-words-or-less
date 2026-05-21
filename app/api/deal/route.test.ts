@@ -48,40 +48,6 @@ describe('/api/deal route', () => {
     expect(Object.keys(body.definitions)).toEqual(expect.arrayContaining(body.words))
   })
 
-  it('caps ad hoc deck deal sizes for refresh requests', async () => {
-    const response = await POST(jsonRequest({
-      kind: 'deck',
-      modeId: 'classic',
-      deckId: 'green',
-      count: 999,
-      usedWords: [],
-    }))
-    const body = await jsonResponse(response) as {
-      kind: string
-      deckId: string
-      words: string[]
-      definitions: Record<string, string>
-    }
-
-    expect(response.status).toBe(200)
-    expect(body).toMatchObject({ kind: 'words', deckId: 'green' })
-    expect(body.words).toHaveLength(50)
-    expect(Object.keys(body.definitions)).toHaveLength(50)
-  })
-
-  it('rejects invalid ad hoc deck ids before dealing refresh words', async () => {
-    const response = await POST(jsonRequest({
-      kind: 'deck',
-      modeId: 'classic',
-      deckId: 'expert',
-      count: 5,
-      usedWords: [],
-    }))
-
-    expect(response.status).toBe(400)
-    await expect(jsonResponse(response)).resolves.toMatchObject({ error: 'Invalid deck id' })
-  })
-
   it('deals complete stack boards from YAML mode rules', async () => {
     const response = await POST(jsonRequest({
       kind: 'stack',

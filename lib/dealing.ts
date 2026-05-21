@@ -1,5 +1,5 @@
 import { getStackRound, type GameMode, type WordDeckId } from './gameMode'
-import { FALLBACK_WORD_POOLS, pickWords, type RandomSource } from './wordSelection'
+import { canonicalWord, FALLBACK_WORD_POOLS, pickWords, type RandomSource } from './wordSelection'
 
 export interface StackBoardState {
   wordsByStack: Record<string, string[]>
@@ -17,7 +17,7 @@ export interface StackDeal {
 }
 
 export function appendUsedWords(current: string[], words: string[]): string[] {
-  return Array.from(new Set([...current, ...words].map(word => word.trim().toUpperCase()).filter(Boolean)))
+  return Array.from(new Set([...current, ...words].map(canonicalWord).filter(Boolean)))
 }
 
 export function dealtWordsOrFallback(
@@ -28,7 +28,7 @@ export function dealtWordsOrFallback(
   random?: RandomSource
 ): string[] {
   const cleaned = Array.isArray(dealtWords)
-    ? dealtWords.map(word => word.trim().toUpperCase()).filter(Boolean).slice(0, count)
+    ? dealtWords.map(canonicalWord).filter(Boolean).slice(0, count)
     : []
 
   if (cleaned.length >= count) return cleaned

@@ -1,24 +1,23 @@
 'use client'
 
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
-import { gameReducer, initGame } from '@/lib/gameState'
+import { gameReducer, initGame, isCluingPhase } from '@/lib/gameState'
 import type { GameAction, GameState } from '@/lib/gameState'
 import type { GameMode } from '@/lib/gameMode'
 import type { ChallengeSettings } from '@/lib/challenges'
 import { actionFromDeal, planDeal } from '@/lib/dealPlan'
 import type { DealRequest, DealResponse } from '@/lib/dealPlan'
-import { mergeUsedWords, readUsedWords, writeUsedWords } from '@/lib/storage'
+import { readUsedWords, writeUsedWords } from '@/lib/storage'
 import BiddingRound from '@/components/BiddingRound'
 import ClueGiverView from '@/components/ClueGiverView'
 import RoundResult from '@/components/RoundResult'
 import RoundIntro from '@/components/RoundIntro'
 import StackSelection from '@/components/StackSelection'
-import MoneyRound from '@/components/MoneyRound'
+import MoneyIntro from '@/components/MoneyIntro'
+import MoneyResult from '@/components/MoneyResult'
 import FinalScoreboard from '@/components/FinalScoreboard'
 import PassToClueGiver from '@/components/PassToClueGiver'
 import PassToBidders from '@/components/PassToBidders'
-
-const CLUING_PHASES = new Set(['round1_cluing', 'round23_cluing', 'money_cluing'])
 
 interface GameClientProps {
   team1Name: string
@@ -43,7 +42,7 @@ async function requestDeal(body: DealRequest): Promise<DealResponse> {
 }
 
 function cluingReadyKey(state: GameState): string | null {
-  if (!CLUING_PHASES.has(state.phase) || !state.cluing) return null
+  if (!isCluingPhase(state.phase) || !state.cluing) return null
   return [
     state.phase,
     state.currentRound,
@@ -57,11 +56,7 @@ function cluingReadyKey(state: GameState): string | null {
 
 function biddingReadyKey(state: GameState): string | null {
   if (state.phase !== 'round1_bidding' || !state.bid) return null
-  return [
-    state.phase,
-    state.round1Contests,
-    state.bid.words.join('|'),
-  ].join(':')
+  return `${state.phase}:${state.round1Contests}`
 }
 
 export default function GameClient({ team1Name, team2Name, teamPlayers, challengeSettings, gameMode }: GameClientProps) {
@@ -81,7 +76,7 @@ export default function GameClient({ team1Name, team2Name, teamPlayers, challeng
 
   useEffect(() => {
     if (state.phase === 'final') {
-      writeUsedWords(mergeUsedWords(readUsedWords(), state.usedWords))
+      writeUsedWords(state.usedWords)
     }
   }, [state.phase]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -132,7 +127,7 @@ export default function GameClient({ team1Name, team2Name, teamPlayers, challeng
     </>
   )
 
-  const isCluing = CLUING_PHASES.has(state.phase)
+  const isCluing = isCluingPhase(state.phase)
   const isBidding = state.phase === 'round1_bidding'
   const activeCluingKey = cluingReadyKey(state)
   const activeBiddingKey = biddingReadyKey(state)
@@ -166,8 +161,10 @@ export default function GameClient({ team1Name, team2Name, teamPlayers, challeng
       return <>{dealOverlay}<StackSelection state={state} dispatch={dispatchWithDeals} /></>
 
     case 'money_intro':
+      return <>{dealOverlay}<MoneyIntro state={state} dispatch={dispatchWithDeals} /></>
+
     case 'money_result':
-      return <>{dealOverlay}<MoneyRound state={state} dispatch={dispatchWithDeals} /></>
+      return <>{dealOverlay}<MoneyResult state={state} dispatch={dispatchWithDeals} /></>
 
     case 'final':
       return <>{dealOverlay}<FinalScoreboard state={state} onRestart={() => window.location.href = '/'} /></>

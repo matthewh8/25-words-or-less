@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import type { GameState, GameAction } from '@/lib/gameState'
-import { winningBidAmount } from '@/lib/gameState'
+import { TEAM_COLORS } from '@/lib/teamColors'
 import { useActionInterval } from '@/lib/useActionInterval'
 import Timer from './Timer'
 import { teamPlayerLine } from './TeamNameBlock'
@@ -11,8 +11,6 @@ interface Props {
   state: GameState
   dispatch: (a: GameAction) => void
 }
-
-const TEAM_COLORS = ['#ff3a6d', '#3a8bff'] as const
 
 export default function BiddingRound({ state, dispatch }: Props) {
   const { bid, teams } = state
@@ -29,7 +27,7 @@ export default function BiddingRound({ state, dispatch }: Props) {
   if (!bid) return null
 
   const { words, currentBid, activeBidder, biddingTeam, biddingTimeLeft } = bid
-  const winBid = winningBidAmount(mode)
+  const winBid = mode.bidding.wordCount
   const maxBid = mode.bidding.maxBid
   const noBidsYet = currentBid >= maxBid
   const opponentIndex: 0 | 1 = activeBidder === 0 ? 1 : 0
@@ -151,7 +149,7 @@ export default function BiddingRound({ state, dispatch }: Props) {
               <div className="mt-3 flex items-center gap-3 md:mt-4">
                 <Timer timeLeft={biddingTimeLeft} total={mode.timing.biddingSeconds} />
                 {timeExpired && (
-                  <p className="text-xs font-bold text-[#ff3a6d]">Time's up — make a move.</p>
+                  <p className="text-xs font-bold text-[#ff3a6d]">Time&apos;s up — make a move.</p>
                 )}
               </div>
             </div>
@@ -196,7 +194,7 @@ export default function BiddingRound({ state, dispatch }: Props) {
                   onClick={() => dispatch({ type: 'CONCEDE' })}
                   className="rounded-md border border-white/15 bg-white/[0.04] py-2.5 text-sm font-black uppercase tracking-normal text-white/80 transition-all hover:border-white/30 hover:bg-white/[0.08] active:scale-95 md:py-3 md:text-base"
                 >
-                  Concede · {opponentTeam.name} at {currentBid}
+                  Concede · {opponentTeam.name} {noBidsYet ? `clues all ${words.length}` : `at ${currentBid}`}
                 </button>
               </div>
 

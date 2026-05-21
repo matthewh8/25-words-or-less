@@ -1,15 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import {
   getWordBankSummary,
-  getWordDefinition,
   getWordDecks,
   getDefinitionsForWords,
-  pickWords,
   validateWordBank,
   WORD_BANK_SOURCES,
   type WordDeck,
   type WordSource,
 } from './words'
+import { pickWords } from './wordSelection'
 
 describe('pickWords', () => {
   it('uses every available unused word before recycling the pool', () => {
@@ -75,11 +74,9 @@ describe('word bank validation', () => {
     const firstGreenWord = getWordDecks().find(deck => deck.id === 'green')?.words[0]
     if (!firstGreenWord) throw new Error('expected a bundled green word')
 
-    const definition = getWordDefinition(firstGreenWord)
-    expect(definition.length).toBeGreaterThan(0)
-    expect(getDefinitionsForWords([firstGreenWord, 'not-a-playable-word'])).toEqual({
-      [firstGreenWord]: definition,
-    })
+    const definitions = getDefinitionsForWords([firstGreenWord, 'not-a-playable-word'])
+    expect(definitions[firstGreenWord]?.length ?? 0).toBeGreaterThan(0)
+    expect(Object.keys(definitions)).toEqual([firstGreenWord])
   })
 
   it('reports schema, attribution, safety, and generated-word errors', () => {

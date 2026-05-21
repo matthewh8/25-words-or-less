@@ -1,20 +1,18 @@
-import { getStackRound, type WordDeckId } from '@/lib/gameMode'
+import { getStackRound } from '@/lib/gameMode'
 import { loadGameMode } from '@/lib/gameModeServer'
 import { getDefinitionsForWords, getWordsForDeck } from '@/lib/words'
+import { appendUsedWords } from '@/lib/dealing'
+import { canonicalWord } from '@/lib/wordSelection'
 
 export const dynamic = 'force-dynamic'
 
-const DECK_IDS = new Set<WordDeckId>(['bidding', 'green', 'yellow', 'red', 'money'])
+type DealKind = 'bidding' | 'stack' | 'money'
 
-type DealKind = 'bidding' | 'stack' | 'money' | 'deck'
-
-interface DealRequest {
+interface RawDealRequest {
   kind?: DealKind
   modeId?: string
   usedWords?: unknown
   roundNumber?: unknown
-  deckId?: unknown
-  count?: unknown
 }
 
 function normalizeUsedWords(value: unknown): string[] {
@@ -23,7 +21,7 @@ function normalizeUsedWords(value: unknown): string[] {
     new Set(
       value
         .filter((word): word is string => typeof word === 'string')
-        .map(word => word.trim().toUpperCase())
+        .map(canonicalWord)
         .filter(Boolean)
     )
   ).slice(0, 10000)
@@ -36,17 +34,11 @@ function positiveInt(value: unknown, fallback: number, max = 50): number {
 }
 
 function isDealKind(value: unknown): value is DealKind {
-  return value === 'bidding' || value === 'stack' || value === 'money' || value === 'deck'
-}
-
-function deckId(value: unknown): WordDeckId | null {
-  return typeof value === 'string' && DECK_IDS.has(value as WordDeckId)
-    ? value as WordDeckId
-    : null
+  return value === 'bidding' || value === 'stack' || value === 'money'
 }
 
 export async function POST(request: Request) {
-  let body: DealRequest
+  let body: RawDealRequest
   try {
     body = await request.json()
   } catch {
@@ -70,24 +62,17 @@ export async function POST(request: Request) {
     return Response.json({ kind: 'words', deckId: gameMode.money.wordDeck, words, definitions: getDefinitionsForWords(words) })
   }
 
-  if (body.kind === 'deck') {
-    const selectedDeck = deckId(body.deckId)
-    if (!selectedDeck) return Response.json({ error: 'Invalid deck id' }, { status: 400 })
-    const words = getWordsForDeck(selectedDeck, positiveInt(body.count, 5), usedWords)
-    return Response.json({ kind: 'words', deckId: selectedDeck, words, definitions: getDefinitionsForWords(words) })
-  }
-
   const round = getStackRound(gameMode, positiveInt(body.roundNumber, gameMode.stacks.rounds[0].number, 99))
     ?? gameMode.stacks.rounds[0]
   const wordsByStack: Record<string, string[]> = {}
   const drawnWords: string[] = []
-  let used = [...usedWords]
+  let used = usedWords
 
   for (const option of gameMode.stacks.options) {
     const words = getWordsForDeck(option.wordDeck, gameMode.stacks.wordCount, used)
     wordsByStack[option.id] = words
     drawnWords.push(...words)
-    used = Array.from(new Set([...used, ...words.map(word => word.toUpperCase())]))
+    used = appendUsedWords(used, words)
   }
 
   return Response.json({

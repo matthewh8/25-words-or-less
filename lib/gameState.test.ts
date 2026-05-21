@@ -6,11 +6,10 @@ import {
   clampTurnSeconds,
   gameReducer,
   initGame,
-  winningBidAmount,
   type CluingState,
   type GameState,
 } from './gameState'
-import { buildGameMode } from './gameMode'
+import { buildGameMode, DEFAULT_GAME_MODE } from './gameMode'
 
 function startCluingByConcede(initial: GameState, amount = 20): GameState {
   const afterBid = gameReducer(initial, { type: 'PLACE_BID', amount })
@@ -42,7 +41,7 @@ describe('bid validation', () => {
     expect(canPlaceBid(5, 25)).toBe(true)
     expect(canPlaceBid(4, 25)).toBe(false)
     expect(canPlaceBid(12.5, 25)).toBe(false)
-    expect(winningBidAmount()).toBe(5)
+    expect(DEFAULT_GAME_MODE.bidding.wordCount).toBe(5)
   })
 
   it('ignores invalid bids in the reducer', () => {
@@ -297,14 +296,6 @@ describe('phase edges', () => {
     const result = gameReducer(cluingState, { type: 'END_CLUING' })
 
     expect(gameReducer(result, { type: 'TIMER_TICK' })).toBe(result)
-  })
-
-  it('ignores stale word refreshes after the round has ended', () => {
-    const bidding = gameReducer(initGame('A', 'B'), { type: 'START_BIDDING', firstTeam: 0 })
-    const cluingState = startCluingByConcede(bidding)
-    const result = gameReducer(cluingState, { type: 'END_CLUING' })
-
-    expect(gameReducer(result, { type: 'REFRESH_WORDS', words: ['LATE', 'WORDS'] })).toBe(result)
   })
 
   it('captures the revealed words, statuses, and dealt definitions when cluing ends', () => {

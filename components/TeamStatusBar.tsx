@@ -1,6 +1,7 @@
 'use client'
 
 import type { TeamState } from '@/lib/gameState'
+import { TEAM_COLORS } from '@/lib/teamColors'
 import { teamPlayerLine } from './TeamNameBlock'
 
 interface TeamStatusBarProps {
@@ -9,10 +10,7 @@ interface TeamStatusBarProps {
   activeLabel?: string
   caption?: string
   compact?: boolean
-  showScores?: boolean
 }
-
-const TEAM_COLORS = ['#ff3a6d', '#3a8bff'] as const
 
 export default function TeamStatusBar({
   teams,
@@ -20,7 +18,6 @@ export default function TeamStatusBar({
   activeLabel = 'Up',
   caption,
   compact,
-  showScores = true,
 }: TeamStatusBarProps) {
   return (
     <section className={`min-w-0 overflow-hidden rounded-lg border border-white/10 bg-[#101522] ${compact ? 'p-2' : 'p-3 md:p-4'}`} aria-label="Team assignments">
@@ -56,11 +53,9 @@ export default function TeamStatusBar({
                     <div className="min-w-0 truncate text-[10px] font-bold leading-snug text-white/45 md:text-[11px]">{playerLine}</div>
                   </div>
                 </div>
-                {showScores && (
-                  <div className={`shrink-0 text-xl font-black tabular-nums tracking-normal ${active ? 'text-[#ffd23f]' : 'text-white'} md:text-2xl`}>
-                    {team.score.toLocaleString()}
-                  </div>
-                )}
+                <div className={`shrink-0 text-xl font-black tabular-nums tracking-normal ${active ? 'text-[#ffd23f]' : 'text-white'} md:text-2xl`}>
+                  {team.score.toLocaleString()}
+                </div>
               </div>
             </div>
           )

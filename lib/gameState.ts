@@ -16,6 +16,7 @@ import {
   type StackDeal,
 } from './dealing'
 import { scoreCluing } from './scoring'
+import { pickDefinitions } from './wordSelection'
 
 export type Phase =
   | 'setup'
@@ -106,19 +107,36 @@ function clampSeconds(value: number, fallback: number, gameMode: GameMode): numb
   return Math.min(gameMode.timing.maxSeconds, Math.max(gameMode.timing.minSeconds, Math.round(value)))
 }
 
+const CLUING_PHASES = new Set<Phase>(['round1_cluing', 'round23_cluing', 'money_cluing'])
+
+export function isCluingPhase(phase: Phase): boolean {
+  return CLUING_PHASES.has(phase)
+}
+
+export function biddingExhausted(state: GameState): boolean {
+  return state.round1Contests + 1 >= state.gameMode.bidding.contests
+}
+
+export function leadingTeam(teams: [TeamState, TeamState]): 0 | 1 {
+  return teams[0].score >= teams[1].score ? 0 : 1
+}
+
+export function stackRoundDone(state: GameState): boolean {
+  if (!state.stackBoard) return false
+  const board = state.stackBoard
+  const stacksExhausted = board.usedStackIds.length >= state.gameMode.stacks.options.length
+  return board.turnsLeft - 1 <= 0 || stacksExhausted
+}
+
 export function canPlaceBid(
   amount: number,
   currentBid: number,
   gameMode: GameMode = DEFAULT_GAME_MODE
 ): boolean {
   return Number.isInteger(amount)
-    && amount >= winningBidAmount(gameMode)
+    && amount >= gameMode.bidding.wordCount
     && amount < currentBid
     && currentBid <= gameMode.bidding.maxBid
-}
-
-export function winningBidAmount(gameMode: GameMode = DEFAULT_GAME_MODE): number {
-  return gameMode.bidding.wordCount
 }
 
 function nextUnguessed(guessed: boolean[], from: number): number {
@@ -130,22 +148,20 @@ function nextUnguessed(guessed: boolean[], from: number): number {
   return from
 }
 
-function isCluingPhase(phase: Phase): boolean {
-  return phase === 'round1_cluing' || phase === 'round23_cluing' || phase === 'money_cluing'
+function dealHand(
+  state: GameState,
+  deckId: WordDeckId,
+  count: number,
+  action: { words?: string[]; wordDefinitions?: Record<string, string> },
+): { words: string[]; definitions: Record<string, string>; usedWords: string[] } {
+  const words = dealtWordsOrFallback(deckId, count, state.usedWords, action.words)
+  return {
+    words,
+    definitions: pickDefinitions(words, action.wordDefinitions),
+    usedWords: appendUsedWords(state.usedWords, words),
+  }
 }
 
-function definitionsForWords(words: string[], definitions: Record<string, string> | undefined): Record<string, string> {
-  const cleanDefinitions: Record<string, string> = {}
-  const source = definitions ?? {}
-  for (const word of words) {
-    const canonical = word.trim().toUpperCase()
-    const definition = source[canonical] ?? source[word]
-    if (typeof definition === 'string' && definition.trim()) {
-      cleanDefinitions[canonical] = definition.trim()
-    }
-  }
-  return cleanDefinitions
-}
 
 function revealFromCluing(cluing: CluingState): WordRevealState {
   return {
@@ -153,7 +169,7 @@ function revealFromCluing(cluing: CluingState): WordRevealState {
     deckId: cluing.deckId,
     label: cluing.label,
     words: [...cluing.words],
-    definitions: definitionsForWords(cluing.words, cluing.definitions),
+    definitions: pickDefinitions(cluing.words, cluing.definitions),
     guessed: [...cluing.guessed],
     cluingTeam: cluing.cluingTeam,
   }
@@ -170,7 +186,7 @@ function startBiddingClue(state: GameState, bid: BidState, mode: GameMode): Game
       deckId: mode.bidding.wordDeck,
       label: mode.bidding.title,
       words: bid.words,
-      definitions: definitionsForWords(bid.words, bid.definitions),
+      definitions: pickDefinitions(bid.words, bid.definitions),
       wordsLeft: bid.currentBid,
       wordLimit: bid.currentBid,
       timeLeft: state.roundTime,
@@ -237,25 +253,23 @@ export type GameAction =
   | { type: 'START_MONEY_ROUND'; words?: string[]; wordDefinitions?: Record<string, string>; moneyTime?: number }
   | { type: 'ADVANCE_PHASE'; roundTime?: number; moneyTime?: number; firstTeam?: 0 | 1; nextStackDeal?: StackDeal }
   | { type: 'REFRESH_BID'; words?: string[]; wordDefinitions?: Record<string, string> }
-  | { type: 'REFRESH_WORDS'; words?: string[]; wordDefinitions?: Record<string, string> }
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   const mode = state.gameMode
 
   switch (action.type) {
     case 'START_BIDDING': {
-      const words = dealtWordsOrFallback(mode.bidding.wordDeck, mode.bidding.wordCount, state.usedWords, action.words)
-      const definitions = definitionsForWords(words, action.wordDefinitions)
+      const hand = dealHand(state, mode.bidding.wordDeck, mode.bidding.wordCount, action)
       return {
         ...state,
         phase: 'round1_bidding',
         ...(action.roundTime !== undefined && { roundTime: clampTurnSeconds(action.roundTime, mode) }),
-        usedWords: appendUsedWords(state.usedWords, words),
+        usedWords: hand.usedWords,
         lastResult: null,
         lastReveal: null,
         bid: {
-          words,
-          definitions,
+          words: hand.words,
+          definitions: hand.definitions,
           currentBid: mode.bidding.maxBid,
           biddingTeam: action.firstTeam,
           activeBidder: action.firstTeam,
@@ -275,7 +289,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         activeBidder: next,
         biddingTeam: state.bid.activeBidder,
       }
-      if (action.amount === winningBidAmount(mode)) {
+      if (action.amount === mode.bidding.wordCount) {
         return startBiddingClue(state, bid, mode)
       }
       return {
@@ -312,7 +326,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'MARK_CORRECT': {
       if (!state.cluing || !isCluingPhase(state.phase)) return state
-      if (state.cluing.timeLeft <= 0 || state.cluing.wordsLeft < 0) return state
+      if (state.cluing.timeLeft <= 0) return state
       const { guessed, currentWordIndex } = state.cluing
       const newGuessed = [...guessed]
       newGuessed[currentWordIndex] = true
@@ -329,7 +343,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'MARK_SKIP': {
       if (!state.cluing || !isCluingPhase(state.phase)) return state
       if (!mode.clueActions.allowSkip) return state
-      if (state.cluing.timeLeft <= 0 || state.cluing.wordsLeft < 0) return state
+      if (state.cluing.timeLeft <= 0) return state
       if (!canSkipCurrentWord(state.cluing)) return state
       const { guessed, currentWordIndex } = state.cluing
       const nextIndex = nextUnguessed(guessed, currentWordIndex)
@@ -384,14 +398,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         lastReveal: revealFromCluing(state.cluing),
         lastChallenge: challenge,
         challengesShown: challenge ? state.challengesShown + 1 : state.challengesShown,
-        moneyWon: result.moneyWon,
+        ...(isMoneyRound && { moneyWon: result.moneyWon }),
       }
     }
 
     case 'NEXT_AFTER_RESULT': {
       if (state.phase === 'round1_result') {
         const newContests = state.round1Contests + 1
-        if (newContests >= mode.bidding.contests) {
+        if (biddingExhausted(state)) {
           const firstStackRound = mode.stacks.rounds[0]
           const { board, drawnWords } = initialStackBoard(mode, firstStackRound.number, state.usedWords, action.nextStackDeal)
           return {
@@ -403,12 +417,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             usedWords: appendUsedWords(state.usedWords, drawnWords),
             bid: null,
             cluing: null,
+            lastResult: null,
             lastReveal: null,
+            lastChallenge: null,
           }
         }
         const nextFirst: 0 | 1 = state.bid?.biddingTeam === 0 ? 1 : 0
         return gameReducer(
-          { ...state, round1Contests: newContests, bid: null, cluing: null, lastReveal: null },
+          { ...state, round1Contests: newContests, bid: null, cluing: null, lastReveal: null, lastChallenge: null },
           { type: 'START_BIDDING', firstTeam: nextFirst, words: action.nextBidWords, wordDefinitions: action.nextBidDefinitions }
         )
       }
@@ -417,8 +433,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         if (!state.stackBoard) return state
         const board = state.stackBoard
         const newTurns = board.turnsLeft - 1
-        const stacksExhausted = board.usedStackIds.length >= mode.stacks.options.length
-        if (newTurns <= 0 || stacksExhausted) {
+        if (stackRoundDone(state)) {
           const nextStackRound = getNextStackRound(mode, state.currentRound)
           if (nextStackRound) {
             const { board: newBoard, drawnWords } = initialStackBoard(mode, nextStackRound.number, state.usedWords, action.nextStackDeal)
@@ -431,9 +446,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
               cluing: null,
               lastResult: null,
               lastReveal: null,
+              lastChallenge: null,
             }
           }
-          return { ...state, phase: 'money_intro', cluing: null, lastResult: null, lastReveal: null }
+          return { ...state, phase: 'money_intro', cluing: null, lastResult: null, lastReveal: null, lastChallenge: null }
         }
         const nextTeam: 0 | 1 = board.currentTeam === 0 ? 1 : 0
         return {
@@ -476,7 +492,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           stackId: stack.id,
           label: stack.label,
           words,
-          definitions: definitionsForWords(words, state.stackBoard.definitions),
+          definitions: pickDefinitions(words, state.stackBoard.definitions),
           wordsLeft: mode.stacks.wordLimit,
           wordLimit: mode.stacks.wordLimit,
           timeLeft: state.roundTime,
@@ -491,27 +507,25 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'START_MONEY_ROUND': {
       if (state.phase !== 'money_intro') return state
       const moneyTime = action.moneyTime !== undefined ? clampMoneySeconds(action.moneyTime, mode) : state.moneyTime
-      const words = dealtWordsOrFallback(mode.money.wordDeck, mode.money.wordCount, state.usedWords, action.words)
-      const definitions = definitionsForWords(words, action.wordDefinitions)
-      const winnerTeam: 0 | 1 = state.teams[0].score >= state.teams[1].score ? 0 : 1
+      const hand = dealHand(state, mode.money.wordDeck, mode.money.wordCount, action)
       return {
         ...state,
         phase: 'money_cluing',
         moneyTime,
-        usedWords: appendUsedWords(state.usedWords, words),
+        usedWords: hand.usedWords,
         lastReveal: null,
         cluing: {
           stream: 'money',
           deckId: mode.money.wordDeck,
           label: mode.money.title,
-          words,
-          definitions,
+          words: hand.words,
+          definitions: hand.definitions,
           wordsLeft: mode.money.wordLimit,
           wordLimit: mode.money.wordLimit,
           timeLeft: moneyTime,
-          guessed: Array(words.length).fill(false),
+          guessed: Array(hand.words.length).fill(false),
           skipCount: 0,
-          cluingTeam: winnerTeam,
+          cluingTeam: leadingTeam(state.teams),
           currentWordIndex: 0,
         },
       }
@@ -569,37 +583,16 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'REFRESH_BID': {
       if (!state.bid || state.phase !== 'round1_bidding') return state
-      const words = dealtWordsOrFallback(mode.bidding.wordDeck, mode.bidding.wordCount, state.usedWords, action.words)
-      const definitions = definitionsForWords(words, action.wordDefinitions)
+      const hand = dealHand(state, mode.bidding.wordDeck, mode.bidding.wordCount, action)
       return {
         ...state,
-        usedWords: appendUsedWords(state.usedWords, words),
+        usedWords: hand.usedWords,
         bid: {
           ...state.bid,
-          words,
-          definitions,
+          words: hand.words,
+          definitions: hand.definitions,
           currentBid: mode.bidding.maxBid,
           biddingTimeLeft: mode.timing.biddingSeconds,
-        },
-      }
-    }
-
-    case 'REFRESH_WORDS': {
-      if (!state.cluing) return state
-      if (!isCluingPhase(state.phase)) return state
-      const words = dealtWordsOrFallback(state.cluing.deckId, state.cluing.words.length, state.usedWords, action.words)
-      const definitions = definitionsForWords(words, action.wordDefinitions)
-      return {
-        ...state,
-        usedWords: appendUsedWords(state.usedWords, words),
-        cluing: {
-          ...state.cluing,
-          words,
-          definitions,
-          wordsLeft: state.cluing.wordLimit,
-          guessed: Array(words.length).fill(false),
-          skipCount: 0,
-          currentWordIndex: 0,
         },
       }
     }

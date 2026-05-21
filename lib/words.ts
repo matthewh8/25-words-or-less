@@ -1,8 +1,6 @@
 import wordBankData from '@/data/words/word-bank.json'
-import type { WordDeckId } from './gameMode'
-import { pickWords, type WordPools } from './wordSelection'
-
-export { pickWords } from './wordSelection'
+import { DECK_IDS, type WordDeckId } from './gameMode'
+import { pickDefinitions, pickWords, type WordPools } from './wordSelection'
 
 export type Difficulty = 'green' | 'yellow' | 'red'
 
@@ -49,10 +47,10 @@ const wordBank = wordBankData as WordBankData
 // Every playable entry is a single distinct word, including money.
 export const WORD_BANK_SOURCES: WordSource[] = wordBank.sources.map(source => ({ ...source }))
 
-export const greenWords: string[] = [...wordBank.decks.green]
-export const yellowWords: string[] = [...wordBank.decks.yellow]
-export const redWords: string[] = [...wordBank.decks.red]
-export const moneyWords: string[] = [...wordBank.decks.money]
+const greenWords: string[] = [...wordBank.decks.green]
+const yellowWords: string[] = [...wordBank.decks.yellow]
+const redWords: string[] = [...wordBank.decks.red]
+const moneyWords: string[] = [...wordBank.decks.money]
 const WORD_DEFINITIONS: Record<string, string> = wordBank.definitions ?? {}
 
 const WORD_POOLS: WordPools = {
@@ -63,30 +61,8 @@ const WORD_POOLS: WordPools = {
   money: moneyWords,
 }
 
-export function getWordPools(): WordPools {
-  return {
-    bidding: [...WORD_POOLS.bidding],
-    green: [...WORD_POOLS.green],
-    yellow: [...WORD_POOLS.yellow],
-    red: [...WORD_POOLS.red],
-    money: [...WORD_POOLS.money],
-  }
-}
-
 export function getWordsForDeck(deckId: WordDeckId, count: number, usedWords: string[] = []): string[] {
   return pickWords(WORD_POOLS[deckId], count, usedWords)
-}
-
-export function getBiddingWords(usedWords: string[] = []): string[] {
-  return getWordsForDeck('bidding', 5, usedWords)
-}
-
-export function getColorWords(difficulty: Difficulty, usedWords: string[] = []): string[] {
-  return getWordsForDeck(difficulty, 5, usedWords)
-}
-
-export function getMoneyWords(usedWords: string[] = []): string[] {
-  return getWordsForDeck('money', 10, usedWords)
 }
 
 const BLOCKED_WORDS = new Set([
@@ -284,11 +260,9 @@ const BLOCKED_PATTERNS = [
   /^PEDOPHIL/,
 ]
 
-const VALID_WORD_DECK_IDS = new Set<WordDeckId>(['bidding', 'green', 'yellow', 'red', 'money'])
 const VALID_DIFFICULTIES = new Set<WordDeck['difficulty']>(['green', 'yellow', 'red', 'money'])
 const WORD_ENTRY_PATTERN = /^[A-Z0-9]+$/
 const SOURCE_ID_PATTERN = /^[a-z0-9][a-z0-9-]*$/
-const SINGLE_WORD_DECK_IDS = new Set<WordDeckId>(['bidding', 'green', 'yellow', 'red', 'money'])
 
 function canonicalWordEntry(word: string): string {
   return word.trim().replace(/\s+/g, ' ')
@@ -298,19 +272,8 @@ function spacingInsensitiveKey(word: string): string {
   return canonicalWordEntry(word).replace(/\s/g, '')
 }
 
-export function getWordDefinition(word: string): string {
-  const canonical = canonicalWordEntry(word).toUpperCase()
-  return WORD_DEFINITIONS[canonical] ?? ''
-}
-
 export function getDefinitionsForWords(words: string[]): Record<string, string> {
-  const definitions: Record<string, string> = {}
-  for (const word of words) {
-    const canonical = canonicalWordEntry(word).toUpperCase()
-    const definition = WORD_DEFINITIONS[canonical]
-    if (definition) definitions[canonical] = definition
-  }
-  return definitions
+  return pickDefinitions(words, WORD_DEFINITIONS)
 }
 
 function isRomanNumeralArtifact(word: string): boolean {
@@ -442,7 +405,7 @@ export function validateWordBank(
     const deckId = typeof deck.id === 'string' && deck.id ? deck.id : '(missing id)'
     if (seenDeckIds.has(deckId)) errors.push(`${deckId} deck id is duplicated`)
     seenDeckIds.add(deckId)
-    if (!VALID_WORD_DECK_IDS.has(deck.id)) errors.push(`${deckId} deck has invalid id`)
+    if (!DECK_IDS.has(deck.id)) errors.push(`${deckId} deck has invalid id`)
     if (!VALID_DIFFICULTIES.has(deck.difficulty)) errors.push(`${deckId} deck has invalid difficulty ${deck.difficulty}`)
     if (!Array.isArray(deck.sourceIds) || deck.sourceIds.length === 0) errors.push(`${deckId} deck must include source attribution`)
     if (!Array.isArray(deck.words) || !deck.words.length) errors.push(`${deckId} deck is empty`)
@@ -469,7 +432,7 @@ export function validateWordBank(
       if (!WORD_ENTRY_PATTERN.test(canonical)) errors.push(`${label} has invalid characters: ${canonical}`)
       if (isBlockedWord(canonical)) errors.push(`${label} is blocked by safety filter: ${canonical}`)
       const wordCount = canonical.split(' ').length
-      if (SINGLE_WORD_DECK_IDS.has(deck.id) && wordCount !== 1) {
+      if (DECK_IDS.has(deck.id) && wordCount !== 1) {
         errors.push(`${label} must be a single word for ${deck.id}: ${canonical}`)
       }
       if (seen.has(canonical)) errors.push(`${deckId} contains duplicate word: ${canonical}`)

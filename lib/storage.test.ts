@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import {
   clearSavedSetup,
   clearUsedWords,
-  mergeUsedWords,
   readSavedSetup,
   readUsedWords,
   USED_WORD_HISTORY_LIMIT,
@@ -71,8 +70,10 @@ class BadJsonAndBlockedCleanupStorage extends MemoryStorage {
 }
 
 describe('used-word storage', () => {
-  it('dedupes, normalizes, and merges word history', () => {
-    expect(mergeUsedWords(['apple', 'BANANA'], ['banana', 'Cherry'])).toEqual(['APPLE', 'BANANA', 'CHERRY'])
+  it('dedupes, normalizes, and trims when writing combined history', () => {
+    const storage = new MemoryStorage()
+    writeUsedWords(['apple', 'BANANA', 'banana', 'Cherry'], storage)
+    expect(readUsedWords(storage)).toEqual(['APPLE', 'BANANA', 'CHERRY'])
   })
 
   it('recovers from corrupt localStorage data', () => {

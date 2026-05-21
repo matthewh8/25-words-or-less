@@ -188,7 +188,7 @@ export const DEFAULT_GAME_MODE: GameMode = {
   },
 }
 
-const DECK_IDS = new Set<WordDeckId>(['bidding', 'green', 'yellow', 'red', 'money'])
+export const DECK_IDS = new Set<WordDeckId>(['bidding', 'green', 'yellow', 'red', 'money'])
 const FAILURE_AWARDS = new Set<FailureAward>(['opponent', 'cluing', 'none'])
 const CHALLENGE_FREQUENCIES = new Set<ChallengeFrequency>(['off', 'low', 'normal', 'high'])
 
@@ -599,10 +599,6 @@ export function summarizeGameMode(gameMode: GameMode): GameModeSummary {
   }
 }
 
-export function getStackOption(gameMode: GameMode, stackId: string): StackOptionRules {
-  return findStackOption(gameMode, stackId) ?? gameMode.stacks.options[0]
-}
-
 export function findStackOption(gameMode: GameMode, stackId: string): StackOptionRules | undefined {
   return gameMode.stacks.options.find(option => option.id === stackId)
 }
@@ -613,5 +609,5 @@ export function getStackRound(gameMode: GameMode, roundNumber: number): StackRou
 
 export function getNextStackRound(gameMode: GameMode, roundNumber: number): StackRoundRules | undefined {
   const currentIndex = gameMode.stacks.rounds.findIndex(round => round.number === roundNumber)
-  return currentIndex >= 0 ? gameMode.stacks.rounds[currentIndex + 1] : gameMode.stacks.rounds[0]
+  return currentIndex >= 0 ? gameMode.stacks.rounds[currentIndex + 1] : undefined
 }

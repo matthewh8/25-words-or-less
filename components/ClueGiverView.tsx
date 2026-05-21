@@ -1,14 +1,15 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 import type { GameState, GameAction } from '@/lib/gameState'
 import { canSkipCurrentWord } from '@/lib/gameState'
-import { getStackOption } from '@/lib/gameMode'
-import { clueControlGameAction, type ClueControlAvailability, type ClueControlGameAction } from '@/lib/clueControls'
+import { findStackOption } from '@/lib/gameMode'
+import { clueControlGameAction, type ClueControlGameAction } from '@/lib/clueControls'
 import { clueKeyboardAction } from '@/lib/keyboard'
-import { matchSpeechToTarget, shouldAutoAcceptSpeechMatch } from '@/lib/speech'
-import { getSpeechRecognitionConstructor, isSpeechRecognitionSupported, stopSpeechRecognitionSafely } from '@/lib/speechBrowser'
+import { isSpeechRecognitionSupported } from '@/lib/speechBrowser'
 import { useActionInterval } from '@/lib/useActionInterval'
+import { useClueSounds, type ClueSound } from '@/lib/clueSounds'
+import { useSpeechMatch } from '@/lib/useSpeechMatch'
 import Timer from './Timer'
 import TeamStatusBar from './TeamStatusBar'
 
@@ -21,28 +22,14 @@ interface ActiveProps extends Props {
   cluing: NonNullable<GameState['cluing']>
 }
 
-type ControlSound = 'word' | 'skip' | 'correct' | 'end'
-
-type AudioWindow = Window & typeof globalThis & {
-  webkitAudioContext?: typeof AudioContext
-}
-
 export default function ClueGiverView({ state, dispatch }: Props) {
   if (!state.cluing) return null
   return <ActiveClueGiverView state={state} dispatch={dispatch} cluing={state.cluing} />
 }
 
-function subscribeSpeechSupport() {
-  return () => undefined
-}
-
-function getSpeechSupportSnapshot() {
-  return isSpeechRecognitionSupported()
-}
-
-function getSpeechSupportServerSnapshot() {
-  return false
-}
+const subscribeSpeechSupport = () => () => undefined
+const getSpeechSupportSnapshot = () => isSpeechRecognitionSupported()
+const getSpeechSupportServerSnapshot = () => false
 
 function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
   const { teams } = state
@@ -53,14 +40,10 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
     getSpeechSupportSnapshot,
     getSpeechSupportServerSnapshot
   )
-  const [listening, setListening] = useState(false)
-  const [speechNotice, setSpeechNotice] = useState('')
-  const [lastTranscript, setLastTranscript] = useState('')
-  const soundEnabledRef = useRef(soundEnabled)
-  const audioContextRef = useRef<AudioContext | null>(null)
+  const playSound = useClueSounds(soundEnabled)
 
   const { words, guessed, wordsLeft, wordLimit, timeLeft, stream, cluingTeam, currentWordIndex } = cluing
-  const stack = stream === 'stack' ? getStackOption(state.gameMode, cluing.stackId ?? '') : null
+  const stack = stream === 'stack' ? findStackOption(state.gameMode, cluing.stackId ?? '') : null
   const accent = stream === 'bidding' || stream === 'money' ? '#ffd23f' : stack?.color ?? '#ffd23f'
   const moneyStream = stream === 'money'
   const mobileClueGridRows = stream === 'money'
@@ -69,128 +52,36 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
   const timeTotal = stream === 'money' ? state.moneyTime : state.roundTime
   const allGuessed = guessed.every(Boolean)
   const noWordsLeft = wordsLeft === 0
-  const overBudget = wordsLeft < 0
-  const displayedWordsLeft = Math.max(0, wordsLeft)
-  const dead = timeLeft === 0 || overBudget || allGuessed
+  const dead = timeLeft === 0 || allGuessed
   const currentWord = words[currentWordIndex]
   const canRefund = !dead && state.gameMode.clueActions.allowBudgetRefund && wordsLeft < wordLimit
   const canSkip = !dead && state.gameMode.clueActions.allowSkip && canSkipCurrentWord(cluing)
-  const playControlSound = useCallback((kind: ControlSound) => {
-    if (!soundEnabledRef.current || typeof window === 'undefined') return
-    const AudioContextConstructor = window.AudioContext ?? (window as AudioWindow).webkitAudioContext
-    if (!AudioContextConstructor) return
 
-    const context = audioContextRef.current ?? new AudioContextConstructor()
-    audioContextRef.current = context
-    if (context.state === 'suspended') void context.resume()
-
-    const now = context.currentTime
-    const oscillator = context.createOscillator()
-    const gain = context.createGain()
-    const frequency = kind === 'correct' ? 660 : kind === 'skip' ? 220 : kind === 'end' ? 160 : 420
-    const duration = kind === 'correct' ? 0.16 : 0.1
-
-    oscillator.type = kind === 'skip' || kind === 'end' ? 'triangle' : 'sine'
-    oscillator.frequency.setValueAtTime(frequency, now)
-    if (kind === 'correct') oscillator.frequency.exponentialRampToValueAtTime(880, now + duration)
-    gain.gain.setValueAtTime(0.0001, now)
-    gain.gain.exponentialRampToValueAtTime(0.055, now + 0.012)
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration)
-    oscillator.connect(gain).connect(context.destination)
-    oscillator.start(now)
-    oscillator.stop(now + duration + 0.02)
-  }, [])
-
-  const controlsRef = useRef<ClueControlAvailability & {
-    dispatch: (a: GameAction) => void
-    playSound: (kind: ControlSound) => void
-  }>({
+  const onSpeechMatch = useCallback(() => dispatch({ type: 'MARK_CORRECT' }), [dispatch])
+  const { listening, notice: speechNotice, transcript: lastTranscript } = useSpeechMatch({
+    currentWord,
+    enabled: speechEnabled,
     dead,
-    canRefund,
-    canSkip,
-    dispatch,
-    playSound: playControlSound,
+    onMatch: onSpeechMatch,
   })
-
-  useEffect(() => {
-    controlsRef.current = { dead, canRefund, canSkip, dispatch, playSound: playControlSound }
-  }, [canRefund, canSkip, dead, dispatch, playControlSound])
-
-  useEffect(() => {
-    soundEnabledRef.current = soundEnabled
-  }, [soundEnabled])
 
   useActionInterval(() => dispatch({ type: 'TIMER_TICK' }), timeLeft > 0 ? 1000 : null)
 
-  // Arrow controls mirror the visible touch controls.
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       const action = clueKeyboardAction(e)
       if (action) e.preventDefault()
-      const controls = controlsRef.current
-      const gameAction = clueControlGameAction(action, controls)
+      const gameAction = clueControlGameAction(action, { dead, canRefund, canSkip })
       if (!gameAction) return
-
-      controls.playSound(soundForAction(gameAction))
-      controls.dispatch({ type: gameAction })
+      playSound(soundForAction(gameAction))
+      dispatch({ type: gameAction })
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  }, [canRefund, canSkip, dead, dispatch, playSound])
 
-  useEffect(() => {
-    const Recognition = getSpeechRecognitionConstructor()
-    if (!speechEnabled || !Recognition || dead || !currentWord) {
-      return
-    }
-
-    const recognition = new Recognition()
-    recognition.continuous = true
-    recognition.interimResults = true
-    recognition.lang = 'en-US'
-    recognition.onstart = () => {
-      setListening(true)
-      setSpeechNotice('Listening')
-    }
-    recognition.onend = () => setListening(false)
-    recognition.onerror = () => {
-      setListening(false)
-      setSpeechNotice('Speech recognition stopped')
-    }
-    recognition.onresult = event => {
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const result = event.results[i]
-        const transcript = result[0]?.transcript ?? ''
-        if (!transcript) continue
-        setLastTranscript(transcript.trim())
-        const match = matchSpeechToTarget(currentWord, transcript)
-        if (match.matched) {
-          const confidence = result[0]?.confidence ?? 1
-          if (!shouldAutoAcceptSpeechMatch(match, result.isFinal, confidence)) {
-            setSpeechNotice(`Maybe ${currentWord}; tap Correct to confirm`)
-            continue
-          }
-          setSpeechNotice(`Matched ${currentWord}`)
-          dispatch({ type: 'MARK_CORRECT' })
-          stopSpeechRecognitionSafely(recognition)
-          return
-        }
-      }
-    }
-
-    try {
-      recognition.start()
-    } catch {
-      queueMicrotask(() => setSpeechNotice('Speech recognition unavailable'))
-    }
-
-    return () => {
-      stopSpeechRecognitionSafely(recognition)
-    }
-  }, [currentWord, dead, dispatch, speechEnabled])
-
-  function dispatchClueAction(action: GameAction, sound: ControlSound) {
-    playControlSound(sound)
+  function dispatchClueAction(action: GameAction, sound: ClueSound) {
+    playSound(sound)
     dispatch(action)
   }
 
@@ -228,17 +119,17 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
           <div className="rounded-lg border border-white/10 bg-[#141826] p-3 text-center md:p-4">
             <p className="mono-label text-white/35 text-[9px] mb-1">Words left</p>
             <div className={`text-4xl font-black tabular-nums tracking-normal md:text-5xl ${
-              displayedWordsLeft <= 5 ? 'text-[#ff3a6d]' : displayedWordsLeft <= 10 ? 'text-[#ffd23f]' : 'text-white'
+              wordsLeft <= 5 ? 'text-[#ff3a6d]' : wordsLeft <= 10 ? 'text-[#ffd23f]' : 'text-white'
             }`}>
-              {displayedWordsLeft}
+              {wordsLeft}
               <span className="text-base text-white/25 font-normal"> /{wordLimit}</span>
             </div>
             <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden mt-3">
               <div
                 className={`h-full rounded-full transition-all ${
-                  displayedWordsLeft <= 5 ? 'bg-[#ff3a6d]' : displayedWordsLeft <= 10 ? 'bg-[#ffd23f]' : 'bg-[#ffd23f]'
+                  wordsLeft <= 5 ? 'bg-[#ff3a6d]' : 'bg-[#ffd23f]'
                 }`}
-                style={{ width: `${Math.max(0, (displayedWordsLeft / wordLimit) * 100)}%` }}
+                style={{ width: `${Math.max(0, (wordsLeft / wordLimit) * 100)}%` }}
               />
             </div>
           </div>
@@ -289,7 +180,7 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
               </button>
 
               <button
-                onClick={() => dispatchClueAction({ type: 'WORD_USED' }, 'word')}
+                onClick={() => dispatchClueAction({ type: 'WORD_USED' }, noWordsLeft ? 'end' : 'word')}
                 disabled={dead}
                 aria-label={noWordsLeft ? 'End turn with no clue words left' : 'Spend one clue word'}
                 aria-keyshortcuts="ArrowDown"
@@ -378,9 +269,6 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
           {noWordsLeft && !allGuessed && (
             <div className="mt-4 text-[#ffd23f] text-xs font-bold text-center">No clue words left</div>
           )}
-          {overBudget && !allGuessed && (
-            <div className="mt-4 text-[#ff3a6d] text-xs font-bold text-center">Over word budget</div>
-          )}
         </div>
       </div>
 
@@ -388,7 +276,7 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
   )
 }
 
-function soundForAction(action: ClueControlGameAction): ControlSound {
+function soundForAction(action: ClueControlGameAction): ClueSound {
   if (action === 'MARK_CORRECT') return 'correct'
   if (action === 'MARK_SKIP') return 'skip'
   return 'word'

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import PlayerChip from '@/components/PlayerChip'
 import { teamPlayerLine } from '@/components/TeamNameBlock'
 import type { GameModeSummary } from '@/lib/gameMode'
 import { clearSavedSetup, clearUsedWords, readSavedSetup, writeSavedSetup } from '@/lib/storage'
@@ -298,80 +299,39 @@ export default function HomeClient({ gameModes }: HomeClientProps) {
 
             <div className="panel-scroll mt-2 min-h-0 flex-1 overflow-y-auto pr-1">
               <div className="grid content-start gap-2">
-              {rosterLanes.map(lane => {
-                function playerChip(player: string) {
-                  const assignment = playerAssignment(player)
-                  return (
-                    <div key={player} className="grid h-8 min-w-0 shrink-0 basis-[calc(50%_-_0.1875rem)] grid-cols-[minmax(0,1fr)_auto] items-center gap-1 overflow-hidden rounded-md border border-white/10 bg-white/[0.055] px-1.5 leading-none sm:h-9 sm:basis-[calc(50%_-_0.1875rem)] sm:gap-1.5 sm:px-2 2xl:basis-[calc(33.333%_-_0.25rem)]">
-                      <span className="min-w-0 truncate text-[11px] font-black leading-none sm:text-xs">{player}</span>
-                      <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
-                        {assignment !== null && (
-                          <button
-                            type="button"
-                            onClick={() => assignPlayer(player, null)}
-                            aria-label={`Move ${player} to bench`}
-                            className="h-5 w-5 rounded border border-[#ffd23f]/35 text-[9px] font-black leading-none text-[#ffd23f] transition-colors hover:bg-[#ffd23f]/10 sm:h-6 sm:w-6"
-                          >
-                            B
-                          </button>
-                        )}
-                        {assignment !== 0 && (
-                          <button
-                            type="button"
-                            onClick={() => assignPlayer(player, 0)}
-                            aria-label={`Move ${player} to ${teamNames[0] || 'Team 1'}`}
-                            className="h-5 w-5 rounded border border-[#ff3a6d]/35 text-[9px] font-black leading-none text-[#ff8cab] transition-colors hover:bg-[#ff3a6d]/10 sm:h-6 sm:w-6"
-                          >
-                            1
-                          </button>
-                        )}
-                        {assignment !== 1 && (
-                          <button
-                            type="button"
-                            onClick={() => assignPlayer(player, 1)}
-                            aria-label={`Move ${player} to ${teamNames[1] || 'Team 2'}`}
-                            className="h-5 w-5 rounded border border-[#3a8bff]/35 text-[9px] font-black leading-none text-[#8bb8ff] transition-colors hover:bg-[#3a8bff]/10 sm:h-6 sm:w-6"
-                          >
-                            2
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => removePlayer(player)}
-                          aria-label={`Remove ${player}`}
-                          className="h-5 w-5 rounded border border-white/10 text-[9px] leading-none text-white/45 transition-colors hover:text-white sm:h-6 sm:w-6"
-                        >
-                          x
-                        </button>
-                      </div>
+              {rosterLanes.map(lane => (
+                <div
+                  key={lane.id}
+                  className={`min-h-12 min-w-0 rounded-md border sm:min-h-[4.75rem] ${lane.border} bg-[#0a0d14] p-1.5 sm:p-2`}
+                >
+                  <div className="flex items-center justify-between gap-2 leading-none">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className={`h-2 w-2 shrink-0 rounded-full ${lane.dot}`} />
+                      <p className={`mono-label min-w-0 truncate text-[9px] leading-none ${lane.tone}`}>{lane.title}</p>
                     </div>
-                  )
-                }
-
-                return (
-                  <div
-                    key={lane.id}
-                    className={`min-h-12 min-w-0 rounded-md border sm:min-h-[4.75rem] ${lane.border} bg-[#0a0d14] p-1.5 sm:p-2`}
-                  >
-                    <div className="flex items-center justify-between gap-2 leading-none">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <span className={`h-2 w-2 shrink-0 rounded-full ${lane.dot}`} />
-                        <p className={`mono-label min-w-0 truncate text-[9px] leading-none ${lane.tone}`}>{lane.title}</p>
-                      </div>
-                      <span className="mono-label shrink-0 text-[9px] leading-none text-white/35">{lane.names.length}</span>
-                    </div>
-
-                    <div className="mt-1.5 flex min-w-0 flex-wrap content-start gap-1.5 sm:mt-2">
-                      {lane.names.map(playerChip)}
-                      {!lane.names.length && players.length === 0 && (
-                        <p className="grid h-7 w-full place-items-center rounded-md border border-dashed border-white/10 text-center text-[11px] font-bold text-white/25 sm:h-10">
-                          {lane.empty}
-                        </p>
-                      )}
-                    </div>
+                    <span className="mono-label shrink-0 text-[9px] leading-none text-white/35">{lane.names.length}</span>
                   </div>
-                )
-              })}
+
+                  <div className="mt-1.5 flex min-w-0 flex-wrap content-start gap-1.5 sm:mt-2">
+                    {lane.names.map(player => (
+                      <PlayerChip
+                        key={player}
+                        player={player}
+                        assignment={playerAssignment(player)}
+                        team1Name={teamNames[0]}
+                        team2Name={teamNames[1]}
+                        onAssign={assignPlayer}
+                        onRemove={removePlayer}
+                      />
+                    ))}
+                    {!lane.names.length && players.length === 0 && (
+                      <p className="grid h-7 w-full place-items-center rounded-md border border-dashed border-white/10 text-center text-[11px] font-bold text-white/25 sm:h-10">
+                        {lane.empty}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
               </div>
             </div>
 

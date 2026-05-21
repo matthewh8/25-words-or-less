@@ -1,5 +1,7 @@
 'use client'
 
+import { lookupDefinition } from '@/lib/wordSelection'
+
 interface WordRevealListProps {
   words: string[]
   guessed: boolean[]
@@ -7,12 +9,6 @@ interface WordRevealListProps {
   title?: string
   variant?: 'round' | 'money'
   className?: string
-}
-
-function definitionFor(word: string, definitions: Record<string, string> | undefined): string {
-  if (!definitions) return ''
-  const canonical = word.trim().toUpperCase()
-  return definitions[canonical] ?? definitions[word] ?? ''
 }
 
 export default function WordRevealList({
@@ -28,7 +24,6 @@ export default function WordRevealList({
   const gridClassName = variant === 'money'
     ? 'grid-cols-1'
     : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-1'
-  const moneyVariant = variant === 'money'
 
   return (
     <section className={`flex min-h-0 w-full min-w-0 flex-col overflow-hidden rounded-lg border border-white/10 bg-[#141826] p-3 md:p-5 ${className}`}>
@@ -36,7 +31,7 @@ export default function WordRevealList({
       <div className={`panel-scroll grid min-h-0 flex-1 max-h-[44vh] ${gridClassName} gap-1.5 overflow-y-auto pr-1 md:gap-2`}>
         {words.map((word, index) => {
           const correct = Boolean(guessed[index])
-          const definition = definitionFor(word, definitions)
+          const definition = lookupDefinition(word, definitions)
           return (
             <article
               key={`${word}-${index}`}

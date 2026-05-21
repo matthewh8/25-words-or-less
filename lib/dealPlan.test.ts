@@ -115,58 +115,18 @@ describe('deal planning', () => {
     })
   })
 
-  it('refreshes the active clue deck with the current deck id and word count', () => {
-    const state: GameState = {
-      ...initGame('Team A', 'Team B'),
-      phase: 'round23_cluing',
-      cluing: {
-        stream: 'stack',
-        deckId: 'red',
-        stackId: 'red',
-        label: 'Red',
-        words: ['ONE', 'TWO', 'THREE'],
-        definitions: {},
-        wordsLeft: 8,
-        wordLimit: 8,
-        timeLeft: 30,
-        guessed: [false, false, false],
-        skipCount: 0,
-        cluingTeam: 0,
-        currentWordIndex: 0,
-      },
-    }
-
-    const plan = planDeal(state, { type: 'REFRESH_WORDS' })
-
-    expect(plan).toMatchObject({
-      type: 'refresh-words',
-      request: { kind: 'deck', deckId: 'red', count: 3 },
-    })
-    if (plan.type === 'direct') throw new Error('expected refresh deal plan')
-    expect(actionFromDeal(plan, bidWords)).toEqual({
-      type: 'REFRESH_WORDS',
-      words: bidWords.words,
-      wordDefinitions: bidWords.definitions,
-    })
-  })
-
-  it('does not request refresh deals outside active bidding or cluing phases', () => {
+  it('does not request refresh deals outside active bidding', () => {
     const bidding = gameReducer(initGame('Team A', 'Team B'), {
       type: 'START_BIDDING',
       firstTeam: 0,
       words: bidWords.words,
     })
     const afterBid = gameReducer(bidding, { type: 'PLACE_BID', amount: 20 })
-  const cluing = gameReducer(afterBid, { type: 'CONCEDE' })
-    const result = gameReducer(cluing, { type: 'END_CLUING' })
+    const cluing = gameReducer(afterBid, { type: 'CONCEDE' })
 
     expect(planDeal(cluing, { type: 'REFRESH_BID' })).toEqual({
       type: 'direct',
       action: { type: 'REFRESH_BID' },
-    })
-    expect(planDeal(result, { type: 'REFRESH_WORDS' })).toEqual({
-      type: 'direct',
-      action: { type: 'REFRESH_WORDS' },
     })
   })
 

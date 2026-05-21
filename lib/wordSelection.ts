@@ -3,6 +3,28 @@ import type { WordDeckId } from './gameMode'
 export type WordPools = Record<WordDeckId, string[]>
 export type RandomSource = () => number
 
+export function canonicalWord(word: string): string {
+  return word.trim().toUpperCase()
+}
+
+export function lookupDefinition(word: string, definitions: Record<string, string> | undefined): string {
+  if (!definitions) return ''
+  return definitions[canonicalWord(word)] ?? definitions[word] ?? ''
+}
+
+export function pickDefinitions(words: string[], source: Record<string, string> | undefined): Record<string, string> {
+  if (!source) return {}
+  const definitions: Record<string, string> = {}
+  for (const word of words) {
+    const canonical = canonicalWord(word)
+    const definition = source[canonical] ?? source[word]
+    if (typeof definition === 'string' && definition.trim()) {
+      definitions[canonical] = definition.trim()
+    }
+  }
+  return definitions
+}
+
 export const FALLBACK_WORD_POOLS: WordPools = {
   bidding: ['ALPHA', 'BRAVO', 'CHARLIE', 'DELTA', 'ECHO', 'FOXTROT', 'GOLF', 'HOTEL'],
   green: ['APPLE', 'BREAD', 'CHAIR', 'DOOR', 'EAGLE', 'FORK', 'GARDEN', 'HOUSE'],

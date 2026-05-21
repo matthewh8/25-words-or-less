@@ -88,10 +88,6 @@ export function clearUsedWords(storage: Storage | undefined = getBrowserStorage(
   removeStorageItem(storage, STORAGE_KEY)
 }
 
-export function mergeUsedWords(current: string[], incoming: string[]): string[] {
-  return normalizeWords([...current, ...incoming])
-}
-
 function normalizeNames(value: unknown): string[] {
   if (!Array.isArray(value)) return []
   return Array.from(

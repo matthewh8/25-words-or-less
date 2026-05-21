@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import type { GameState, GameAction } from '@/lib/gameState'
-import { winningBidAmount } from '@/lib/gameState'
 import TeamStatusBar from './TeamStatusBar'
 import TimeConfigurator from './TimeConfigurator'
 
@@ -24,7 +23,7 @@ export default function RoundIntro({ state, dispatch }: Props) {
         icon: 'BID',
         bullets: [
           `Both teams see ${gameMode.bidding.wordCount} words`,
-          `Bid down from ${gameMode.bidding.maxBid}; bidding ends when someone takes ${winningBidAmount(gameMode)} or the other team concedes`,
+          `Bid down from ${gameMode.bidding.maxBid}; bidding ends when someone takes ${gameMode.bidding.wordCount} or the other team concedes`,
           `All correct gives the cluing team ${gameMode.bidding.successPoints.toLocaleString()} pts; a miss gives the other team ${gameMode.bidding.failurePoints.toLocaleString()} pts`,
         ],
       }
