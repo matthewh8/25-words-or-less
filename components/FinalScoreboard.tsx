@@ -17,62 +17,73 @@ export default function FinalScoreboard({ state, onRestart }: Props) {
     .map((t, i) => ({ ...t, index: i as 0 | 1 }))
     .sort((a, b) => b.score - a.score)
 
+  const headline = tied ? "Tie game" : `${teams[winner].name} wins!`
+  const subline = tied
+    ? `Both teams ended with ${teams[0].score.toLocaleString()} pts`
+    : `${teams[winner].score.toLocaleString()} pts to ${teams[1 - winner].score.toLocaleString()} pts`
+
   return (
-    <div className="flex h-dvh flex-col items-center justify-center overflow-hidden bg-[#0a0d14] p-3 text-white sm:p-4 md:p-8">
-      <div className="min-h-0 w-full max-w-4xl fade-in-up">
-
-        <div className="mb-4 text-center md:mb-8">
-          <p className="mono-label mb-2 text-xs font-bold text-[#ffd23f] md:mb-3">Game Over</p>
-          <h2 className="text-4xl font-black uppercase leading-[0.9] tracking-normal text-white md:text-6xl">
-            {tied ? "It's a tie!" : (
-              <>
-                <span className="block truncate">{teams[winner].name}</span>
-                <span className="block">wins!</span>
-              </>
+    <div className="flex min-h-dvh flex-col items-center justify-center overflow-y-auto bg-[#0a0d14] p-3 text-white md:p-8">
+      <div className="w-full max-w-5xl fade-in-up">
+        <div className="grid gap-2 md:gap-5 lg:grid-cols-[0.95fr_1.05fr]">
+          <div className={`rounded-lg p-3 md:p-8 ${
+            moneyWon ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-[#ffd23f]/10 border border-[#ffd23f]/30'
+          }`}>
+            <p className="mono-label mb-2 text-[10px] text-[#ffd23f] md:mb-4">Game over</p>
+            <div className={`mb-2 text-4xl font-black uppercase leading-[0.85] md:mb-4 md:text-7xl ${
+              moneyWon ? 'text-[#2de584]' : 'text-white'
+            }`}>
+              {headline}
+            </div>
+            <div className="text-sm text-white/55 md:text-lg">{subline}</div>
+            {moneyWon && (
+              <p className="mt-2 text-xs font-bold text-[#ffd23f] md:mt-3 md:text-sm">+ Money Round jackpot</p>
             )}
-          </h2>
-          {moneyWon && (
-            <p className="text-[#ffd23f]/80 text-sm mt-3">Money Round jackpot</p>
-          )}
-        </div>
+          </div>
 
-        <div className="mb-4 grid gap-2 md:mb-8 md:grid-cols-2 md:gap-3">
-          {sorted.map(({ score, index, ...team }, rank) => {
-            const isWinner = rank === 0 && !tied
-            return (
-              <div
-                key={index}
-                className={`flex min-w-0 items-center justify-between gap-3 rounded-lg px-3 py-3 transition-all sm:px-4 sm:py-4 md:px-5 md:py-6 ${
-                  isWinner
-                    ? 'bg-[#ffd23f]/10 border border-[#ffd23f]/30'
-                    : 'bg-[#141826] border border-white/10'
-                }`}
-              >
-                <div className="flex min-w-0 items-center gap-3">
-                  <span className={`h-3 w-3 rounded-full ${index === 0 ? 'bg-[#ff3a6d]' : 'bg-[#3a8bff]'}`} />
-                  <TeamNameBlock
-                    team={team}
-                    nameClassName={`text-lg font-black uppercase tracking-normal sm:text-xl md:text-2xl ${isWinner ? 'text-[#ffd23f]' : 'text-white'}`}
-                    playersClassName="mt-0.5 text-[10px] font-bold text-white/35 md:text-xs"
-                    maxChars={34}
-                  />
-                </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  {isWinner && (
-                    <span className="rounded-sm bg-[#ffd23f] px-1.5 py-0.5 text-[8px] font-black uppercase text-[#0a0d14]">
-                      Winner
-                    </span>
-                  )}
-                  <span className="text-3xl font-black tabular-nums tracking-normal text-white sm:text-4xl md:text-5xl">{score.toLocaleString()}</span>
-                </div>
-              </div>
-            )
-          })}
+          <section className="flex min-h-0 w-full min-w-0 flex-col overflow-hidden rounded-lg border border-white/10 bg-[#141826] p-3 md:p-5">
+            <p className="mono-label mb-2 text-[10px] text-white/45 md:mb-3">Standings</p>
+            <div className="panel-scroll grid min-h-0 flex-1 max-h-[44vh] grid-cols-1 gap-2 overflow-y-auto pr-1 md:gap-3">
+              {sorted.map(({ score, index, ...team }, rank) => {
+                const isWinner = rank === 0 && !tied
+                return (
+                  <article
+                    key={index}
+                    className={`flex min-w-0 items-center justify-between gap-3 rounded-md border px-3 py-3 md:px-4 md:py-4 ${
+                      isWinner
+                        ? 'border-[#ffd23f]/30 bg-[#ffd23f]/10'
+                        : 'border-white/10 bg-white/[0.03]'
+                    }`}
+                  >
+                    <div className="flex min-w-0 flex-1 items-center gap-2">
+                      <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${index === 0 ? 'bg-[#ff3a6d]' : 'bg-[#3a8bff]'}`} />
+                      <TeamNameBlock
+                        team={team}
+                        nameClassName={`text-base font-black uppercase tracking-normal md:text-xl ${isWinner ? 'text-[#ffd23f]' : 'text-white'}`}
+                        playersClassName="mt-0.5 text-[10px] font-bold text-white/40 md:text-[11px]"
+                        maxChars={30}
+                      />
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      {isWinner && (
+                        <span className="rounded-sm bg-[#ffd23f] px-1.5 py-0.5 text-[8px] font-black uppercase text-[#0a0d14]">
+                          Winner
+                        </span>
+                      )}
+                      <span className={`text-2xl font-black tabular-nums tracking-normal md:text-3xl ${isWinner ? 'text-[#ffd23f]' : 'text-white'}`}>
+                        {score.toLocaleString()}
+                      </span>
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
+          </section>
         </div>
 
         <button
           onClick={onRestart}
-          className="w-full rounded-md bg-[#ffd23f] py-4 text-base font-black uppercase tracking-normal text-[#0a0d14] transition-all hover:bg-[#ffe071] active:scale-95"
+          className="mt-2 w-full rounded-md bg-[#ffd23f] py-3.5 text-base font-black uppercase tracking-normal text-[#0a0d14] transition-all hover:bg-[#ffe071] active:scale-95 md:mt-5 md:py-4"
         >
           Play Again
         </button>
