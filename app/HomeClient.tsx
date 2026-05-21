@@ -255,7 +255,7 @@ export default function HomeClient({ gameModes }: HomeClientProps) {
           </div>
         </section>
 
-        <section className="grid min-h-0 min-w-0 grid-rows-[minmax(0,1fr)_minmax(0,1fr)] gap-2 md:grid-cols-[minmax(18rem,1.08fr)_minmax(17rem,0.92fr)] md:grid-rows-none lg:gap-3">
+        <section className="grid min-h-0 min-w-0 grid-rows-[minmax(0,1fr)_auto] gap-2 md:grid-cols-[minmax(18rem,1.08fr)_minmax(17rem,0.92fr)] md:grid-rows-none lg:gap-3">
           <div className="order-1 flex min-h-0 min-w-0 flex-col rounded-lg border border-white/10 bg-[#141826] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] lg:p-4">
             <div className="mb-1 flex shrink-0 items-end justify-between gap-3 sm:mb-2 sm:gap-4">
               <div>
@@ -302,15 +302,15 @@ export default function HomeClient({ gameModes }: HomeClientProps) {
                 function playerChip(player: string) {
                   const assignment = playerAssignment(player)
                   return (
-                    <div key={player} className="grid h-9 min-w-0 shrink-0 basis-full grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 overflow-hidden rounded-md border border-white/10 bg-white/[0.055] px-2 leading-none sm:basis-[calc(50%_-_0.1875rem)] 2xl:basis-[calc(33.333%_-_0.25rem)]">
-                      <span className="min-w-0 truncate text-xs font-black leading-none">{player}</span>
-                      <div className="flex shrink-0 items-center gap-1">
+                    <div key={player} className="grid h-8 min-w-0 shrink-0 basis-[calc(50%_-_0.1875rem)] grid-cols-[minmax(0,1fr)_auto] items-center gap-1 overflow-hidden rounded-md border border-white/10 bg-white/[0.055] px-1.5 leading-none sm:h-9 sm:basis-[calc(50%_-_0.1875rem)] sm:gap-1.5 sm:px-2 2xl:basis-[calc(33.333%_-_0.25rem)]">
+                      <span className="min-w-0 truncate text-[11px] font-black leading-none sm:text-xs">{player}</span>
+                      <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
                         {assignment !== null && (
                           <button
                             type="button"
                             onClick={() => assignPlayer(player, null)}
                             aria-label={`Move ${player} to bench`}
-                            className="h-6 w-6 rounded border border-[#ffd23f]/35 text-[9px] font-black leading-none text-[#ffd23f] transition-colors hover:bg-[#ffd23f]/10"
+                            className="h-5 w-5 rounded border border-[#ffd23f]/35 text-[9px] font-black leading-none text-[#ffd23f] transition-colors hover:bg-[#ffd23f]/10 sm:h-6 sm:w-6"
                           >
                             B
                           </button>
@@ -320,7 +320,7 @@ export default function HomeClient({ gameModes }: HomeClientProps) {
                             type="button"
                             onClick={() => assignPlayer(player, 0)}
                             aria-label={`Move ${player} to ${teamNames[0] || 'Team 1'}`}
-                            className="h-6 w-6 rounded border border-[#ff3a6d]/35 text-[9px] font-black leading-none text-[#ff8cab] transition-colors hover:bg-[#ff3a6d]/10"
+                            className="h-5 w-5 rounded border border-[#ff3a6d]/35 text-[9px] font-black leading-none text-[#ff8cab] transition-colors hover:bg-[#ff3a6d]/10 sm:h-6 sm:w-6"
                           >
                             1
                           </button>
@@ -330,7 +330,7 @@ export default function HomeClient({ gameModes }: HomeClientProps) {
                             type="button"
                             onClick={() => assignPlayer(player, 1)}
                             aria-label={`Move ${player} to ${teamNames[1] || 'Team 2'}`}
-                            className="h-6 w-6 rounded border border-[#3a8bff]/35 text-[9px] font-black leading-none text-[#8bb8ff] transition-colors hover:bg-[#3a8bff]/10"
+                            className="h-5 w-5 rounded border border-[#3a8bff]/35 text-[9px] font-black leading-none text-[#8bb8ff] transition-colors hover:bg-[#3a8bff]/10 sm:h-6 sm:w-6"
                           >
                             2
                           </button>
@@ -339,7 +339,7 @@ export default function HomeClient({ gameModes }: HomeClientProps) {
                           type="button"
                           onClick={() => removePlayer(player)}
                           aria-label={`Remove ${player}`}
-                          className="h-6 w-6 rounded border border-white/10 text-[9px] leading-none text-white/45 transition-colors hover:text-white"
+                          className="h-5 w-5 rounded border border-white/10 text-[9px] leading-none text-white/45 transition-colors hover:text-white sm:h-6 sm:w-6"
                         >
                           x
                         </button>
@@ -351,7 +351,7 @@ export default function HomeClient({ gameModes }: HomeClientProps) {
                 return (
                   <div
                     key={lane.id}
-                    className={`min-h-[4.75rem] min-w-0 rounded-md border ${lane.border} bg-[#0a0d14] p-2`}
+                    className={`min-h-12 min-w-0 rounded-md border sm:min-h-[4.75rem] ${lane.border} bg-[#0a0d14] p-1.5 sm:p-2`}
                   >
                     <div className="flex items-center justify-between gap-2 leading-none">
                       <div className="flex min-w-0 items-center gap-2">
@@ -361,10 +361,10 @@ export default function HomeClient({ gameModes }: HomeClientProps) {
                       <span className="mono-label shrink-0 text-[9px] leading-none text-white/35">{lane.names.length}</span>
                     </div>
 
-                    <div className="mt-2 flex min-w-0 flex-wrap content-start gap-1.5">
+                    <div className="mt-1.5 flex min-w-0 flex-wrap content-start gap-1.5 sm:mt-2">
                       {lane.names.map(playerChip)}
                       {!lane.names.length && players.length === 0 && (
-                        <p className="grid h-10 w-full place-items-center rounded-md border border-dashed border-white/10 text-center text-[11px] font-bold text-white/25">
+                        <p className="grid h-7 w-full place-items-center rounded-md border border-dashed border-white/10 text-center text-[11px] font-bold text-white/25 sm:h-10">
                           {lane.empty}
                         </p>
                       )}
