@@ -49,7 +49,6 @@ export default function PassToClueGiver({ state, onReady }: Props) {
           teams={teams}
           activeTeam={cluing.cluingTeam}
           activeLabel="Cluing"
-          caption={`${teamName} is up`}
           compact
         />
       </div>

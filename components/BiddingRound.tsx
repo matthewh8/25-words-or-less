@@ -79,7 +79,7 @@ export default function BiddingRound({ state, dispatch }: Props) {
           teams={teams}
           activeTeam={activeBidder}
           activeLabel="Bid now"
-          caption={`${teams[biddingTeam].name} holds ${currentBid}; ${teams[activeBidder].name} lowers or concedes`}
+          caption={`Holding ${currentBid} — other team lowers or concedes`}
           compact
         />
 

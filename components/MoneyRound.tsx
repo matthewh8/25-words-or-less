@@ -14,77 +14,78 @@ interface Props {
 }
 
 export default function MoneyRound({ state, dispatch }: Props) {
-  const { teams, cluing, lastChallenge, lastReveal } = state
+  const { teams, cluing, lastReveal } = state
   const mode = state.gameMode
   const winnerTeam: 0 | 1 = teams[0].score >= teams[1].score ? 0 : 1
   const [time, setTime] = useState(state.moneyTime)
 
   if (state.phase === 'money_intro') {
     return (
-      <div className="flex h-dvh flex-col overflow-hidden bg-[#0a0d14] p-2 text-white sm:p-3 md:p-6">
-        <div className="mx-auto grid h-full min-h-0 w-full min-w-0 max-w-5xl grid-rows-[auto_minmax(0,1fr)_auto] gap-2 fade-in-up sm:gap-3">
+      <div className="flex h-dvh flex-col items-center justify-center overflow-hidden bg-[#0a0d14] p-3 text-white md:p-8">
+        <div className="w-full max-w-5xl fade-in-up">
 
-          <div className="shrink-0 text-center">
-            <div className="mb-1 inline-flex h-9 w-9 items-center justify-center rounded-md bg-[#ffd23f] text-lg font-black text-[#0a0d14] sm:h-11 sm:w-11 md:mb-2 md:h-14 md:w-14 md:text-2xl">
+          <div className="mb-3 flex items-center gap-3 md:mb-8 md:gap-4">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-md bg-[#ffd23f] text-lg font-black text-[#0a0d14] md:h-16 md:w-16 md:text-2xl">
               $
             </div>
-            <p className="mono-label mb-0.5 text-[10px] font-bold text-[#ffd23f] sm:text-xs">Final</p>
-            <h2 className="mx-auto max-w-full break-words text-[clamp(1.75rem,8vw,4.5rem)] font-black uppercase leading-[0.86] text-white">{mode.money.title}</h2>
-            <p className="mt-0.5 text-xs text-white/40 sm:text-sm">Winning team plays for the jackpot</p>
+            <div>
+              <div className="mono-label text-[#ffd23f] text-xs font-bold">Final</div>
+              <div className="text-4xl font-black uppercase leading-[0.9] text-white md:text-5xl">{mode.money.title}</div>
+            </div>
           </div>
 
-          <div className="grid min-h-0 min-w-0 gap-2 overflow-hidden md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] md:gap-3">
-            <div className="grid min-w-0 content-start gap-2 overflow-hidden rounded-lg border border-white/10 bg-[#101522] p-2 sm:p-3 md:p-4">
-              <div className="grid grid-cols-2 gap-2 text-center">
-                <div className="rounded-md border border-white/10 bg-[#141826] p-2 md:p-3">
+          <div className="grid gap-2 md:gap-5 lg:grid-cols-[1fr_360px]">
+            <div className="space-y-2 rounded-lg border border-white/10 bg-[#141826] p-3 md:space-y-3 md:p-5">
+              <div className="grid grid-cols-2 gap-2 text-center md:gap-3">
+                <div className="rounded-md border border-white/10 bg-[#0f1320] p-2 md:p-3">
                   <div className="text-2xl font-black text-white md:text-3xl">{mode.money.wordCount}</div>
-                  <div className="text-[10px] text-white/35 sm:text-xs">words to guess</div>
+                  <div className="text-[10px] text-white/35 md:text-xs">words to guess</div>
                 </div>
-                <div className="rounded-md border border-white/10 bg-[#141826] p-2 md:p-3">
+                <div className="rounded-md border border-white/10 bg-[#0f1320] p-2 md:p-3">
                   <div className="text-2xl font-black text-white md:text-3xl">{mode.money.wordLimit}</div>
-                  <div className="text-[10px] text-white/35 sm:text-xs">clue word limit</div>
+                  <div className="text-[10px] text-white/35 md:text-xs">clue word limit</div>
                 </div>
               </div>
 
-              <TimeConfigurator
-                label="Time limit"
-                value={time}
-                presets={mode.timing.moneyPresets}
-                min={mode.timing.minSeconds}
-                max={mode.timing.maxSeconds}
-                ariaLabel="Custom money round time in seconds"
-                compact
-                onChange={setTime}
-              />
-            </div>
-
-            <div className="grid min-h-0 min-w-0 content-start gap-2 overflow-hidden">
-              <div className="rounded-lg border border-[#ffd23f]/20 bg-[#ffd23f]/10 p-2 text-center sm:p-3 md:p-4">
-                <p className="mono-label mb-1 text-[9px] text-[#ffd23f]/80 sm:text-[10px]">Playing for</p>
+              <div className="rounded-md border border-[#ffd23f]/20 bg-[#ffd23f]/10 p-2 text-center md:p-3">
+                <p className="mono-label mb-1 text-[9px] text-[#ffd23f]/80 md:text-[10px]">Playing for</p>
                 <TeamNameBlock
                   team={teams[winnerTeam]}
-                  nameClassName="text-base font-black text-white sm:text-lg"
-                  playersClassName="mt-1 text-[10px] font-bold leading-tight text-white/45 sm:text-xs"
+                  nameClassName="text-base font-black text-white md:text-lg"
+                  playersClassName="mt-1 text-[10px] font-bold leading-tight text-white/45 md:text-xs"
                   maxPlayers={4}
                   maxChars={32}
                 />
               </div>
-
-              <TeamStatusBar
-                teams={teams}
-                activeTeam={winnerTeam}
-                activeLabel="Money"
-                caption={`${teams[winnerTeam].name} is up for the final`}
-                compact
-              />
-
-              <Scoreboard teams={teams} highlight={winnerTeam} compact />
             </div>
+
+            <TimeConfigurator
+              label="Time limit"
+              value={time}
+              presets={mode.timing.moneyPresets}
+              min={mode.timing.minSeconds}
+              max={mode.timing.maxSeconds}
+              ariaLabel="Custom money round time in seconds"
+              onChange={setTime}
+            />
+          </div>
+
+          <div className="mt-2 md:mt-5">
+            <TeamStatusBar
+              teams={teams}
+              activeTeam={winnerTeam}
+              activeLabel="Money"
+              compact
+            />
+          </div>
+
+          <div className="mt-2 md:mt-3">
+            <Scoreboard teams={teams} highlight={winnerTeam} compact />
           </div>
 
           <button
             onClick={() => dispatch({ type: 'ADVANCE_PHASE', moneyTime: time })}
-            className="h-12 w-full shrink-0 rounded-md bg-[#ffd23f] text-sm font-black uppercase tracking-normal text-[#0a0d14] transition-all hover:bg-[#ffe071] active:scale-95 sm:h-14 sm:text-base"
+            className="mt-2 w-full rounded-md bg-[#ffd23f] py-3.5 text-base font-black uppercase tracking-normal text-[#0a0d14] transition-all hover:bg-[#ffe071] active:scale-[0.98] md:mt-5 md:py-4 md:text-lg"
           >
             Start Money Round
           </button>
@@ -100,54 +101,51 @@ export default function MoneyRound({ state, dispatch }: Props) {
     const revealDefinitions = lastReveal?.definitions ?? cluing?.definitions
     const correct = revealGuessed.filter(Boolean).length
     return (
-      <div className={`flex h-dvh flex-col overflow-hidden p-2 text-white sm:p-3 md:p-6 ${won ? 'bg-[#07130d]' : 'bg-[#0a0d14]'}`}>
-        <div className="mx-auto grid h-full min-h-0 w-full min-w-0 max-w-6xl grid-rows-[auto_auto_minmax(0,1fr)_auto_auto] gap-2 fade-in-up md:gap-3">
+      <div className={`flex h-dvh flex-col items-center justify-center overflow-hidden p-3 text-white md:p-8 ${won ? 'bg-[#07130d]' : 'bg-[#0a0d14]'}`}>
+        <div className="grid h-full w-full max-w-5xl grid-rows-[1fr_auto] gap-2 fade-in-up md:h-auto md:gap-5">
+          <TeamStatusBar
+            teams={teams}
+            activeTeam={winnerTeam}
+            activeLabel="Money"
+            compact
+          />
 
-          <div className={`rounded-lg p-2 text-center sm:p-3 md:p-4 ${won ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-[#141826] border border-white/10'}`}>
-            <p className="mono-label mb-1 text-[9px] text-white/45 md:text-[10px]">Money result</p>
-            <div className={`mb-0.5 text-3xl font-black uppercase leading-[0.86] tracking-normal sm:text-4xl md:text-5xl ${won ? 'text-[#2de584]' : 'text-white'}`}>
-              {won ? 'Jackpot!' : 'So close!'}
+          <div className="grid min-h-0 gap-2 lg:grid-cols-[0.95fr_1.05fr] lg:gap-5">
+            <div className={`rounded-lg p-3 md:p-8 ${won ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-[#141826] border border-white/10'}`}>
+              <p className="mono-label mb-2 text-[10px] text-white/45 md:mb-4">Money result</p>
+              <div className={`mb-2 text-4xl font-black uppercase leading-[0.85] md:mb-4 md:text-8xl ${won ? 'text-[#2de584]' : 'text-white'}`}>
+                {won ? 'Jackpot!' : 'So close!'}
+              </div>
+              <div className="text-sm text-white/55 md:text-lg">
+                {won
+                  ? `${teams[winnerTeam].name} got all ${mode.money.wordCount}!`
+                  : `${correct}/${mode.money.wordCount} words / ${teams[winnerTeam].name} still wins`
+                }
+              </div>
+              <TeamNameBlock
+                team={teams[winnerTeam]}
+                className="mt-2"
+                nameClassName="sr-only"
+                playersClassName="text-xs font-bold text-white/35"
+                maxChars={32}
+              />
+              <div className="mt-3 md:mt-6">
+                <Scoreboard teams={teams} highlight={winnerTeam} compact />
+              </div>
             </div>
-            <div className="text-xs text-white/50 sm:text-sm">
-              {won
-                ? `${teams[winnerTeam].name} got all ${mode.money.wordCount}!`
-                : `${correct}/${mode.money.wordCount} words / ${teams[winnerTeam].name} still wins`
-              }
-            </div>
-            <TeamNameBlock
-              team={teams[winnerTeam]}
-              className="mt-1"
-              nameClassName="sr-only"
-              playersClassName="text-[10px] font-bold leading-tight text-white/35 sm:text-xs"
-              maxPlayers={4}
-              maxChars={32}
+
+            <WordRevealList
+              words={revealWords}
+              guessed={revealGuessed}
+              definitions={revealDefinitions}
+              title="Money answers"
+              variant="money"
             />
           </div>
 
-          <Scoreboard teams={teams} highlight={winnerTeam} compact />
-
-          <WordRevealList
-            words={revealWords}
-            guessed={revealGuessed}
-            definitions={revealDefinitions}
-            title="Money answers"
-            variant="money"
-            className="h-full"
-          />
-
-          {lastChallenge && (
-            <div className="max-h-16 overflow-hidden rounded-md border border-[#ffd23f]/25 bg-[#161a2b] p-2 md:max-h-20 md:p-3">
-              <p className="mono-label mb-1 text-[8px] font-bold text-[#ffd23f] md:text-[9px]">{lastChallenge.label}</p>
-              <p className="overflow-hidden text-[11px] leading-snug text-white/80 md:text-xs [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">{lastChallenge.text}</p>
-              {lastChallenge.alcoholOptional && (
-                <p className="mono-label mt-1 text-[8px] text-white/35">Optional 21+ prompt / non-alcohol fallback included</p>
-              )}
-            </div>
-          )}
-
           <button
             onClick={() => dispatch({ type: 'NEXT_AFTER_RESULT' })}
-            className="h-12 w-full shrink-0 rounded-md bg-[#ffd23f] text-sm font-black uppercase tracking-normal text-[#0a0d14] transition-all hover:bg-[#ffe071] active:scale-95 sm:h-14 sm:text-base"
+            className="w-full rounded-md bg-[#ffd23f] py-3.5 text-base font-black uppercase tracking-normal text-[#0a0d14] transition-all hover:bg-[#ffe071] active:scale-95 md:py-4"
           >
             Final Scores
           </button>

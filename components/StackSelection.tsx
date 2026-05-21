@@ -34,7 +34,6 @@ export default function StackSelection({ state, dispatch }: Props) {
             teams={teams}
             activeTeam={team}
             activeLabel="Pick now"
-            caption={`${teams[team].name} is up for stack selection`}
             compact
           />
         </div>

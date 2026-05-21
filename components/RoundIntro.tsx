@@ -80,7 +80,7 @@ export default function RoundIntro({ state, dispatch }: Props) {
             teams={teams}
             activeTeam={activeTeam}
             activeLabel="Starts"
-            caption={isBiddingRound ? 'Both team captains bid this round' : `${activeTeam !== undefined ? teams[activeTeam].name : 'Starting team'} picks first`}
+            caption={isBiddingRound ? 'Both captains bid this round' : 'Picks first this round'}
             compact
           />
         </div>

@@ -213,7 +213,6 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
           teams={teams}
           activeTeam={cluingTeam}
           activeLabel="Cluing"
-          caption={`${teams[cluingTeam].name} is up now`}
           compact
         />
       </div>

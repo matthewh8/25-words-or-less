@@ -47,7 +47,6 @@ export default function FinalScoreboard({ state, onRestart }: Props) {
             teams={teams}
             activeTeam={tied ? undefined : winner}
             activeLabel="Winner"
-            caption={tied ? 'Final teams' : `${teams[winner].name} wins`}
             compact
           />
         </div>

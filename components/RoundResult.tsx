@@ -12,7 +12,7 @@ interface Props {
 }
 
 export default function RoundResult({ state, dispatch }: Props) {
-  const { lastResult, teams, cluing, lastChallenge, lastReveal } = state
+  const { lastResult, teams, cluing, lastReveal } = state
   const revealWords = lastReveal?.words ?? cluing?.words ?? []
   const revealGuessed = lastReveal?.guessed ?? cluing?.guessed ?? []
   const revealDefinitions = lastReveal?.definitions ?? cluing?.definitions
@@ -41,7 +41,6 @@ export default function RoundResult({ state, dispatch }: Props) {
           teams={teams}
           activeTeam={points > 0 ? awardTeam : lastResult.team}
           activeLabel={points > 0 ? 'Scored' : 'Last up'}
-          caption={points > 0 ? `${teams[awardTeam].name} receives this result` : `${teams[lastResult.team].name} just played`}
           compact
         />
 
@@ -64,24 +63,12 @@ export default function RoundResult({ state, dispatch }: Props) {
             </div>
           </div>
 
-          <div className="grid min-h-0 gap-2">
-            <WordRevealList
-              words={revealWords}
-              guessed={revealGuessed}
-              definitions={revealDefinitions}
-              title="Answers"
-            />
-
-            {lastChallenge && (
-              <div className="mt-2 rounded-md border border-[#ffd23f]/25 bg-[#161a2b] p-3 md:mt-4 md:p-4">
-                <p className="mono-label mb-1 text-[9px] font-bold text-[#ffd23f] md:mb-2">{lastChallenge.label}</p>
-                <p className="text-xs leading-snug text-white/80 md:text-sm">{lastChallenge.text}</p>
-                {lastChallenge.alcoholOptional && (
-                  <p className="mono-label mt-2 text-[8px] text-white/35">Optional 21+ prompt / non-alcohol fallback included</p>
-                )}
-              </div>
-            )}
-          </div>
+          <WordRevealList
+            words={revealWords}
+            guessed={revealGuessed}
+            definitions={revealDefinitions}
+            title="Answers"
+          />
         </div>
 
         <button
