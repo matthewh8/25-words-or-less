@@ -21,7 +21,7 @@ describe('scoreCluing', () => {
     })
 
     expect(scoreCluing(cluing({ guessed: [true, false, false, false, false] }))).toMatchObject({
-      points: 5,
+      points: 10,
       awardTeam: 1,
       allCorrect: false,
     })

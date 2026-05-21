@@ -85,7 +85,7 @@ export default function MoneyRound({ state, dispatch }: Props) {
     const revealDefinitions = lastReveal?.definitions ?? cluing?.definitions
     const correct = revealGuessed.filter(Boolean).length
     return (
-      <div className={`flex h-dvh flex-col items-center justify-center overflow-hidden p-3 text-white md:p-8 ${won ? 'bg-[#07130d]' : 'bg-[#0a0d14]'}`}>
+      <div className={`flex min-h-dvh flex-col items-center justify-center overflow-y-auto p-3 text-white md:p-8 ${won ? 'bg-[#07130d]' : 'bg-[#0a0d14]'}`}>
         <div className="w-full max-w-5xl fade-in-up">
           <div className="grid gap-2 md:gap-5 lg:grid-cols-[0.95fr_1.05fr]">
             <div className={`rounded-lg p-3 md:p-8 ${won ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-[#141826] border border-white/10'}`}>

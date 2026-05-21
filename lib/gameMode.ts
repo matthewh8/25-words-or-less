@@ -137,7 +137,7 @@ export const DEFAULT_GAME_MODE: GameMode = {
     minBid: 5,
     maxBid: 25,
     successPoints: 10,
-    failurePoints: 5,
+    failurePoints: 10,
     failureAward: 'opponent',
   },
   stacks: {

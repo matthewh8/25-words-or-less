@@ -25,7 +25,7 @@ export default function RoundIntro({ state, dispatch }: Props) {
         bullets: [
           `Both teams see ${gameMode.bidding.wordCount} words`,
           `Bid down from ${gameMode.bidding.maxBid}; bidding ends when someone takes ${winningBidAmount(gameMode)} or the other team concedes`,
-          `All correct gives ${gameMode.bidding.successPoints.toLocaleString()} pts; a miss gives ${gameMode.bidding.failurePoints.toLocaleString()} pts to the configured failure side`,
+          `All correct gives the cluing team ${gameMode.bidding.successPoints.toLocaleString()} pts; a miss gives the other team ${gameMode.bidding.failurePoints.toLocaleString()} pts`,
         ],
       }
     : {

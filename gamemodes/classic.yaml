@@ -21,7 +21,7 @@ bidding:
   minBid: 5
   maxBid: 25
   successPoints: 10
-  failurePoints: 5
+  failurePoints: 10
   failureAward: opponent
 
 stacks:

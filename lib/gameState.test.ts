@@ -168,7 +168,7 @@ describe('phase edges', () => {
     const result = gameReducer(atZero, { type: 'WORD_USED' })
     expect(result.phase).toBe('round1_result')
     expect(result.cluing?.wordsLeft).toBe(0)
-    expect(result.teams[1].score).toBe(5)
+    expect(result.teams[1].score).toBe(10)
   })
 
   it('can win while exactly at zero words left', () => {
@@ -275,7 +275,7 @@ describe('phase edges', () => {
     const duplicate = gameReducer(result, { type: 'END_CLUING' })
 
     expect(duplicate).toBe(result)
-    expect(duplicate.teams[1].score).toBe(5)
+    expect(duplicate.teams[1].score).toBe(10)
   })
 
   it('ignores stale timer ticks after the round has ended', () => {
