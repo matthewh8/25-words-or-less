@@ -5,6 +5,7 @@ import type { GameState, GameAction } from '@/lib/gameState'
 import { winningBidAmount } from '@/lib/gameState'
 import { useActionInterval } from '@/lib/useActionInterval'
 import Timer from './Timer'
+import { teamPlayerLine } from './TeamNameBlock'
 
 interface Props {
   state: GameState
@@ -38,6 +39,8 @@ export default function BiddingRound({ state, dispatch }: Props) {
   const maxBidAllowed = noBidsYet ? maxBid - 1 : currentBid - 1
   const placeholderRange = winBid >= maxBidAllowed ? `${winBid}` : `${winBid}–${maxBidAllowed}`
   const timeExpired = biddingTimeLeft <= 0
+  const activePlayers = teamPlayerLine(activeTeam.players, '', 4, 32)
+  const holderPlayers = teamPlayerLine(holderTeam.players, '', 4, 32)
 
   function placeBid(raw: string) {
     const n = parseInt(raw, 10)
@@ -116,7 +119,10 @@ export default function BiddingRound({ state, dispatch }: Props) {
                     <span style={{ color: activeColor }}>{activeTeam.name}</span>
                     <span className="text-white">, open the bidding.</span>
                   </p>
-                  <p className="mt-1 text-sm text-white/55 md:text-base">
+                  {activePlayers && (
+                    <p className="mt-0.5 truncate text-[11px] font-bold uppercase tracking-wide text-white/40 md:text-xs">{activePlayers}</p>
+                  )}
+                  <p className="mt-2 text-sm text-white/55 md:text-base">
                     How many clue-words do you need for all {words.length}?
                   </p>
                 </>
@@ -128,10 +134,16 @@ export default function BiddingRound({ state, dispatch }: Props) {
                     <span className="text-[#ffd23f] tabular-nums">{currentBid}</span>
                     <span className="text-white"> clue-words is enough.</span>
                   </p>
-                  <p className="mt-1 text-sm md:text-base">
+                  {holderPlayers && (
+                    <p className="mt-0.5 truncate text-[11px] font-bold uppercase tracking-wide text-white/40 md:text-xs">{holderPlayers}</p>
+                  )}
+                  <p className="mt-2 text-sm md:text-base">
                     <span className="font-black" style={{ color: activeColor }}>{activeTeam.name}</span>
                     <span className="text-white/55">, your move.</span>
                   </p>
+                  {activePlayers && (
+                    <p className="mt-0.5 truncate text-[11px] font-bold uppercase tracking-wide text-white/40 md:text-xs">{activePlayers}</p>
+                  )}
                 </>
               )}
               <div className="mt-3 flex items-center gap-3 md:mt-4">
@@ -171,21 +183,22 @@ export default function BiddingRound({ state, dispatch }: Props) {
 
               {error && <p className="text-center text-[11px] text-[#ff3a6d] md:text-xs">{error}</p>}
 
-              <button
-                onClick={takeFloor}
-                className="w-full rounded-md border border-[#ffd23f]/40 bg-[#ffd23f]/10 py-2.5 text-sm font-black uppercase text-[#ffd23f] transition-all hover:bg-[#ffd23f]/20 active:scale-95 md:py-3 md:text-base"
-              >
-                Take {winBid} — auto-win
-              </button>
-
-              {!noBidsYet && (
+              <div className={`grid gap-2 ${noBidsYet ? '' : 'sm:grid-cols-2'}`}>
                 <button
-                  onClick={() => dispatch({ type: 'CONCEDE' })}
-                  className="w-full rounded-md bg-[#ffd23f] py-2.5 text-sm font-black uppercase tracking-normal text-[#0a0d14] transition-all hover:bg-[#ffe071] active:scale-95 md:py-3 md:text-base"
+                  onClick={takeFloor}
+                  className="rounded-md bg-[#ffd23f] py-2.5 text-sm font-black uppercase tracking-normal text-[#0a0d14] transition-all hover:bg-[#ffe071] active:scale-95 md:py-3 md:text-base"
                 >
-                  Pass — {holderTeam.name} clues at {currentBid}
+                  Take {winBid} · auto-win
                 </button>
-              )}
+                {!noBidsYet && (
+                  <button
+                    onClick={() => dispatch({ type: 'CONCEDE' })}
+                    className="rounded-md border border-white/15 bg-white/[0.04] py-2.5 text-sm font-black uppercase tracking-normal text-white/80 transition-all hover:border-white/30 hover:bg-white/[0.08] active:scale-95 md:py-3 md:text-base"
+                  >
+                    Concede · {holderTeam.name} at {currentBid}
+                  </button>
+                )}
+              </div>
 
               {history.length > 0 && (
                 <div className="mt-1 flex flex-wrap justify-center gap-1.5">
