@@ -12,6 +12,11 @@ import {
 } from './gameState'
 import { buildGameMode } from './gameMode'
 
+function startCluingByConcede(initial: GameState, amount = 20): GameState {
+  const afterBid = gameReducer(initial, { type: 'PLACE_BID', amount })
+  return gameReducer(afterBid, { type: 'CONCEDE' })
+}
+
 function cluing(overrides: Partial<CluingState> = {}): CluingState {
   return {
     stream: 'bidding',
@@ -81,11 +86,16 @@ describe('bid validation', () => {
 
   it('ignores stale bidding actions after bidding has ended', () => {
     const started = gameReducer(initGame('A', 'B'), { type: 'START_BIDDING', firstTeam: 0 })
-    const cluingState = gameReducer(started, { type: 'CONCEDE' })
+    const cluingState = startCluingByConcede(started)
 
     expect(cluingState.phase).toBe('round1_cluing')
     expect(gameReducer(cluingState, { type: 'PLACE_BID', amount: 20 })).toBe(cluingState)
     expect(gameReducer(cluingState, { type: 'BIDDING_TICK' })).toBe(cluingState)
+  })
+
+  it('ignores CONCEDE before any bid has been placed', () => {
+    const started = gameReducer(initGame('A', 'B'), { type: 'START_BIDDING', firstTeam: 0 })
+    expect(gameReducer(started, { type: 'CONCEDE' })).toBe(started)
   })
 })
 
@@ -155,7 +165,7 @@ describe('phase edges', () => {
 
   it('keeps the clue budget at zero and ends when spending with no words left', () => {
     const bidding = gameReducer(initGame('A', 'B'), { type: 'START_BIDDING', firstTeam: 0 })
-    const cluingState = gameReducer(bidding, { type: 'CONCEDE' })
+    const cluingState = startCluingByConcede(bidding)
     const almostOut: GameState = {
       ...cluingState,
       cluing: cluingState.cluing ? { ...cluingState.cluing, wordsLeft: 1 } : null,
@@ -173,7 +183,7 @@ describe('phase edges', () => {
 
   it('can win while exactly at zero words left', () => {
     const bidding = gameReducer(initGame('A', 'B'), { type: 'START_BIDDING', firstTeam: 0 })
-    const cluingState = gameReducer(bidding, { type: 'CONCEDE' })
+    const cluingState = startCluingByConcede(bidding)
     const lastWord: GameState = {
       ...cluingState,
       cluing: cluingState.cluing
@@ -189,7 +199,7 @@ describe('phase edges', () => {
 
   it('does not spend a word when the last answer is marked correct', () => {
     const bidding = gameReducer(initGame('A', 'B'), { type: 'START_BIDDING', firstTeam: 0 })
-    const cluingState = gameReducer(bidding, { type: 'CONCEDE' })
+    const cluingState = startCluingByConcede(bidding)
     const lastWord: GameState = {
       ...cluingState,
       cluing: cluingState.cluing
@@ -204,7 +214,7 @@ describe('phase edges', () => {
 
   it('does not count no-op skips when only one word is left unresolved', () => {
     const bidding = gameReducer(initGame('A', 'B'), { type: 'START_BIDDING', firstTeam: 0 })
-    const cluingState = gameReducer(bidding, { type: 'CONCEDE' })
+    const cluingState = startCluingByConcede(bidding)
     const lastWord: GameState = {
       ...cluingState,
       cluing: cluingState.cluing
@@ -220,7 +230,7 @@ describe('phase edges', () => {
 
   it('adds one clue word back without exceeding the configured budget', () => {
     const bidding = gameReducer(initGame('A', 'B'), { type: 'START_BIDDING', firstTeam: 0 })
-    const cluingState = gameReducer(bidding, { type: 'CONCEDE' })
+    const cluingState = startCluingByConcede(bidding)
     const spent: GameState = {
       ...cluingState,
       cluing: cluingState.cluing ? { ...cluingState.cluing, wordsLeft: 4, wordLimit: 5 } : null,
@@ -241,7 +251,7 @@ describe('phase edges', () => {
       },
     })
     const bidding = gameReducer(initGame('A', 'B', [], mode), { type: 'START_BIDDING', firstTeam: 0 })
-    const cluingState = gameReducer(bidding, { type: 'CONCEDE' })
+    const cluingState = startCluingByConcede(bidding)
     const started: GameState = {
       ...cluingState,
       cluing: cluingState.cluing ? { ...cluingState.cluing, wordsLeft: 4, wordLimit: 5 } : null,
@@ -261,7 +271,7 @@ describe('phase edges', () => {
 
   it('ignores clue actions after the round has ended', () => {
     const bidding = gameReducer(initGame('A', 'B'), { type: 'START_BIDDING', firstTeam: 0 })
-    const cluingState = gameReducer(bidding, { type: 'CONCEDE' })
+    const cluingState = startCluingByConcede(bidding)
     const result = gameReducer(cluingState, { type: 'END_CLUING' })
 
     const changed = gameReducer(result, { type: 'MARK_CORRECT' })
@@ -270,7 +280,7 @@ describe('phase edges', () => {
 
   it('does not rescore if an end-cluing action arrives after the result screen', () => {
     const bidding = gameReducer(initGame('A', 'B'), { type: 'START_BIDDING', firstTeam: 0 })
-    const cluingState = gameReducer(bidding, { type: 'CONCEDE' })
+    const cluingState = startCluingByConcede(bidding)
     const result = gameReducer(cluingState, { type: 'END_CLUING' })
     const duplicate = gameReducer(result, { type: 'END_CLUING' })
 
@@ -280,7 +290,7 @@ describe('phase edges', () => {
 
   it('ignores stale timer ticks after the round has ended', () => {
     const bidding = gameReducer(initGame('A', 'B'), { type: 'START_BIDDING', firstTeam: 0 })
-    const cluingState = gameReducer(bidding, { type: 'CONCEDE' })
+    const cluingState = startCluingByConcede(bidding)
     const result = gameReducer(cluingState, { type: 'END_CLUING' })
 
     expect(gameReducer(result, { type: 'TIMER_TICK' })).toBe(result)
@@ -288,7 +298,7 @@ describe('phase edges', () => {
 
   it('ignores stale word refreshes after the round has ended', () => {
     const bidding = gameReducer(initGame('A', 'B'), { type: 'START_BIDDING', firstTeam: 0 })
-    const cluingState = gameReducer(bidding, { type: 'CONCEDE' })
+    const cluingState = startCluingByConcede(bidding)
     const result = gameReducer(cluingState, { type: 'END_CLUING' })
 
     expect(gameReducer(result, { type: 'REFRESH_WORDS', words: ['LATE', 'WORDS'] })).toBe(result)
@@ -306,7 +316,7 @@ describe('phase edges', () => {
       words,
       wordDefinitions,
     })
-    const cluingState = gameReducer(bidding, { type: 'CONCEDE' })
+    const cluingState = startCluingByConcede(bidding)
     const partiallyCorrect: GameState = {
       ...cluingState,
       cluing: cluingState.cluing ? { ...cluingState.cluing, guessed: [true, false, false, false, false] } : null,
@@ -323,7 +333,7 @@ describe('phase edges', () => {
 
   it('ends a clue turn when the timer reaches zero', () => {
     const bidding = gameReducer(initGame('A', 'B'), { type: 'START_BIDDING', firstTeam: 0 })
-    const cluingState = gameReducer(bidding, { type: 'CONCEDE' })
+    const cluingState = startCluingByConcede(bidding)
     const almostOut: GameState = {
       ...cluingState,
       cluing: cluingState.cluing ? { ...cluingState.cluing, timeLeft: 1 } : null,

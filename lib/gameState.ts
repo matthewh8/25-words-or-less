@@ -44,7 +44,6 @@ export interface BidState {
   currentBid: number
   biddingTeam: 0 | 1
   activeBidder: 0 | 1
-  conceded: boolean
   biddingTimeLeft: number
 }
 
@@ -260,7 +259,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           currentBid: mode.bidding.maxBid,
           biddingTeam: action.firstTeam,
           activeBidder: action.firstTeam,
-          conceded: false,
           biddingTimeLeft: mode.timing.biddingSeconds,
         },
       }
@@ -289,7 +287,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'CONCEDE': {
       if (!state.bid) return state
       if (state.phase !== 'round1_bidding') return state
-      return startBiddingClue(state, { ...state.bid, conceded: true }, mode)
+      if (state.bid.currentBid >= mode.bidding.maxBid) return state
+      return startBiddingClue(state, state.bid, mode)
     }
 
     case 'WORD_REFUND': {
@@ -581,7 +580,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           definitions,
           currentBid: mode.bidding.maxBid,
           biddingTimeLeft: mode.timing.biddingSeconds,
-          conceded: false,
         },
       }
     }
