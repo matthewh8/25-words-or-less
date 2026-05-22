@@ -28,13 +28,13 @@ export default function MoneyResult({ state, dispatch }: Props) {
     : `${correct}/${mode.money.wordCount} words / ${teams[winnerTeam].name} still wins`
 
   const card = (
-    <div className="flex flex-col gap-2 md:gap-3">
-      <div className={`rounded-lg p-3 md:p-8 ${moneyWon ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-[#141826] border border-white/10'}`}>
-        <p className="mono-label mb-2 text-[10px] text-white/45 md:mb-4">Money result</p>
-        <div className={`mb-2 text-4xl font-black uppercase leading-[0.85] md:mb-4 md:text-8xl ${moneyWon ? 'text-[#2de584]' : 'text-white'}`}>
+    <div className="flex flex-col gap-2 md:gap-3 landscape-short:min-h-0 landscape-short:overflow-hidden">
+      <div className={`rounded-lg p-3 md:p-8 landscape-short:!p-3 ${moneyWon ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-[#141826] border border-white/10'}`}>
+        <p className="mono-label mb-2 text-[10px] text-white/45 md:mb-4 landscape-short:!mb-1">Money result</p>
+        <div className={`mb-2 text-4xl font-black uppercase leading-[0.85] md:mb-4 md:text-8xl landscape-short:!mb-1 landscape-short:!text-2xl ${moneyWon ? 'text-[#2de584]' : 'text-white'}`}>
           {moneyWon ? 'Jackpot!' : 'So close!'}
         </div>
-        <div className="text-sm text-white/55 md:text-lg">{subline}</div>
+        <div className="text-sm text-white/55 md:text-lg landscape-short:!text-xs">{subline}</div>
       </div>
       {lastChallenge && <ChallengeCard challenge={lastChallenge} />}
     </div>

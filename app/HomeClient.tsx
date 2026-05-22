@@ -196,8 +196,8 @@ export default function HomeClient({ gameModes }: HomeClientProps) {
   }
 
   return (
-    <div className="h-dvh overflow-hidden bg-[#0a0d14] p-1.5 text-white sm:p-3 lg:p-4">
-      <main className="mx-auto grid h-full min-h-0 w-full grid-rows-[auto_minmax(0,1fr)] gap-1.5 lg:grid-cols-[0.52fr_1.48fr] lg:grid-rows-none lg:gap-3">
+    <div className="h-dvh overflow-hidden bg-[#0a0d14] p-1.5 text-white sm:p-3 lg:p-4 landscape-short:p-2">
+      <main className="mx-auto grid h-full min-h-0 w-full grid-rows-[auto_minmax(0,1fr)] gap-1.5 lg:grid-cols-[0.52fr_1.48fr] lg:grid-rows-none lg:gap-3 landscape-short:grid-cols-[0.5fr_1.5fr] landscape-short:grid-rows-none landscape-short:gap-2">
         <section className="grid min-h-0 min-w-0 gap-1.5 rounded-lg border border-white/10 bg-[#101522] p-2 sm:gap-2 sm:p-3 lg:flex lg:flex-col lg:justify-between lg:p-5">
           <div className="flex items-center justify-between gap-3 lg:block">
             <div className="flex items-baseline gap-2">
@@ -222,7 +222,7 @@ export default function HomeClient({ gameModes }: HomeClientProps) {
                     aria-label={`Team ${index + 1} name`}
                     placeholder={`Team ${index + 1}`}
                     maxLength={24}
-                    className="min-w-0 flex-1 bg-transparent text-sm font-black text-white outline-none placeholder:text-white/25 lg:text-lg"
+                    className="min-w-0 flex-1 bg-transparent text-base font-black text-white outline-none placeholder:text-white/25 lg:text-lg"
                   />
                 </div>
                 <p className="mt-1 truncate text-[10px] font-bold text-white/35">
@@ -286,12 +286,12 @@ export default function HomeClient({ gameModes }: HomeClientProps) {
                   }
                 }}
                 placeholder="Add player, press Enter"
-                className="h-8 min-w-0 flex-1 rounded-md border border-white/10 bg-[#0a0d14] px-3 text-xs font-bold text-white outline-none placeholder:text-white/25 focus:border-[#ffd23f]/60 sm:h-10 sm:text-sm"
+                className="h-10 min-w-0 flex-1 rounded-md border border-white/10 bg-[#0a0d14] px-3 text-base font-bold text-white outline-none placeholder:text-white/25 focus:border-[#ffd23f]/60 sm:h-10 sm:text-sm"
               />
               <button
                 type="button"
                 onClick={addPlayers}
-                className="h-8 rounded-md bg-white/[0.06] px-3 text-xs font-black uppercase leading-none text-white transition-all hover:bg-white/[0.1] active:scale-95 sm:h-10 sm:px-4 sm:text-sm"
+                className="h-10 rounded-md bg-white/[0.06] px-3 text-sm font-black uppercase leading-none text-white transition-all hover:bg-white/[0.1] active:scale-95 sm:h-10 sm:px-4 sm:text-sm"
               >
                 Add
               </button>
@@ -359,7 +359,7 @@ export default function HomeClient({ gameModes }: HomeClientProps) {
               value={selectedMode}
               onChange={event => chooseMode(event.target.value)}
               aria-label="Game mode"
-              className="h-8 w-full shrink-0 rounded-md border border-[#ffd23f]/40 bg-[#0a0d14] px-3 text-xs font-black uppercase text-white outline-none focus:border-[#ffd23f] sm:hidden"
+              className="h-10 w-full shrink-0 rounded-md border border-[#ffd23f]/40 bg-[#0a0d14] px-3 text-base font-black uppercase text-white outline-none focus:border-[#ffd23f] sm:hidden"
             >
               {gameModes.map(mode => (
                 <option key={mode.id} value={mode.id}>

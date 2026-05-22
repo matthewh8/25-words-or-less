@@ -26,18 +26,18 @@ export default function FinalScoreboard({ state, onRestart }: Props) {
     : `${teams[winner].score.toLocaleString()} pts to ${teams[1 - winner].score.toLocaleString()} pts`
 
   const card = (
-    <div className={`rounded-lg p-3 md:p-8 ${
+    <div className={`rounded-lg p-3 md:p-8 landscape-short:!p-3 ${
       moneyWon ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-[#ffd23f]/10 border border-[#ffd23f]/30'
     }`}>
-      <p className="mono-label mb-2 text-[10px] text-[#ffd23f] md:mb-4">Game over</p>
-      <div className={`mb-2 text-4xl font-black uppercase leading-[0.85] md:mb-4 md:text-7xl ${
+      <p className="mono-label mb-2 text-[10px] text-[#ffd23f] md:mb-4 landscape-short:!mb-1">Game over</p>
+      <div className={`mb-2 text-4xl font-black uppercase leading-[0.85] md:mb-4 md:text-7xl landscape-short:!mb-1 landscape-short:!text-2xl ${
         moneyWon ? 'text-[#2de584]' : 'text-white'
       }`}>
         {headline}
       </div>
-      <div className="text-sm text-white/55 md:text-lg">{subline}</div>
+      <div className="text-sm text-white/55 md:text-lg landscape-short:!text-xs">{subline}</div>
       {moneyWon && (
-        <p className="mt-2 text-xs font-bold text-[#ffd23f] md:mt-3 md:text-sm">+ Money Round jackpot</p>
+        <p className="mt-2 text-xs font-bold text-[#ffd23f] md:mt-3 md:text-sm landscape-short:!mt-1">+ Money Round jackpot</p>
       )}
     </div>
   )

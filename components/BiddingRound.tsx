@@ -76,8 +76,8 @@ export default function BiddingRound({ state, dispatch }: Props) {
   }
 
   return (
-    <div className="flex h-dvh flex-col items-center overflow-y-auto bg-[#0a0d14] p-2 text-white md:justify-center md:p-8">
-      <div className="grid w-full max-w-5xl gap-2 fade-in-up md:gap-4">
+    <div className="flex h-dvh flex-col items-center overflow-y-auto bg-[#0a0d14] p-2 text-white md:justify-center md:p-8 landscape-short:!justify-center landscape-short:!p-3 landscape-short:!overflow-hidden">
+      <div className="grid w-full max-w-5xl gap-2 fade-in-up md:gap-4 landscape-short:!gap-2">
 
         <div className="flex items-baseline justify-between gap-3">
           <span className="mono-label text-[#ffd23f] text-xs font-bold">
@@ -88,14 +88,14 @@ export default function BiddingRound({ state, dispatch }: Props) {
           </span>
         </div>
 
-        <div className="grid gap-2 md:gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="grid gap-2 md:gap-4 lg:grid-cols-[0.9fr_1.1fr] landscape-short:grid-cols-[0.9fr_1.1fr] landscape-short:gap-3">
 
           {/* Words to clue */}
-          <div className="rounded-lg border border-white/10 bg-[#141826] p-3 md:p-5">
-            <p className="mono-label mb-2 text-[10px] text-white/45 md:mb-3">{words.length} words to clue</p>
-            <div className="mb-3 grid grid-cols-2 gap-1.5 md:gap-2 lg:grid-cols-1">
+          <div className="rounded-lg border border-white/10 bg-[#141826] p-3 md:p-5 landscape-short:!p-2">
+            <p className="mono-label mb-2 text-[10px] text-white/45 md:mb-3 landscape-short:!mb-1">{words.length} words to clue</p>
+            <div className="mb-3 grid grid-cols-2 gap-1.5 md:gap-2 lg:grid-cols-1 landscape-short:!grid-cols-1 landscape-short:!mb-2 landscape-short:!gap-1">
               {words.map((w, i) => (
-                <div key={i} className="flex min-w-0 items-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-2 py-1.5 md:gap-3 md:px-4 md:py-3">
+                <div key={i} className="flex min-w-0 items-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-2 py-1.5 md:gap-3 md:px-4 md:py-3 landscape-short:!py-0.5 landscape-short:!px-2">
                   <span className="font-mono text-[10px] text-white/35 md:text-xs">{String(i+1).padStart(2,'0')}</span>
                   <span className="min-w-0 truncate text-xs font-black uppercase tracking-normal md:text-base">{w}</span>
                 </div>
@@ -103,32 +103,32 @@ export default function BiddingRound({ state, dispatch }: Props) {
             </div>
             <button
               onClick={() => { setHistory([]); dispatch({ type: 'REFRESH_BID' }) }}
-              className="mono-label w-full rounded-md border border-[#ffd23f]/40 py-1.5 text-[10px] text-[#ffd23f] transition-all hover:bg-[#ffd23f]/10 active:scale-95 md:py-2"
+              className="mono-label w-full rounded-md border border-[#ffd23f]/40 py-1.5 text-[10px] text-[#ffd23f] transition-all hover:bg-[#ffd23f]/10 active:scale-95 md:py-2 landscape-short:!py-1"
             >
               New Words
             </button>
           </div>
 
           {/* State sentence + actions */}
-          <div className="flex flex-col gap-2 md:gap-3">
+          <div className="flex flex-col gap-2 md:gap-3 landscape-short:!gap-2">
 
-            <div className="rounded-lg border border-white/10 bg-[#101522] p-3 md:p-5">
+            <div className="rounded-lg border border-white/10 bg-[#101522] p-3 md:p-5 landscape-short:!p-2">
               {noBidsYet ? (
                 <>
-                  <p className="text-2xl font-black uppercase leading-tight md:text-3xl">
+                  <p className="text-2xl font-black uppercase leading-tight md:text-3xl landscape-short:!text-lg">
                     <span style={{ color: activeColor }}>{activeTeam.name}</span>
                     <span className="text-white">, open the bidding.</span>
                   </p>
                   {activePlayers && (
                     <p className="mt-0.5 truncate text-[11px] font-bold uppercase tracking-wide text-white/40 md:text-xs">{activePlayers}</p>
                   )}
-                  <p className="mt-2 text-sm text-white/55 md:text-base">
+                  <p className="mt-2 text-sm text-white/55 md:text-base landscape-short:!mt-1 landscape-short:!text-xs">
                     How many clue-words do you need for all {words.length}?
                   </p>
                 </>
               ) : (
                 <>
-                  <p className="text-2xl font-black uppercase leading-tight md:text-3xl">
+                  <p className="text-2xl font-black uppercase leading-tight md:text-3xl landscape-short:!text-lg">
                     <span style={{ color: holderColor }}>{holderTeam.name}</span>
                     <span className="text-white"> says: </span>
                     <span className="text-[#ffd23f] tabular-nums">{currentBid}</span>
@@ -146,15 +146,20 @@ export default function BiddingRound({ state, dispatch }: Props) {
                   )}
                 </>
               )}
-              <div className="mt-3 flex items-center gap-3 md:mt-4">
-                <Timer timeLeft={biddingTimeLeft} total={mode.timing.biddingSeconds} />
+              <div className="mt-3 flex items-center gap-3 md:mt-4 landscape-short:!mt-2">
+                <div className="landscape-short:hidden">
+                  <Timer timeLeft={biddingTimeLeft} total={mode.timing.biddingSeconds} />
+                </div>
+                <div className="hidden landscape-short:!block">
+                  <Timer timeLeft={biddingTimeLeft} total={mode.timing.biddingSeconds} size="xs" />
+                </div>
                 {timeExpired && (
                   <p className="text-xs font-bold text-[#ff3a6d]">Time&apos;s up — make a move.</p>
                 )}
               </div>
             </div>
 
-            <div className="flex flex-col gap-2 rounded-lg border border-white/10 bg-[#141826] p-3 md:gap-3 md:p-5">
+            <div className="flex flex-col gap-2 rounded-lg border border-white/10 bg-[#141826] p-3 md:gap-3 md:p-5 landscape-short:!gap-1.5 landscape-short:!p-2">
               <div className="flex items-center gap-2">
                 <input
                   type="number"
@@ -183,16 +188,16 @@ export default function BiddingRound({ state, dispatch }: Props) {
 
               {error && <p className="text-center text-[11px] text-[#ff3a6d] md:text-xs">{error}</p>}
 
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className="grid gap-2 sm:grid-cols-2 landscape-short:!gap-1.5">
                 <button
                   onClick={takeFloor}
-                  className="rounded-md bg-[#ffd23f] py-2.5 text-sm font-black uppercase tracking-normal text-[#0a0d14] transition-all hover:bg-[#ffe071] active:scale-95 md:py-3 md:text-base"
+                  className="rounded-md bg-[#ffd23f] py-2.5 text-sm font-black uppercase tracking-normal text-[#0a0d14] transition-all hover:bg-[#ffe071] active:scale-95 md:py-3 md:text-base landscape-short:!py-1.5 landscape-short:!text-xs"
                 >
                   Take {winBid} · auto-win
                 </button>
                 <button
                   onClick={() => dispatch({ type: 'CONCEDE' })}
-                  className="rounded-md border border-white/15 bg-white/[0.04] py-2.5 text-sm font-black uppercase tracking-normal text-white/80 transition-all hover:border-white/30 hover:bg-white/[0.08] active:scale-95 md:py-3 md:text-base"
+                  className="rounded-md border border-white/15 bg-white/[0.04] py-2.5 text-sm font-black uppercase tracking-normal text-white/80 transition-all hover:border-white/30 hover:bg-white/[0.08] active:scale-95 md:py-3 md:text-base landscape-short:!py-1.5 landscape-short:!text-xs"
                 >
                   Concede · {opponentTeam.name} {noBidsYet ? `clues all ${words.length}` : `at ${currentBid}`}
                 </button>

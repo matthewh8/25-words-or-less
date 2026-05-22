@@ -16,11 +16,11 @@ export default function StackSelection({ state, dispatch }: Props) {
   const usedStackIds = stackBoard.usedStackIds
 
   return (
-    <div className="flex h-dvh flex-col items-center justify-center overflow-hidden bg-[#0a0d14] p-3 text-white md:p-8">
+    <div className="flex h-dvh flex-col items-center justify-center overflow-hidden bg-[#0a0d14] p-3 text-white md:p-8 landscape-short:!p-3">
       <div className="w-full max-w-4xl fade-in-up">
 
-        <div className="mb-3 md:mb-5">
-          <p className="mono-label mb-2 text-[#ffd23f] text-xs font-bold">Round {currentRound} / {turnsLeft} turn{turnsLeft !== 1 ? 's' : ''} left</p>
+        <div className="mb-3 md:mb-5 landscape-short:!mb-2">
+          <p className="mono-label mb-2 text-[#ffd23f] text-xs font-bold landscape-short:!mb-1">Round {currentRound} / {turnsLeft} turn{turnsLeft !== 1 ? 's' : ''} left</p>
           <TeamStatusBar
             teams={teams}
             activeTeam={team}
@@ -29,9 +29,9 @@ export default function StackSelection({ state, dispatch }: Props) {
           />
         </div>
 
-        <h2 className="mb-3 text-4xl font-black uppercase leading-[0.9] text-white md:mb-6 md:text-6xl">Pick a stack</h2>
+        <h2 className="mb-3 text-4xl font-black uppercase leading-[0.9] text-white md:mb-6 md:text-6xl landscape-short:!mb-2 landscape-short:!text-2xl">Pick a stack</h2>
 
-        <div className="grid grid-cols-3 gap-2 md:gap-3">
+        <div className="grid grid-cols-3 gap-2 md:gap-3 landscape-short:!gap-2">
           {gameMode.stacks.options.map(stack => {
             const used = usedStackIds.includes(stack.id)
             return (
@@ -39,7 +39,7 @@ export default function StackSelection({ state, dispatch }: Props) {
                 key={stack.id}
                 onClick={() => !used && dispatch({ type: 'SELECT_STACK', stackId: stack.id })}
                 disabled={used}
-                className={`flex min-h-36 w-full flex-col items-start justify-between gap-2 rounded-lg border px-3 py-3 text-left transition-all md:min-h-48 md:gap-4 md:px-5 md:py-5 ${
+                className={`flex min-h-36 w-full flex-col items-start justify-between gap-2 rounded-lg border px-3 py-3 text-left transition-all md:min-h-48 md:gap-4 md:px-5 md:py-5 landscape-short:!min-h-24 landscape-short:!gap-1 landscape-short:!py-2 landscape-short:!px-2 ${
                   used ? 'cursor-not-allowed border-white/[0.05] bg-white/[0.02] opacity-30' : 'active:scale-95'
                 }`}
                 style={!used ? { borderColor: `${stack.color}55`, backgroundColor: `${stack.color}12` } : undefined}
@@ -49,12 +49,12 @@ export default function StackSelection({ state, dispatch }: Props) {
                   {used && <span className="mono-label text-white/30 text-[9px] font-normal">taken</span>}
                 </div>
                 <div>
-                  <div className="text-xl font-black uppercase text-white md:text-3xl">{stack.label}</div>
-                  <div className="mt-1 text-[10px] text-white/40 md:text-xs">
+                  <div className="text-xl font-black uppercase text-white md:text-3xl landscape-short:!text-base">{stack.label}</div>
+                  <div className="mt-1 text-[10px] text-white/40 md:text-xs landscape-short:!text-[9px]">
                     {stack.pointsPerWord.toLocaleString()} pts/word + {gameMode.stacks.allCorrectBonus.toLocaleString()} bonus all {gameMode.stacks.wordCount}
                   </div>
                 </div>
-                <div className={`text-4xl font-black md:text-6xl ${used ? 'text-white/20' : 'text-white/70'}`}>
+                <div className={`text-4xl font-black md:text-6xl landscape-short:!text-2xl ${used ? 'text-white/20' : 'text-white/70'}`}>
                   {stack.pointsPerWord >= 1000 ? `${stack.pointsPerWord / 1000}k` : stack.pointsPerWord}
                 </div>
               </button>
@@ -62,7 +62,7 @@ export default function StackSelection({ state, dispatch }: Props) {
           })}
         </div>
 
-        <p className="mono-label mt-4 text-center text-[10px] text-white/25 md:mt-6">
+        <p className="mono-label mt-4 text-center text-[10px] text-white/25 md:mt-6 landscape-short:!mt-2">
           {gameMode.stacks.wordLimit}-word clue limit / {state.roundTime} seconds
         </p>
       </div>

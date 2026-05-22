@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+@custom-variant landscape-short {
+  @media (orientation: landscape) and (max-width: 1023px) {
+    @slot;
+  }
+}
+@custom-variant portrait-md {
+  @media (orientation: portrait) and (min-width: 768px) {
+    @slot;
+  }
+}
+
 :root {
   --bg: #0a0d14;
   --surface: #141826;
