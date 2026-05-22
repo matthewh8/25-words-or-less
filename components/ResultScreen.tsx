@@ -13,7 +13,7 @@ interface ResultScreenProps {
 }
 
 export default function ResultScreen({ layout = 'fit', background = 'default', card, sidebar, footer, actionLabel, onAction }: ResultScreenProps) {
-  const sizing = layout === 'scroll' ? 'min-h-dvh overflow-y-auto landscape-short:!h-dvh landscape-short:!overflow-hidden landscape-short:!min-h-0' : 'h-dvh overflow-hidden'
+  const sizing = layout === 'scroll' ? 'min-h-full overflow-y-auto landscape-short:!h-full landscape-short:!overflow-hidden landscape-short:!min-h-0' : 'h-full overflow-hidden'
   const bg = background === 'jackpot' ? 'bg-[#07130d]' : 'bg-[#0a0d14]'
   const container = `flex ${sizing} flex-col items-center justify-center ${bg} p-3 text-white md:p-8 landscape-short:!p-3`
 

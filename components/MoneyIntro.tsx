@@ -18,7 +18,7 @@ export default function MoneyIntro({ state, dispatch }: Props) {
   const [time, setTime] = useState(state.moneyTime)
 
   return (
-    <div className="flex h-dvh flex-col items-center justify-center overflow-hidden bg-[#0a0d14] p-3 text-white md:p-8 landscape-short:!p-3">
+    <div className="flex h-full flex-col items-center justify-center overflow-hidden bg-[#0a0d14] p-3 text-white md:p-8 landscape-short:!p-3">
       <div className="w-full max-w-5xl fade-in-up">
 
         <div className="mb-3 flex items-center gap-3 md:mb-8 md:gap-4 landscape-short:!mb-2">

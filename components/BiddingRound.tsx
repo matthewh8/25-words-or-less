@@ -77,7 +77,7 @@ export default function BiddingRound({ state, dispatch }: Props) {
   }
 
   return (
-    <div className="flex h-dvh flex-col items-center overflow-y-auto bg-[#0a0d14] p-2 text-white md:justify-center md:p-8 landscape-short:!justify-center landscape-short:!p-3 landscape-short:!overflow-hidden">
+    <div className="flex h-full flex-col items-center overflow-y-auto bg-[#0a0d14] p-2 text-white md:justify-center md:p-8 landscape-short:!justify-center landscape-short:!p-3 landscape-short:!overflow-hidden">
       <div className="grid w-full max-w-5xl gap-2 fade-in-up md:gap-4 landscape-short:!gap-2">
 
         <div className="flex items-baseline justify-between gap-3">

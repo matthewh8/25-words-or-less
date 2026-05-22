@@ -196,7 +196,7 @@ export default function HomeClient({ gameModes }: HomeClientProps) {
   }
 
   return (
-    <div className="h-dvh overflow-hidden bg-[#0a0d14] p-1.5 text-white sm:p-3 lg:p-4 landscape-short:p-2">
+    <div className="h-full overflow-hidden bg-[#0a0d14] p-1.5 text-white sm:p-3 lg:p-4 landscape-short:p-2">
       <main className="mx-auto grid h-full min-h-0 w-full grid-rows-[auto_minmax(0,1fr)] gap-1.5 lg:grid-cols-[0.52fr_1.48fr] lg:grid-rows-none lg:gap-3 landscape-short:grid-cols-[0.5fr_1.5fr] landscape-short:grid-rows-none landscape-short:gap-2">
         <section className="grid min-h-0 min-w-0 gap-1.5 rounded-lg border border-white/10 bg-[#101522] p-2 sm:gap-2 sm:p-3 lg:flex lg:flex-col lg:justify-between lg:p-5">
           <div className="flex items-center justify-between gap-3 lg:block">

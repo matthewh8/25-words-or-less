@@ -27,7 +27,7 @@ export default function Premeditation({ state, dispatch }: Props) {
   const cluingPlayers = teamPlayerLine(cluingTeam.players, '', 4, 32)
 
   return (
-    <div className="flex h-dvh flex-col items-center overflow-y-auto bg-[#120915] p-3 text-white md:justify-center md:p-8 landscape-short:!justify-center landscape-short:!p-3 landscape-short:!overflow-hidden">
+    <div className="flex h-full flex-col items-center overflow-y-auto bg-[#120915] p-3 text-white md:justify-center md:p-8 landscape-short:!justify-center landscape-short:!p-3 landscape-short:!overflow-hidden">
       <div className="grid w-full max-w-3xl gap-3 fade-in-up md:gap-5 landscape-short:!gap-2">
 
         <div className="text-center">

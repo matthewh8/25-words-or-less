@@ -16,7 +16,7 @@ export default function StackSelection({ state, dispatch }: Props) {
   const usedStackIds = stackBoard.usedStackIds
 
   return (
-    <div className="flex h-dvh flex-col items-center justify-center overflow-hidden bg-[#0a0d14] p-3 text-white md:p-8 landscape-short:!p-3">
+    <div className="flex h-full flex-col items-center justify-center overflow-hidden bg-[#0a0d14] p-3 text-white md:p-8 landscape-short:!p-3">
       <div className="w-full max-w-4xl fade-in-up">
 
         <div className="mb-3 md:mb-5 landscape-short:!mb-2">

@@ -17,7 +17,7 @@ export default function PassToClueGiver({ state, onReady }: Props) {
   const seconds = cluing.timeLeft
 
   return (
-    <div className="flex h-dvh flex-col items-center justify-center overflow-hidden bg-[#120915] p-5 text-white landscape-short:p-3">
+    <div className="flex h-full flex-col items-center justify-center overflow-hidden bg-[#120915] p-5 text-white landscape-short:p-3">
       <div className="fade-in-up flex w-full max-w-sm flex-col items-center landscape-short:max-w-md">
       <div className="relative mb-6 flex items-center justify-center landscape-short:mb-2">
         <div className="absolute w-24 h-24 rounded-full bg-[#ff3a6d]/20 pulse-ring landscape-short:!w-14 landscape-short:!h-14" />
