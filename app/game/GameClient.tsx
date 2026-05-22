@@ -161,7 +161,7 @@ export default function GameClient({ team1Name, team2Name, teamPlayers, challeng
       return <>{dealOverlay}<MoneyResult state={state} dispatch={dispatchWithDeals} /></>
 
     case 'final':
-      return <>{dealOverlay}<FinalScoreboard state={state} onRestart={() => window.location.href = '/'} /></>
+      return <>{dealOverlay}<FinalScoreboard state={state} dispatch={dispatch} onRestart={() => window.location.href = '/'} /></>
 
     default:
       return null

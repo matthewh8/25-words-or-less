@@ -1,6 +1,6 @@
 'use client'
 
-import type { GameState } from '@/lib/gameState'
+import type { GameAction, GameState } from '@/lib/gameState'
 import { leadingTeam } from '@/lib/gameState'
 import ResultScreen from './ResultScreen'
 import TeamNameBlock from './TeamNameBlock'
@@ -8,10 +8,11 @@ import { TEAM_COLORS } from '@/lib/teamColors'
 
 interface Props {
   state: GameState
+  dispatch: (a: GameAction) => void
   onRestart: () => void
 }
 
-export default function FinalScoreboard({ state, onRestart }: Props) {
+export default function FinalScoreboard({ state, dispatch, onRestart }: Props) {
   const { teams, moneyWon } = state
   const winner = leadingTeam(teams)
   const tied = teams[0].score === teams[1].score
@@ -72,9 +73,25 @@ export default function FinalScoreboard({ state, onRestart }: Props) {
                     Winner
                   </span>
                 )}
+                <button
+                  type="button"
+                  onClick={() => dispatch({ type: 'ADJUST_SCORE', teamId: index, delta: -1 })}
+                  aria-label={`Decrease ${team.name} score by one`}
+                  className="h-8 w-8 rounded-md border border-white/10 bg-white/[0.04] font-mono text-white/70 transition-colors hover:border-white/20 hover:text-white"
+                >
+                  −
+                </button>
                 <span className={`text-2xl font-black tabular-nums tracking-normal md:text-3xl ${isWinner ? 'text-[#ffd23f]' : 'text-white'}`}>
                   {score.toLocaleString()}
                 </span>
+                <button
+                  type="button"
+                  onClick={() => dispatch({ type: 'ADJUST_SCORE', teamId: index, delta: 1 })}
+                  aria-label={`Increase ${team.name} score by one`}
+                  className="h-8 w-8 rounded-md border border-white/10 bg-white/[0.04] font-mono text-white/70 transition-colors hover:border-white/20 hover:text-white"
+                >
+                  +
+                </button>
               </div>
             </article>
           )

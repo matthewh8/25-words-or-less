@@ -259,6 +259,7 @@ export type GameAction =
   | { type: 'START_MONEY_ROUND'; words?: string[]; wordDefinitions?: Record<string, string>; moneyTime?: number }
   | { type: 'ADVANCE_PHASE'; roundTime?: number; moneyTime?: number; firstTeam?: 0 | 1; nextStackDeal?: StackDeal }
   | { type: 'REFRESH_BID'; words?: string[]; wordDefinitions?: Record<string, string> }
+  | { type: 'ADJUST_SCORE'; teamId: 0 | 1; delta: number }
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   const mode = state.gameMode
@@ -294,6 +295,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         currentBid: action.amount,
         activeBidder: next,
         biddingTeam: state.bid.activeBidder,
+        biddingTimeLeft: mode.timing.biddingSeconds,
       }
       if (action.amount === mode.bidding.wordCount) {
         return startBiddingClue(state, bid, mode)
@@ -599,6 +601,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'START_CLUING_NOW': {
       if (state.phase !== 'round1_premeditation') return state
       return { ...state, phase: 'round1_cluing', premeditationTimeLeft: 0 }
+    }
+
+    case 'ADJUST_SCORE': {
+      const teams = [...state.teams] as [TeamState, TeamState]
+      const current = teams[action.teamId].score
+      const next = Math.max(0, current + action.delta)
+      teams[action.teamId] = { ...teams[action.teamId], score: next }
+      return { ...state, teams }
     }
 
     case 'REFRESH_BID': {

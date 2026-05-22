@@ -104,18 +104,6 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
       <div className={`grid min-h-0 flex-1 ${mobileClueGridRows} gap-2 overflow-hidden p-2 md:grid-cols-[300px_1fr] md:grid-rows-none md:gap-3 md:p-4 xl:grid-cols-[340px_1fr] xl:gap-4 xl:p-8`}>
         {/* Left: timer and controls */}
         <div className="order-2 grid min-h-0 grid-cols-2 gap-2 md:order-1 md:flex md:flex-col md:gap-3 xl:gap-4 landscape-short:grid landscape-short:grid-cols-2 landscape-short:gap-1.5">
-          <div className="flex justify-center rounded-lg border border-white/10 bg-[#101522] p-2 md:p-5 landscape-short:hidden">
-            <div className="md:hidden">
-              <Timer timeLeft={timeLeft} total={timeTotal} size={moneyStream ? 'xs' : 'sm'} />
-            </div>
-            <div className="hidden md:block 2xl:hidden">
-              <Timer timeLeft={timeLeft} total={timeTotal} size="md" />
-            </div>
-            <div className="hidden 2xl:block">
-              <Timer timeLeft={timeLeft} total={timeTotal} size="lg" />
-            </div>
-          </div>
-
           <div className="rounded-lg border border-white/10 bg-[#141826] p-3 text-center md:p-4 landscape-short:hidden">
             <p className="mono-label text-white/35 text-[9px] mb-1">Words left</p>
             <div className={`text-4xl font-black tabular-nums tracking-normal md:text-5xl ${
@@ -134,6 +122,18 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
             </div>
           </div>
 
+          <div className="flex justify-center rounded-lg border border-white/10 bg-[#101522] p-2 md:p-5 landscape-short:hidden">
+            <div className="md:hidden">
+              <Timer timeLeft={timeLeft} total={timeTotal} size={moneyStream ? 'xs' : 'sm'} />
+            </div>
+            <div className="hidden md:block 2xl:hidden">
+              <Timer timeLeft={timeLeft} total={timeTotal} size="md" />
+            </div>
+            <div className="hidden 2xl:block">
+              <Timer timeLeft={timeLeft} total={timeTotal} size="lg" />
+            </div>
+          </div>
+
           <div className={`col-span-2 rounded-lg border border-white/10 bg-[#141826] md:p-3 landscape-short:p-1.5 landscape-short:col-span-2 ${moneyStream ? 'p-1.5' : 'p-2'}`}>
             <div className={`flex items-center justify-between gap-2 ${moneyStream ? 'mb-1' : 'mb-2'} landscape-short:mb-1`}>
               <div className="min-w-0 landscape-short:hidden">
@@ -143,11 +143,11 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
                 </p>
               </div>
               <div className="hidden landscape-short:flex landscape-short:min-w-0 landscape-short:items-baseline landscape-short:gap-2">
-                <span className={`font-black tabular-nums text-xl leading-none ${timeLeft <= 10 ? 'text-[#ff3a6d]' : timeLeft <= 20 ? 'text-[#ffd23f]' : 'text-white'}`}>
-                  {timeLeft}s
-                </span>
                 <span className={`font-black tabular-nums text-lg leading-none ${wordsLeft <= 5 ? 'text-[#ff3a6d]' : wordsLeft <= 10 ? 'text-[#ffd23f]' : 'text-white'}`}>
                   {wordsLeft}<span className="text-white/30 text-xs">/{wordLimit}</span>
+                </span>
+                <span className={`font-black tabular-nums text-xl leading-none ${timeLeft <= 10 ? 'text-[#ff3a6d]' : timeLeft <= 20 ? 'text-[#ffd23f]' : 'text-white'}`}>
+                  {timeLeft}s
                 </span>
               </div>
               <div className="flex shrink-0 items-center gap-1">
@@ -177,17 +177,6 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
 
             <div className={`grid grid-cols-2 ${moneyStream ? 'gap-1' : 'gap-1.5'}`}>
               <button
-                onClick={() => dispatchClueAction({ type: 'WORD_REFUND' }, 'word')}
-                disabled={!canRefund}
-                aria-label="Add one word back to the clue budget"
-                aria-keyshortcuts="ArrowUp"
-                className={`rounded-md border border-[#ffd23f]/30 bg-[#0a0d14] px-2 font-black text-[#ffd23f] transition-all hover:bg-[#ffd23f]/10 active:scale-95 disabled:opacity-25 md:min-h-16 md:py-2 md:text-base ${moneyStream ? 'min-h-11 py-1 text-xs' : 'min-h-14 py-2 text-sm landscape-short:min-h-11 landscape-short:py-1 landscape-short:text-xs'}`}
-              >
-                +1 Word
-                <span className={`text-[9px] font-normal text-white/25 ${moneyStream ? 'hidden md:block' : 'block landscape-short:hidden'}`}>Arrow up</span>
-              </button>
-
-              <button
                 onClick={() => dispatchClueAction({ type: 'WORD_USED' }, noWordsLeft ? 'end' : 'word')}
                 disabled={dead}
                 aria-label={noWordsLeft ? 'End turn with no clue words left' : 'Spend one clue word'}
@@ -207,6 +196,17 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
               >
                 Correct
                 <span className={`text-[9px] font-normal text-[#0a0d14]/50 ${moneyStream ? 'hidden md:block' : 'block landscape-short:hidden'}`}>Arrow right</span>
+              </button>
+
+              <button
+                onClick={() => dispatchClueAction({ type: 'WORD_REFUND' }, 'word')}
+                disabled={!canRefund}
+                aria-label="Add one word back to the clue budget"
+                aria-keyshortcuts="ArrowUp"
+                className={`rounded-md border border-[#ffd23f]/30 bg-[#0a0d14] px-2 font-black text-[#ffd23f] transition-all hover:bg-[#ffd23f]/10 active:scale-95 disabled:opacity-25 md:min-h-16 md:py-2 md:text-base ${moneyStream ? 'min-h-11 py-1 text-xs' : 'min-h-14 py-2 text-sm landscape-short:min-h-11 landscape-short:py-1 landscape-short:text-xs'}`}
+              >
+                +1 Word
+                <span className={`text-[9px] font-normal text-white/25 ${moneyStream ? 'hidden md:block' : 'block landscape-short:hidden'}`}>Arrow up</span>
               </button>
 
               <button

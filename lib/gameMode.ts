@@ -124,8 +124,8 @@ export const DEFAULT_GAME_MODE: GameMode = {
   timing: {
     turnSeconds: 45,
     moneySeconds: 60,
-    biddingSeconds: 45,
-    premeditationSeconds: 30,
+    biddingSeconds: 15,
+    premeditationSeconds: 15,
     minSeconds: 10,
     maxSeconds: 300,
     turnPresets: [30, 45, 60, 90],
