@@ -7,6 +7,7 @@ export interface GameModeTiming {
   turnSeconds: number
   moneySeconds: number
   biddingSeconds: number
+  premeditationSeconds: number
   minSeconds: number
   maxSeconds: number
   turnPresets: number[]
@@ -123,7 +124,8 @@ export const DEFAULT_GAME_MODE: GameMode = {
   timing: {
     turnSeconds: 45,
     moneySeconds: 60,
-    biddingSeconds: 90,
+    biddingSeconds: 45,
+    premeditationSeconds: 30,
     minSeconds: 10,
     maxSeconds: 300,
     turnPresets: [30, 45, 60, 90],
@@ -339,6 +341,7 @@ export function buildGameMode(raw: unknown, fallback: GameMode = DEFAULT_GAME_MO
       turnSeconds: positiveInt(timing.turnSeconds, fallback.timing.turnSeconds),
       moneySeconds: positiveInt(timing.moneySeconds, fallback.timing.moneySeconds),
       biddingSeconds: positiveInt(timing.biddingSeconds, fallback.timing.biddingSeconds),
+      premeditationSeconds: positiveInt(timing.premeditationSeconds, fallback.timing.premeditationSeconds),
       minSeconds,
       maxSeconds,
       turnPresets: intArray(timing.turnPresets, fallback.timing.turnPresets),
@@ -467,7 +470,7 @@ export function validateGameModeDefinition(raw: unknown): string[] {
   requirePositiveInt(raw, 'roundCount', 'mode', errors)
 
   const timing = section(raw.timing)
-  ;['turnSeconds', 'moneySeconds', 'biddingSeconds', 'minSeconds', 'maxSeconds'].forEach(key => {
+  ;['turnSeconds', 'moneySeconds', 'biddingSeconds', 'premeditationSeconds', 'minSeconds', 'maxSeconds'].forEach(key => {
     requirePositiveInt(timing, key, 'timing', errors)
   })
   ;['turnPresets', 'moneyPresets'].forEach(key => {
@@ -481,7 +484,7 @@ export function validateGameModeDefinition(raw: unknown): string[] {
     errors.push('timing.minSeconds must be lower than or equal to timing.maxSeconds')
   }
   if (timingMin !== null && timingMax !== null) {
-    ;(['turnSeconds', 'moneySeconds', 'biddingSeconds'] as const).forEach(key => {
+    ;(['turnSeconds', 'moneySeconds', 'biddingSeconds', 'premeditationSeconds'] as const).forEach(key => {
       if (isPositiveInt(timing[key]) && (timing[key] < timingMin || timing[key] > timingMax)) {
         errors.push(`timing.${key} must be between timing.minSeconds and timing.maxSeconds`)
       }

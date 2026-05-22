@@ -13,7 +13,8 @@ import { buildGameMode, DEFAULT_GAME_MODE } from './gameMode'
 
 function startCluingByConcede(initial: GameState, amount = 20): GameState {
   const afterBid = gameReducer(initial, { type: 'PLACE_BID', amount })
-  return gameReducer(afterBid, { type: 'CONCEDE' })
+  const conceded = gameReducer(afterBid, { type: 'CONCEDE' })
+  return gameReducer(conceded, { type: 'START_CLUING_NOW' })
 }
 
 function cluing(overrides: Partial<CluingState> = {}): CluingState {
@@ -57,16 +58,29 @@ describe('bid validation', () => {
     expect(valid.bid?.biddingTeam).toBe(0)
   })
 
-  it('starts cluing immediately when a team bids all the way to five', () => {
+  it('enters premeditation when a team bids all the way to five before cluing starts', () => {
     const started = gameReducer(initGame('A', 'B'), { type: 'START_BIDDING', firstTeam: 0 })
 
     const wonBid = gameReducer(started, { type: 'PLACE_BID', amount: 5 })
 
-    expect(wonBid.phase).toBe('round1_cluing')
+    expect(wonBid.phase).toBe('round1_premeditation')
     expect(wonBid.bid?.currentBid).toBe(5)
     expect(wonBid.bid?.biddingTeam).toBe(0)
     expect(wonBid.cluing?.cluingTeam).toBe(0)
     expect(wonBid.cluing?.wordLimit).toBe(5)
+
+    const started2 = gameReducer(wonBid, { type: 'START_CLUING_NOW' })
+    expect(started2.phase).toBe('round1_cluing')
+  })
+
+  it('auto-advances from premeditation to cluing when the timer hits zero', () => {
+    const started = gameReducer(initGame('A', 'B'), { type: 'START_BIDDING', firstTeam: 0 })
+    const conceded = gameReducer(started, { type: 'CONCEDE' })
+    expect(conceded.phase).toBe('round1_premeditation')
+    const lastTick: GameState = { ...conceded, premeditationTimeLeft: 1 }
+    const advanced = gameReducer(lastTick, { type: 'PREMEDITATION_TICK' })
+    expect(advanced.phase).toBe('round1_cluing')
+    expect(advanced.premeditationTimeLeft).toBe(0)
   })
 
   it('does not auto-concede when the bidding timer reaches zero', () => {
@@ -95,9 +109,10 @@ describe('bid validation', () => {
   it('passes cluing to the opponent when the opener concedes before bidding', () => {
     const started = gameReducer(initGame('A', 'B'), { type: 'START_BIDDING', firstTeam: 0 })
     const conceded = gameReducer(started, { type: 'CONCEDE' })
-    expect(conceded.phase).toBe('round1_cluing')
+    expect(conceded.phase).toBe('round1_premeditation')
     expect(conceded.cluing?.cluingTeam).toBe(1)
     expect(conceded.cluing?.wordLimit).toBe(started.gameMode.bidding.maxBid)
+    expect(gameReducer(conceded, { type: 'START_CLUING_NOW' }).phase).toBe('round1_cluing')
   })
 })
 

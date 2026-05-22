@@ -52,7 +52,9 @@ export default function RoundIntro({ state, dispatch }: Props) {
           </div>
         </div>
 
-        <div className="grid gap-2 md:gap-5 lg:grid-cols-[1fr_360px] landscape-short:grid-cols-[1fr_280px] landscape-short:gap-3">
+        <div className={`grid gap-2 md:gap-5 landscape-short:gap-3 ${
+          isBiddingRound ? '' : 'lg:grid-cols-[1fr_360px] landscape-short:grid-cols-[1fr_280px]'
+        }`}>
           <div className="space-y-2 rounded-lg border border-white/10 bg-[#141826] p-3 md:space-y-3 md:p-5 landscape-short:!space-y-1 landscape-short:!p-2">
             {info.bullets.map((bullet, i) => (
               <div key={bullet} className="flex items-start gap-3 border-b border-white/10 pb-2 last:border-b-0 last:pb-0 md:gap-4 md:pb-3 landscape-short:!gap-2 landscape-short:!pb-1">
@@ -62,15 +64,17 @@ export default function RoundIntro({ state, dispatch }: Props) {
             ))}
           </div>
 
-          <TimeConfigurator
-            label="Time per turn"
-            value={time}
-            presets={gameMode.timing.turnPresets}
-            min={gameMode.timing.minSeconds}
-            max={gameMode.timing.maxSeconds}
-            ariaLabel="Custom turn time in seconds"
-            onChange={setTime}
-          />
+          {!isBiddingRound && (
+            <TimeConfigurator
+              label="Time per turn"
+              value={time}
+              presets={gameMode.timing.turnPresets}
+              min={gameMode.timing.minSeconds}
+              max={gameMode.timing.maxSeconds}
+              ariaLabel="Custom turn time in seconds"
+              onChange={setTime}
+            />
+          )}
         </div>
 
         <div className="mt-2 md:mt-5 landscape-short:!mt-2">
@@ -84,7 +88,7 @@ export default function RoundIntro({ state, dispatch }: Props) {
         </div>
 
         <button
-          onClick={() => dispatch({ type: 'ADVANCE_PHASE', roundTime: time })}
+          onClick={() => dispatch({ type: 'ADVANCE_PHASE', ...(isBiddingRound ? {} : { roundTime: time }) })}
           className="mt-2 w-full rounded-md bg-[#ffd23f] py-3.5 text-base font-black uppercase tracking-normal text-[#0a0d14] transition-all hover:bg-[#ffe071] active:scale-[0.98] md:mt-5 md:py-4 md:text-lg landscape-short:!mt-2 landscape-short:!py-2 landscape-short:!text-sm"
         >
           Start Round {info.number}

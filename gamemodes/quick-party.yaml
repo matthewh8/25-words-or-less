@@ -8,6 +8,7 @@ timing:
   turnSeconds: 30
   moneySeconds: 45
   biddingSeconds: 45
+  premeditationSeconds: 30
   minSeconds: 10
   maxSeconds: 180
   turnPresets: [20, 30, 45, 60]

@@ -17,7 +17,7 @@ import MoneyIntro from '@/components/MoneyIntro'
 import MoneyResult from '@/components/MoneyResult'
 import FinalScoreboard from '@/components/FinalScoreboard'
 import PassToClueGiver from '@/components/PassToClueGiver'
-import PassToBidders from '@/components/PassToBidders'
+import Premeditation from '@/components/Premeditation'
 
 interface GameClientProps {
   team1Name: string
@@ -43,6 +43,7 @@ async function requestDeal(body: DealRequest): Promise<DealResponse> {
 
 function cluingReadyKey(state: GameState): string | null {
   if (!isCluingPhase(state.phase) || !state.cluing) return null
+  if (state.cluing.stream === 'bidding') return null
   return [
     state.phase,
     state.currentRound,
@@ -54,11 +55,6 @@ function cluingReadyKey(state: GameState): string | null {
   ].join(':')
 }
 
-function biddingReadyKey(state: GameState): string | null {
-  if (state.phase !== 'round1_bidding' || !state.bid) return null
-  return `${state.phase}:${state.round1Contests}`
-}
-
 export default function GameClient({ team1Name, team2Name, teamPlayers, challengeSettings, gameMode }: GameClientProps) {
   const [state, dispatch] = useReducer(gameReducer, undefined, () => {
     return initGame(team1Name, team2Name, readUsedWords(), gameMode, teamPlayers, challengeSettings)
@@ -66,7 +62,6 @@ export default function GameClient({ team1Name, team2Name, teamPlayers, challeng
   const stateRef = useRef(state)
   const pendingDealRef = useRef(false)
   const [cluingReadyFor, setCluingReadyFor] = useState<string | null>(null)
-  const [biddingReadyFor, setBiddingReadyFor] = useState<string | null>(null)
   const [dealPending, setDealPending] = useState(false)
   const [dealError, setDealError] = useState('')
 
@@ -128,24 +123,23 @@ export default function GameClient({ team1Name, team2Name, teamPlayers, challeng
   )
 
   const isCluing = isCluingPhase(state.phase)
-  const isBidding = state.phase === 'round1_bidding'
   const activeCluingKey = cluingReadyKey(state)
-  const activeBiddingKey = biddingReadyKey(state)
   const cluingReady = activeCluingKey !== null && cluingReadyFor === activeCluingKey
-  const biddingReady = activeBiddingKey !== null && biddingReadyFor === activeBiddingKey
+  const needsPassToClueGiver = activeCluingKey !== null
 
-  if (isCluing && !cluingReady) {
+  if (isCluing && needsPassToClueGiver && !cluingReady) {
     return <>{dealOverlay}<PassToClueGiver state={state} onReady={() => setCluingReadyFor(activeCluingKey)} /></>
   }
-  if (isCluing && cluingReady) {
+  if (isCluing) {
     return <>{dealOverlay}<ClueGiverView state={state} dispatch={dispatchWithDeals} /></>
   }
 
-  if (isBidding && !biddingReady) {
-    return <>{dealOverlay}<PassToBidders state={state} onReady={() => setBiddingReadyFor(activeBiddingKey)} /></>
-  }
-  if (isBidding && biddingReady) {
+  if (state.phase === 'round1_bidding') {
     return <>{dealOverlay}<BiddingRound state={state} dispatch={dispatchWithDeals} /></>
+  }
+
+  if (state.phase === 'round1_premeditation') {
+    return <>{dealOverlay}<Premeditation state={state} dispatch={dispatchWithDeals} /></>
   }
 
   switch (state.phase) {

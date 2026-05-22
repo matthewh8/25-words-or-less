@@ -44,7 +44,8 @@ function bidResultState(): GameState {
     words: bidWords.words,
   })
   const afterBid = gameReducer(bidding, { type: 'PLACE_BID', amount: 20 })
-  const cluing = gameReducer(afterBid, { type: 'CONCEDE' })
+  const conceded = gameReducer(afterBid, { type: 'CONCEDE' })
+  const cluing = gameReducer(conceded, { type: 'START_CLUING_NOW' })
   return gameReducer(cluing, { type: 'END_CLUING' })
 }
 
@@ -122,7 +123,8 @@ describe('deal planning', () => {
       words: bidWords.words,
     })
     const afterBid = gameReducer(bidding, { type: 'PLACE_BID', amount: 20 })
-    const cluing = gameReducer(afterBid, { type: 'CONCEDE' })
+    const conceded = gameReducer(afterBid, { type: 'CONCEDE' })
+    const cluing = gameReducer(conceded, { type: 'START_CLUING_NOW' })
 
     expect(planDeal(cluing, { type: 'REFRESH_BID' })).toEqual({
       type: 'direct',

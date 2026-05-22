@@ -7,7 +7,8 @@ roundCount: 4
 timing:
   turnSeconds: 45
   moneySeconds: 60
-  biddingSeconds: 90
+  biddingSeconds: 45
+  premeditationSeconds: 30
   minSeconds: 10
   maxSeconds: 300
   turnPresets: [30, 45, 60, 90]

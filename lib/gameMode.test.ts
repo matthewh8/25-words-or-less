@@ -54,6 +54,7 @@ describe('game mode constructor', () => {
       '  turnSeconds: 30',
       '  moneySeconds: 45',
       '  biddingSeconds: 20',
+      '  premeditationSeconds: 25',
       '  minSeconds: 10',
       '  maxSeconds: 120',
       '  turnPresets: [20, 30]',
