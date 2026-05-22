@@ -86,7 +86,7 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-[#0a0d14] text-white">
+    <div className="flex h-[95dvh] flex-col overflow-hidden bg-[#0a0d14] text-white">
 
       <div className="shrink-0 border-b border-white/10 px-3 pb-2 pt-3 md:px-8 md:pb-3 md:pt-4 landscape-short:py-1.5">
         <div className="mb-2 flex items-center gap-2 landscape-short:mb-1">
