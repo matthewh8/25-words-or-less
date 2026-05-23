@@ -126,13 +126,13 @@ export default function BiddingRound({ state, dispatch }: Props) {
         />
       </div>
 
-      {/* Main 2-panel grid */}
-      <div className="grid min-h-0 flex-1 grid-rows-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-2 overflow-hidden p-2 md:grid-cols-[0.9fr_1.1fr] md:grid-rows-none md:gap-3 md:p-4 landscape-short:grid-cols-[0.9fr_1.1fr] landscape-short:grid-rows-none landscape-short:gap-2 landscape-short:p-2">
+      {/* Main 2-panel area: natural-height flex-col on mobile (no stretch), no-scroll grid on md+ */}
+      <div className="flex flex-col gap-2 overflow-y-auto p-2 md:flex-1 md:min-h-0 md:grid md:overflow-hidden md:grid-cols-[0.9fr_1.1fr] md:gap-3 md:p-4 landscape-short:flex-1 landscape-short:min-h-0 landscape-short:grid landscape-short:overflow-hidden landscape-short:grid-cols-[0.9fr_1.1fr] landscape-short:gap-2 landscape-short:p-2">
 
-        {/* Words to clue */}
-        <div className="flex min-h-0 flex-col rounded-lg border border-white/10 bg-[#141826] p-3 md:p-5 landscape-short:p-2">
-          <p className="mono-label mb-2 shrink-0 text-[10px] text-white/45 landscape-short:mb-1">{words.length} words to clue</p>
-          <div className="min-h-0 flex-1 overflow-y-auto">
+        {/* Words to clue — shrinks to content on mobile, fills grid cell on desktop */}
+        <div className="shrink-0 rounded-lg border border-white/10 bg-[#141826] p-3 md:flex md:min-h-0 md:shrink md:flex-col md:p-5 landscape-short:flex landscape-short:min-h-0 landscape-short:shrink landscape-short:flex-col landscape-short:p-2">
+          <p className="mono-label mb-2 text-[10px] text-white/45 landscape-short:mb-1">{words.length} words to clue</p>
+          <div className="md:min-h-0 md:flex-1 md:overflow-y-auto">
             <div className="grid grid-cols-2 gap-1.5 md:grid-cols-1 landscape-short:grid-cols-1 landscape-short:gap-1">
               {words.map((w, i) => (
                 <div key={i} className="flex min-w-0 items-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-2 py-1.5 md:gap-3 md:px-4 md:py-3 landscape-short:px-2 landscape-short:py-0.5">
@@ -144,14 +144,14 @@ export default function BiddingRound({ state, dispatch }: Props) {
           </div>
           <button
             onClick={() => { setInput(''); setError(''); dispatch({ type: 'REFRESH_BID' }) }}
-            className="mono-label mt-2 w-full shrink-0 rounded-md border border-[#ffd23f]/40 py-1.5 text-[10px] text-[#ffd23f] transition-all hover:bg-[#ffd23f]/10 active:scale-95 landscape-short:mt-1 landscape-short:py-1"
+            className="mono-label mt-2 w-full rounded-md border border-[#ffd23f]/40 py-1.5 text-[10px] text-[#ffd23f] transition-all hover:bg-[#ffd23f]/10 active:scale-95 landscape-short:mt-1 landscape-short:py-1"
           >
             New Words
           </button>
         </div>
 
         {/* Status + timer + quick actions + input */}
-        <div className="flex min-h-0 flex-col gap-2 landscape-short:gap-1.5">
+        <div className="flex min-h-0 flex-col gap-2 md:flex-none landscape-short:flex-none landscape-short:gap-1.5">
 
           <div className="rounded-lg border border-white/10 bg-[#101522] p-3 md:p-5 landscape-short:p-2">
             {noBidsYet ? (
@@ -223,10 +223,16 @@ export default function BiddingRound({ state, dispatch }: Props) {
           </div>
 
         </div>
+
+        {/* Bid buttons at end of scroll content on mobile */}
+        <div className="grid grid-cols-2 gap-2 md:hidden landscape-short:hidden">
+          {teamBidButtons}
+        </div>
+
       </div>
 
-      {/* Team bid buttons — always pinned at bottom */}
-      <div className="shrink-0 grid grid-cols-2 gap-2 px-2 pb-2 md:px-4 md:pb-4 landscape-short:px-2 landscape-short:pb-2">
+      {/* Bid buttons pinned outside on desktop + landscape */}
+      <div className="hidden shrink-0 grid-cols-2 gap-2 px-4 pb-4 md:grid landscape-short:grid landscape-short:px-2 landscape-short:pb-2">
         {teamBidButtons}
       </div>
 
