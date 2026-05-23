@@ -135,7 +135,7 @@ export default function BiddingRound({ state, dispatch }: Props) {
           <div className="md:min-h-0 md:flex-1 md:overflow-y-auto">
             <div className="grid grid-cols-2 gap-1.5 md:grid-cols-1 landscape-short:grid-cols-1 landscape-short:gap-1">
               {words.map((w, i) => (
-                <div key={i} className="flex min-w-0 items-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-2 py-1.5 md:gap-3 md:px-4 md:py-3 landscape-short:px-2 landscape-short:py-0.5">
+                <div key={i} className="flex min-w-0 items-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-2 py-1 md:gap-3 md:px-4 md:py-3 landscape-short:px-2 landscape-short:py-0.5">
                   <span className="font-mono text-[10px] text-white/35 md:text-xs">{String(i+1).padStart(2,'0')}</span>
                   <span className="min-w-0 truncate text-xs font-black uppercase tracking-normal md:text-base">{w}</span>
                 </div>
@@ -178,7 +178,29 @@ export default function BiddingRound({ state, dispatch }: Props) {
                 </p>
               </>
             )}
-            <div className="mt-2 flex items-center justify-between gap-3 landscape-short:mt-1.5">
+            {/* Mobile: compact inline timer + buttons (no ring) */}
+            <div className="mt-2 flex items-center gap-2 md:hidden landscape-short:hidden">
+              <span className={`text-3xl font-black tabular-nums leading-none ${biddingTimeLeft <= 10 ? 'text-[#ff3a6d]' : biddingTimeLeft <= 20 ? 'text-[#ffd23f]' : 'text-white'}`}>
+                {biddingTimeLeft}<span className="ml-0.5 text-sm font-normal text-white/35">s</span>
+              </span>
+              {timeExpired && <span className="text-xs font-bold text-[#ff3a6d]">Time&apos;s up</span>}
+              <div className="ml-auto flex gap-1.5">
+                <button
+                  onClick={() => { setInput(String(winBid)); setError('') }}
+                  className="rounded-md border border-[#ff3a6d]/55 bg-[#ff3a6d]/10 px-2.5 py-2 text-[11px] font-black uppercase tracking-normal text-[#ff3a6d] transition-all hover:bg-[#ff3a6d]/20 active:scale-95"
+                >
+                  Set to {winBid}
+                </button>
+                <button
+                  onClick={() => dispatch({ type: 'CONCEDE' })}
+                  className="rounded-md border border-[#ff3a6d]/55 bg-[#ff3a6d]/10 px-2.5 py-2 text-[11px] font-black uppercase tracking-normal text-[#ff3a6d] transition-all hover:bg-[#ff3a6d]/20 active:scale-95"
+                >
+                  Concede
+                </button>
+              </div>
+            </div>
+            {/* Desktop + landscape: circular timer ring + buttons */}
+            <div className="mt-2 hidden items-center justify-between gap-3 md:flex landscape-short:flex landscape-short:mt-1.5">
               <div className="flex items-center gap-3">
                 <Timer timeLeft={biddingTimeLeft} total={mode.timing.biddingSeconds} landscapeShortSize="xs" />
                 {timeExpired && (
