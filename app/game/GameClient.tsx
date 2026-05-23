@@ -125,9 +125,8 @@ export default function GameClient({ team1Name, team2Name, teamPlayers, challeng
   const isCluing = isCluingPhase(state.phase)
   const activeCluingKey = cluingReadyKey(state)
   const cluingReady = activeCluingKey !== null && cluingReadyFor === activeCluingKey
-  const needsPassToClueGiver = activeCluingKey !== null
 
-  if (isCluing && needsPassToClueGiver && !cluingReady) {
+  if (isCluing && activeCluingKey !== null && !cluingReady) {
     return <>{dealOverlay}<PassToClueGiver state={state} onReady={() => setCluingReadyFor(activeCluingKey)} /></>
   }
   if (isCluing) {
@@ -161,7 +160,7 @@ export default function GameClient({ team1Name, team2Name, teamPlayers, challeng
       return <>{dealOverlay}<MoneyResult state={state} dispatch={dispatchWithDeals} /></>
 
     case 'final':
-      return <>{dealOverlay}<FinalScoreboard state={state} dispatch={dispatch} onRestart={() => window.location.href = '/'} /></>
+      return <>{dealOverlay}<FinalScoreboard state={state} dispatch={dispatchWithDeals} onRestart={() => window.location.href = '/'} /></>
 
     default:
       return null

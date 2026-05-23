@@ -1,18 +1,23 @@
 'use client'
 
+type TimerSize = 'xs' | 'sm' | 'md' | 'lg'
+
 interface TimerProps {
   timeLeft: number
   total: number
-  size?: 'xs' | 'sm' | 'md' | 'lg'
+  size?: TimerSize
+  landscapeShortSize?: TimerSize
 }
 
-export default function Timer({ timeLeft, total, size = 'sm' }: TimerProps) {
+const RING: Record<TimerSize, number> = { lg: 248, md: 176, sm: 132, xs: 104 }
+const TEXT: Record<TimerSize, string> = { lg: 'text-7xl', md: 'text-5xl', sm: 'text-4xl', xs: 'text-3xl' }
+
+function TimerRing({ timeLeft, total, size }: { timeLeft: number; total: number; size: TimerSize }) {
   const safeTotal = Math.max(1, total)
   const pct = Math.max(0, Math.min(100, (timeLeft / safeTotal) * 100))
   const urgent = timeLeft <= 10
   const warning = timeLeft <= 20
-  const ring = size === 'lg' ? 248 : size === 'md' ? 176 : size === 'xs' ? 104 : 132
-  const text = size === 'lg' ? 'text-7xl' : size === 'md' ? 'text-5xl' : size === 'xs' ? 'text-3xl' : 'text-4xl'
+  const ring = RING[size]
 
   return (
     <div
@@ -27,7 +32,7 @@ export default function Timer({ timeLeft, total, size = 'sm' }: TimerProps) {
     >
       <div className="absolute inset-2 rounded-full bg-[#0a0d14] border border-white/10" />
       <div className="relative flex flex-col items-center">
-        <div className={`${text} font-black tabular-nums leading-none tracking-normal transition-colors duration-500 ${
+        <div className={`${TEXT[size]} font-black tabular-nums leading-none tracking-normal transition-colors duration-500 ${
           urgent ? 'text-[#ff3a6d]' : warning ? 'text-[#ffd23f]' : 'text-white'
         }`}>
           {timeLeft}
@@ -36,4 +41,20 @@ export default function Timer({ timeLeft, total, size = 'sm' }: TimerProps) {
       </div>
     </div>
   )
+}
+
+export default function Timer({ timeLeft, total, size = 'sm', landscapeShortSize }: TimerProps) {
+  if (landscapeShortSize) {
+    return (
+      <>
+        <div className="landscape-short:hidden">
+          <TimerRing timeLeft={timeLeft} total={total} size={size} />
+        </div>
+        <div className="hidden landscape-short:block">
+          <TimerRing timeLeft={timeLeft} total={total} size={landscapeShortSize} />
+        </div>
+      </>
+    )
+  }
+  return <TimerRing timeLeft={timeLeft} total={total} size={size} />
 }

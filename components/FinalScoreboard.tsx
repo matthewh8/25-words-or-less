@@ -3,6 +3,7 @@
 import type { GameAction, GameState } from '@/lib/gameState'
 import { leadingTeam } from '@/lib/gameState'
 import ResultScreen from './ResultScreen'
+import ScoreAdjuster from './ScoreAdjuster'
 import TeamNameBlock from './TeamNameBlock'
 import { TEAM_COLORS } from '@/lib/teamColors'
 
@@ -27,18 +28,18 @@ export default function FinalScoreboard({ state, dispatch, onRestart }: Props) {
     : `${teams[winner].score.toLocaleString()} pts to ${teams[1 - winner].score.toLocaleString()} pts`
 
   const card = (
-    <div className={`rounded-lg p-3 md:p-8 landscape-short:!p-3 ${
+    <div className={`rounded-lg p-3 md:p-8 landscape-short:p-3 ${
       moneyWon ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-[#ffd23f]/10 border border-[#ffd23f]/30'
     }`}>
-      <p className="mono-label mb-2 text-[10px] text-[#ffd23f] md:mb-4 landscape-short:!mb-1">Game over</p>
-      <div className={`mb-2 text-4xl font-black uppercase leading-[0.85] md:mb-4 md:text-7xl landscape-short:!mb-1 landscape-short:!text-2xl ${
+      <p className="mono-label mb-2 text-[10px] text-[#ffd23f] md:mb-4 landscape-short:mb-1">Game over</p>
+      <div className={`mb-2 text-4xl font-black uppercase leading-[0.85] md:mb-4 md:text-7xl landscape-short:mb-1 landscape-short:text-2xl ${
         moneyWon ? 'text-[#2de584]' : 'text-white'
       }`}>
         {headline}
       </div>
-      <div className="text-sm text-white/55 md:text-lg landscape-short:!text-xs">{subline}</div>
+      <div className="text-sm text-white/55 md:text-lg landscape-short:text-xs">{subline}</div>
       {moneyWon && (
-        <p className="mt-2 text-xs font-bold text-[#ffd23f] md:mt-3 md:text-sm landscape-short:!mt-1">+ Money Round jackpot</p>
+        <p className="mt-2 text-xs font-bold text-[#ffd23f] md:mt-3 md:text-sm landscape-short:mt-1">+ Money Round jackpot</p>
       )}
     </div>
   )
@@ -73,25 +74,13 @@ export default function FinalScoreboard({ state, dispatch, onRestart }: Props) {
                     Winner
                   </span>
                 )}
-                <button
-                  type="button"
-                  onClick={() => dispatch({ type: 'ADJUST_SCORE', teamId: index, delta: -1 })}
-                  aria-label={`Decrease ${team.name} score by one`}
-                  className="h-8 w-8 rounded-md border border-white/10 bg-white/[0.04] font-mono text-white/70 transition-colors hover:border-white/20 hover:text-white"
-                >
-                  −
-                </button>
-                <span className={`text-2xl font-black tabular-nums tracking-normal md:text-3xl ${isWinner ? 'text-[#ffd23f]' : 'text-white'}`}>
-                  {score.toLocaleString()}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => dispatch({ type: 'ADJUST_SCORE', teamId: index, delta: 1 })}
-                  aria-label={`Increase ${team.name} score by one`}
-                  className="h-8 w-8 rounded-md border border-white/10 bg-white/[0.04] font-mono text-white/70 transition-colors hover:border-white/20 hover:text-white"
-                >
-                  +
-                </button>
+                <ScoreAdjuster
+                  teamId={index}
+                  teamName={team.name}
+                  score={score}
+                  dispatch={dispatch}
+                  scoreClassName={`text-2xl font-black tabular-nums tracking-normal md:text-3xl ${isWinner ? 'text-[#ffd23f]' : 'text-white'}`}
+                />
               </div>
             </article>
           )

@@ -235,7 +235,7 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
         </div>
 
         {/* Right: current word */}
-        <div className="order-1 flex min-h-0 flex-col rounded-lg border border-white/10 bg-[#141826] p-3 md:order-2 md:min-h-[320px] md:p-6 xl:min-h-[360px] xl:p-8 landscape-short:!min-h-0 landscape-short:p-2">
+        <div className="order-1 flex min-h-0 flex-col rounded-lg border border-white/10 bg-[#141826] p-3 md:order-2 md:min-h-[320px] md:p-6 xl:min-h-[360px] xl:p-8 landscape-short:min-h-0 landscape-short:p-2">
           <div className="mb-2 flex min-w-0 items-center gap-3 md:mb-6">
             <p className="mono-label shrink-0 text-white/35 text-[10px]">
               {Math.min(currentWordIndex + 1, words.length)} of {words.length}

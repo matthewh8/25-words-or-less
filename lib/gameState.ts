@@ -47,6 +47,7 @@ export interface BidState {
   biddingTeam: 0 | 1
   activeBidder: 0 | 1
   biddingTimeLeft: number
+  premeditationTimeLeft: number
 }
 
 export interface CluingState {
@@ -93,7 +94,6 @@ export interface GameState {
   usedWords: string[]
   roundTime: number
   moneyTime: number
-  premeditationTimeLeft: number
 }
 
 export function clampTurnSeconds(value: number, gameMode: GameMode = DEFAULT_GAME_MODE): number {
@@ -180,10 +180,9 @@ function revealFromCluing(cluing: CluingState): WordRevealState {
 function startBiddingClue(state: GameState, bid: BidState, mode: GameMode): GameState {
   return {
     ...state,
-    bid,
+    bid: { ...bid, premeditationTimeLeft: mode.timing.premeditationSeconds },
     phase: 'round1_premeditation',
     lastReveal: null,
-    premeditationTimeLeft: mode.timing.premeditationSeconds,
     cluing: {
       stream: 'bidding',
       deckId: mode.bidding.wordDeck,
@@ -237,7 +236,6 @@ export function initGame(
     usedWords: appendUsedWords([], initialUsedWords),
     roundTime: gameMode.timing.turnSeconds,
     moneyTime: gameMode.timing.moneySeconds,
-    premeditationTimeLeft: gameMode.timing.premeditationSeconds,
   }
 }
 
@@ -281,6 +279,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           biddingTeam: action.firstTeam,
           activeBidder: action.firstTeam,
           biddingTimeLeft: mode.timing.biddingSeconds,
+          premeditationTimeLeft: 0,
         },
       }
     }
@@ -590,17 +589,17 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'PREMEDITATION_TICK': {
-      if (state.phase !== 'round1_premeditation') return state
-      const newTime = state.premeditationTimeLeft - 1
+      if (state.phase !== 'round1_premeditation' || !state.bid) return state
+      const newTime = state.bid.premeditationTimeLeft - 1
       if (newTime <= 0) {
-        return { ...state, phase: 'round1_cluing', premeditationTimeLeft: 0 }
+        return { ...state, phase: 'round1_cluing', bid: { ...state.bid, premeditationTimeLeft: 0 } }
       }
-      return { ...state, premeditationTimeLeft: newTime }
+      return { ...state, bid: { ...state.bid, premeditationTimeLeft: newTime } }
     }
 
     case 'START_CLUING_NOW': {
-      if (state.phase !== 'round1_premeditation') return state
-      return { ...state, phase: 'round1_cluing', premeditationTimeLeft: 0 }
+      if (state.phase !== 'round1_premeditation' || !state.bid) return state
+      return { ...state, phase: 'round1_cluing', bid: { ...state.bid, premeditationTimeLeft: 0 } }
     }
 
     case 'ADJUST_SCORE': {

@@ -77,10 +77,13 @@ describe('bid validation', () => {
     const started = gameReducer(initGame('A', 'B'), { type: 'START_BIDDING', firstTeam: 0 })
     const conceded = gameReducer(started, { type: 'CONCEDE' })
     expect(conceded.phase).toBe('round1_premeditation')
-    const lastTick: GameState = { ...conceded, premeditationTimeLeft: 1 }
+    const lastTick: GameState = {
+      ...conceded,
+      bid: conceded.bid ? { ...conceded.bid, premeditationTimeLeft: 1 } : null,
+    }
     const advanced = gameReducer(lastTick, { type: 'PREMEDITATION_TICK' })
     expect(advanced.phase).toBe('round1_cluing')
-    expect(advanced.premeditationTimeLeft).toBe(0)
+    expect(advanced.bid?.premeditationTimeLeft).toBe(0)
   })
 
   it('does not auto-concede when the bidding timer reaches zero', () => {
@@ -463,6 +466,28 @@ describe('phase edges', () => {
     const selected = gameReducer(state, { type: 'SELECT_STACK', stackId: 'yellow' })
     expect(selected.phase).toBe('round23_cluing')
     expect(selected.cluing?.wordLimit).toBe(25)
+  })
+
+  it('adjusts a team score by delta and floors at zero', () => {
+    const state = initGame('A', 'B')
+    const withScore: GameState = {
+      ...state,
+      teams: [{ name: 'A', score: 10, players: [] }, { name: 'B', score: 5, players: [] }],
+    }
+
+    const up = gameReducer(withScore, { type: 'ADJUST_SCORE', teamId: 0, delta: 1 })
+    expect(up.teams[0].score).toBe(11)
+    expect(up.teams[1].score).toBe(5)
+
+    const down = gameReducer(withScore, { type: 'ADJUST_SCORE', teamId: 1, delta: -1 })
+    expect(down.teams[1].score).toBe(4)
+    expect(down.teams[0].score).toBe(10)
+
+    const floored = gameReducer(withScore, { type: 'ADJUST_SCORE', teamId: 1, delta: -10 })
+    expect(floored.teams[1].score).toBe(0)
+
+    const atZero = gameReducer(withScore, { type: 'ADJUST_SCORE', teamId: 1, delta: -5 })
+    expect(atZero.teams[1].score).toBe(0)
   })
 
   it('advances when a stack round has turns left but no unused stacks', () => {
