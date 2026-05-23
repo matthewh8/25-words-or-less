@@ -104,7 +104,7 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
       <div className={`grid min-h-0 flex-1 ${mobileClueGridRows} gap-2 overflow-hidden p-2 md:grid-cols-[300px_1fr] md:grid-rows-none md:gap-3 md:p-4 xl:grid-cols-[340px_1fr] xl:gap-4 xl:p-8`}>
         {/* Left: timer and controls */}
         <div className="order-2 grid min-h-0 grid-cols-2 gap-2 md:order-1 md:flex md:flex-col md:gap-3 xl:gap-4 landscape-short:grid landscape-short:grid-cols-2 landscape-short:gap-1.5">
-          <div className="rounded-lg border border-white/10 bg-[#141826] p-3 text-center md:p-4 landscape-short:hidden">
+          <div className="rounded-lg border border-white/10 bg-[#141826] p-3 text-center md:p-4 landscape-short:hidden max-sm:hidden">
             <p className="mono-label text-white/35 text-[9px] mb-1">Words left</p>
             <div className={`text-4xl font-black tabular-nums tracking-normal md:text-5xl ${
               wordsLeft <= 5 ? 'text-[#ff3a6d]' : wordsLeft <= 10 ? 'text-[#ffd23f]' : 'text-white'
@@ -122,7 +122,7 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
             </div>
           </div>
 
-          <div className="flex justify-center rounded-lg border border-white/10 bg-[#101522] p-2 md:p-5 landscape-short:hidden">
+          <div className="flex justify-center rounded-lg border border-white/10 bg-[#101522] p-2 md:p-5 landscape-short:hidden max-sm:hidden">
             <div className="md:hidden">
               <Timer timeLeft={timeLeft} total={timeTotal} size={moneyStream ? 'xs' : 'sm'} />
             </div>
@@ -135,14 +135,14 @@ function ActiveClueGiverView({ state, dispatch, cluing }: ActiveProps) {
           </div>
 
           <div className={`col-span-2 rounded-lg border border-white/10 bg-[#141826] md:p-3 landscape-short:p-1.5 landscape-short:col-span-2 ${moneyStream ? 'p-1.5' : 'p-2'}`}>
-            <div className={`flex items-center justify-between gap-2 ${moneyStream ? 'mb-1' : 'mb-2'} landscape-short:mb-1`}>
-              <div className="min-w-0 landscape-short:hidden">
+            <div className={`flex items-center justify-between gap-2 ${moneyStream ? 'mb-1' : 'mb-2'} landscape-short:mb-1 max-sm:mb-1`}>
+              <div className="min-w-0 landscape-short:hidden max-sm:hidden">
                 <p className="mono-label text-[9px] text-white/35">Controls</p>
                 <p className="mt-0.5 truncate text-[11px] text-white/45 md:text-xs">
                   {speechSupported ? speechNotice || 'Speech ready' : 'Speech unsupported'}
                 </p>
               </div>
-              <div className="hidden landscape-short:flex landscape-short:min-w-0 landscape-short:items-baseline landscape-short:gap-2">
+              <div className="hidden landscape-short:flex landscape-short:min-w-0 landscape-short:items-baseline landscape-short:gap-2 max-sm:flex max-sm:min-w-0 max-sm:items-baseline max-sm:gap-2">
                 <span className={`font-black tabular-nums text-lg leading-none ${wordsLeft <= 5 ? 'text-[#ff3a6d]' : wordsLeft <= 10 ? 'text-[#ffd23f]' : 'text-white'}`}>
                   {wordsLeft}<span className="text-white/30 text-xs">/{wordLimit}</span>
                 </span>
