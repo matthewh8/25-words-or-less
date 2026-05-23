@@ -126,8 +126,8 @@ export default function BiddingRound({ state, dispatch }: Props) {
         />
       </div>
 
-      {/* Main 2-panel area: natural-height flex-col on mobile (no stretch), no-scroll grid on md+ */}
-      <div className="flex flex-col gap-2 overflow-y-auto p-2 md:flex-1 md:min-h-0 md:grid md:overflow-hidden md:grid-cols-[0.9fr_1.1fr] md:gap-3 md:p-4 landscape-short:flex-1 landscape-short:min-h-0 landscape-short:grid landscape-short:overflow-hidden landscape-short:grid-cols-[0.9fr_1.1fr] landscape-short:gap-2 landscape-short:p-2">
+      {/* Main 2-panel area: flex-1 scroll on mobile (height constrained so scroll works), no-scroll grid on md+ */}
+      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-2 md:grid md:overflow-hidden md:grid-cols-[0.9fr_1.1fr] md:gap-3 md:p-4 landscape-short:grid landscape-short:overflow-hidden landscape-short:grid-cols-[0.9fr_1.1fr] landscape-short:gap-2 landscape-short:p-2">
 
         {/* Words to clue — shrinks to content on mobile, fills grid cell on desktop */}
         <div className="shrink-0 rounded-lg border border-white/10 bg-[#141826] p-3 md:flex md:min-h-0 md:shrink md:flex-col md:p-5 landscape-short:flex landscape-short:min-h-0 landscape-short:shrink landscape-short:flex-col landscape-short:p-2">
@@ -151,7 +151,7 @@ export default function BiddingRound({ state, dispatch }: Props) {
         </div>
 
         {/* Status + timer + quick actions + input */}
-        <div className="flex min-h-0 flex-col gap-2 md:flex-none landscape-short:flex-none landscape-short:gap-1.5">
+        <div className="flex shrink-0 flex-col gap-2 md:flex-none landscape-short:flex-none landscape-short:gap-1.5">
 
           <div className="rounded-lg border border-white/10 bg-[#101522] p-3 md:p-5 landscape-short:p-2">
             {noBidsYet ? (
@@ -225,7 +225,7 @@ export default function BiddingRound({ state, dispatch }: Props) {
         </div>
 
         {/* Bid buttons at end of scroll content on mobile */}
-        <div className="grid grid-cols-2 gap-2 md:hidden landscape-short:hidden">
+        <div className="grid shrink-0 grid-cols-2 gap-2 md:hidden landscape-short:hidden">
           {teamBidButtons}
         </div>
 
