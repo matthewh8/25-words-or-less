@@ -58,7 +58,7 @@ describe('deal planning', () => {
       type: 'start-bidding',
       firstTeam: 1,
       roundTime: 30,
-      request: { kind: 'bidding', modeId: 'classic', usedWords: ['USED'] },
+      request: { kind: 'bidding', usedWords: ['USED'] },
     })
     if (plan.type === 'direct') throw new Error('expected async deal plan')
 
@@ -104,7 +104,7 @@ describe('deal planning', () => {
     expect(plan).toMatchObject({
       type: 'start-money',
       moneyTime: 45,
-      request: { kind: 'money', modeId: 'classic' },
+      request: { kind: 'money' },
     })
     if (plan.type === 'direct') throw new Error('expected money deal plan')
 

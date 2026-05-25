@@ -1,5 +1,5 @@
 import type { ChallengeSettings } from './challenges'
-import type { GameMode } from './gameMode'
+import { DEFAULT_GAME_MODE } from './gameMode'
 import { normalizePlayerName, type TeamPlayers } from './teamSetup'
 
 export type GameSearchParams = { [key: string]: string | string[] | undefined }
@@ -46,7 +46,7 @@ function boolParam(value: string | undefined, fallback: boolean): boolean {
   return fallback
 }
 
-export function parseGameQuery(params: GameSearchParams, gameMode: GameMode): ParsedGameQuery {
+export function parseGameQuery(params: GameSearchParams): ParsedGameQuery {
   const teamOnePlayers = playerList(firstParam(params.p1))
   const teamOneSet = new Set(teamOnePlayers)
   const teamTwoPlayers = playerList(firstParam(params.p2), teamOneSet, MAX_QUERY_PLAYERS - teamOnePlayers.length)
@@ -56,8 +56,8 @@ export function parseGameQuery(params: GameSearchParams, gameMode: GameMode): Pa
     team2Name: shortName(firstParam(params.t2), 'Team 2'),
     teamPlayers: [teamOnePlayers, teamTwoPlayers],
     challengeSettings: {
-      enabled: boolParam(firstParam(params.challenges), gameMode.challenge.enabledByDefault),
-      includeAlcohol: boolParam(firstParam(params.alcohol), gameMode.challenge.includeAlcoholByDefault),
+      enabled: boolParam(firstParam(params.challenges), DEFAULT_GAME_MODE.challenge.enabledByDefault),
+      includeAlcohol: boolParam(firstParam(params.alcohol), DEFAULT_GAME_MODE.challenge.includeAlcoholByDefault),
     },
   }
 }

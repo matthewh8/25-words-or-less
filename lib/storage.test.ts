@@ -130,7 +130,7 @@ describe('setup storage', () => {
       players: ['Ada', 'Ada', 'Grace'],
       teamNames: ['Red', 'Blue'],
       teamPlayers: [['Ada'], ['Grace']],
-      selectedMode: 'chaos',
+
       challengesEnabled: true,
       alcoholPromptsEnabled: false,
     }, storage)
@@ -139,7 +139,7 @@ describe('setup storage', () => {
       players: ['Ada', 'Grace'],
       teamNames: ['Red', 'Blue'],
       teamPlayers: [['Ada'], ['Grace']],
-      selectedMode: 'chaos',
+
     })
 
     clearSavedSetup(storage)
@@ -153,7 +153,7 @@ describe('setup storage', () => {
       players: ['Ada', 'Grace'],
       teamNames: ['A very long team name that should be capped', 'Blue'],
       teamPlayers: [['Ada', 'Missing'], ['Grace', 'Ada']],
-      selectedMode: 'classic',
+
       challengesEnabled: true,
       alcoholPromptsEnabled: false,
     }))
@@ -172,7 +172,7 @@ describe('setup storage', () => {
       players: ['Ava|Ben', 'Cam'],
       teamNames: ['Red', 'Blue'],
       teamPlayers: [['Ava|Ben'], ['Cam']],
-      selectedMode: 'classic',
+
       challengesEnabled: true,
       alcoholPromptsEnabled: false,
     }, storage)
@@ -199,7 +199,7 @@ describe('setup storage', () => {
       players: ['Ada'],
       teamNames: ['Red', 'Blue'],
       teamPlayers: [['Ada'], []],
-      selectedMode: 'classic',
+
       challengesEnabled: true,
       alcoholPromptsEnabled: false,
     }, storage)).not.toThrow()

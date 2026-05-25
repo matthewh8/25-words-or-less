@@ -17,7 +17,7 @@ describe('game query parsing', () => {
       p2: 'Ben|Cam|  |Cam',
       challenges: '0',
       alcohol: '1',
-    }, DEFAULT_GAME_MODE)
+    })
 
     expect(parsed.team1Name).toBe('A very very very very lo')
     expect(parsed.team2Name).toBe('Team 2')
@@ -32,7 +32,7 @@ describe('game query parsing', () => {
     const parsed = parseGameQuery({
       p1: 'Ava%7CBen|Cam',
       p2: 'Cam|Dee%7CRay',
-    }, DEFAULT_GAME_MODE)
+    })
 
     expect(parsed.teamPlayers).toEqual([
       ['Ava Ben', 'Cam'],
@@ -45,7 +45,7 @@ describe('game query parsing', () => {
       p1: Array.from({ length: 40 }, (_, index) => `P${index}`).join('|'),
       challenges: 'maybe',
       alcohol: 'maybe',
-    }, DEFAULT_GAME_MODE)
+    })
 
     expect(parsed.teamPlayers[0]).toHaveLength(24)
     expect(parsed.teamPlayers[0][0]).toBe('P0')
@@ -60,7 +60,7 @@ describe('game query parsing', () => {
     const parsed = parseGameQuery({
       p1: Array.from({ length: 20 }, (_, index) => `A${index}`).join('|'),
       p2: Array.from({ length: 20 }, (_, index) => `B${index}`).join('|'),
-    }, DEFAULT_GAME_MODE)
+    })
 
     expect(parsed.teamPlayers[0]).toHaveLength(20)
     expect(parsed.teamPlayers[1]).toHaveLength(4)

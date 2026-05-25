@@ -101,18 +101,6 @@ export interface GameMode {
   accessibility: AccessibilityDefaults
 }
 
-export interface GameModeSummary {
-  id: string
-  name: string
-  shortName: string
-  description: string
-  bidContests: number
-  stackRounds: number[]
-  moneyWords: number
-  challengeDefault: boolean
-  alcoholDefault: boolean
-}
-
 type UnknownRecord = Record<string, unknown>
 
 export const DEFAULT_GAME_MODE: GameMode = {
@@ -586,20 +574,6 @@ export function validateGameModeDefinition(raw: unknown): string[] {
   requireBoolean(accessibility, 'announceControls', 'accessibility', errors)
 
   return errors
-}
-
-export function summarizeGameMode(gameMode: GameMode): GameModeSummary {
-  return {
-    id: gameMode.id,
-    name: gameMode.name,
-    shortName: gameMode.shortName,
-    description: gameMode.description,
-    bidContests: gameMode.bidding.contests,
-    stackRounds: gameMode.stacks.rounds.map(round => round.number),
-    moneyWords: gameMode.money.wordCount,
-    challengeDefault: gameMode.challenge.enabledByDefault,
-    alcoholDefault: gameMode.challenge.includeAlcoholByDefault,
-  }
 }
 
 export function findStackOption(gameMode: GameMode, stackId: string): StackOptionRules | undefined {

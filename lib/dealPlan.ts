@@ -3,9 +3,9 @@ import type { StackDeal } from './dealing'
 import { biddingExhausted, stackRoundDone, type GameAction, type GameState } from './gameState'
 
 export type DealRequest =
-  | { kind: 'bidding'; modeId: string; usedWords: string[] }
-  | { kind: 'money'; modeId: string; usedWords: string[] }
-  | { kind: 'stack'; modeId: string; usedWords: string[]; roundNumber: number }
+  | { kind: 'bidding'; usedWords: string[] }
+  | { kind: 'money'; usedWords: string[] }
+  | { kind: 'stack'; usedWords: string[]; roundNumber: number }
 
 export interface WordsDealResponse {
   kind: 'words'
@@ -31,9 +31,8 @@ export type DealPlan =
   | { type: 'next-stack'; request: DealRequest }
   | { type: 'refresh-bid'; request: DealRequest }
 
-function dealBase(state: GameState): { modeId: string; usedWords: string[] } {
+function dealBase(state: GameState): { usedWords: string[] } {
   return {
-    modeId: state.gameMode.id,
     usedWords: state.usedWords,
   }
 }

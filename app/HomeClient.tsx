@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import PlayerChip from '@/components/PlayerChip'
 import { teamPlayerLine } from '@/components/TeamNameBlock'
-import type { GameModeSummary } from '@/lib/gameMode'
+import { DEFAULT_GAME_MODE } from '@/lib/gameMode'
 import { clearSavedSetup, clearUsedWords, readSavedSetup, writeSavedSetup } from '@/lib/storage'
 import {
   assignPlayerToTeam,
@@ -14,32 +14,22 @@ import {
   type TeamIndex,
 } from '@/lib/teamSetup'
 
-interface HomeClientProps {
-  gameModes: GameModeSummary[]
-}
-
 function encodePlayers(players: string[]): string {
   return players.map(normalizePlayerName).filter(Boolean).join('|')
 }
 
-export default function HomeClient({ gameModes }: HomeClientProps) {
+export default function HomeClient() {
   const router = useRouter()
-  const firstMode = gameModes[0]?.id ?? 'classic'
   const [teamNames, setTeamNames] = useState<[string, string]>(['Team 1', 'Team 2'])
-  const [selectedMode, setSelectedMode] = useState(firstMode)
   const [players, setPlayers] = useState<string[]>([])
   const [teamPlayers, setTeamPlayers] = useState<[string[], string[]]>([[], []])
   const [draftNames, setDraftNames] = useState('')
-  const [challengesEnabled, setChallengesEnabled] = useState(gameModes[0]?.challengeDefault ?? true)
-  const [alcoholPromptsEnabled, setAlcoholPromptsEnabled] = useState(gameModes[0]?.alcoholDefault ?? false)
+  const [challengesEnabled, setChallengesEnabled] = useState(DEFAULT_GAME_MODE.challenge.enabledByDefault)
+  const [alcoholPromptsEnabled, setAlcoholPromptsEnabled] = useState(DEFAULT_GAME_MODE.challenge.includeAlcoholByDefault)
   const [cleared, setCleared] = useState(false)
   const setupHydratedRef = useRef(false)
   const skipNextSetupWriteRef = useRef(false)
   const clearNoticeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const selectedModeSummary = useMemo(
-    () => gameModes.find(mode => mode.id === selectedMode) ?? gameModes[0],
-    [gameModes, selectedMode]
-  )
 
   const assigned = useMemo(() => new Set([...teamPlayers[0], ...teamPlayers[1]]), [teamPlayers])
   const bench = players.filter(player => !assigned.has(player))
@@ -85,12 +75,11 @@ export default function HomeClient({ gameModes }: HomeClientProps) {
     setPlayers(saved.players)
     setTeamNames(saved.teamNames)
     setTeamPlayers(saved.teamPlayers)
-    setSelectedMode(gameModes.some(mode => mode.id === saved.selectedMode) ? saved.selectedMode : firstMode)
     setChallengesEnabled(saved.challengesEnabled)
     setAlcoholPromptsEnabled(saved.alcoholPromptsEnabled)
     /* eslint-enable react-hooks/set-state-in-effect */
     setupHydratedRef.current = true
-  }, [firstMode, gameModes])
+  }, [])
 
   useEffect(() => {
     if (!setupHydratedRef.current) return
@@ -102,11 +91,10 @@ export default function HomeClient({ gameModes }: HomeClientProps) {
       players,
       teamNames,
       teamPlayers,
-      selectedMode,
       challengesEnabled,
       alcoholPromptsEnabled,
     })
-  }, [alcoholPromptsEnabled, challengesEnabled, players, selectedMode, teamNames, teamPlayers])
+  }, [alcoholPromptsEnabled, challengesEnabled, players, teamNames, teamPlayers])
 
   useEffect(() => {
     return () => {
@@ -167,24 +155,14 @@ export default function HomeClient({ gameModes }: HomeClientProps) {
     setPlayers([])
     setTeamPlayers([[], []])
     setTeamNames(['Team 1', 'Team 2'])
-    setSelectedMode(firstMode)
-    setChallengesEnabled(gameModes[0]?.challengeDefault ?? true)
-    setAlcoholPromptsEnabled(gameModes[0]?.alcoholDefault ?? false)
+    setChallengesEnabled(DEFAULT_GAME_MODE.challenge.enabledByDefault)
+    setAlcoholPromptsEnabled(DEFAULT_GAME_MODE.challenge.includeAlcoholByDefault)
     setDraftNames('')
     clearSavedSetup()
   }
 
-  function chooseMode(modeId: string) {
-    const mode = gameModes.find(item => item.id === modeId)
-    if (!mode) return
-    setSelectedMode(mode.id)
-    setChallengesEnabled(mode.challengeDefault)
-    setAlcoholPromptsEnabled(mode.alcoholDefault)
-  }
-
   function startGame() {
     const params = new URLSearchParams({
-      mode: selectedMode,
       t1: teamNames[0].trim() || 'Team 1',
       t2: teamNames[1].trim() || 'Team 2',
       challenges: challengesEnabled ? '1' : '0',
@@ -345,60 +323,11 @@ export default function HomeClient({ gameModes }: HomeClientProps) {
           </div>
 
           <div className="order-2 flex min-h-0 min-w-0 flex-col rounded-lg border border-white/10 bg-[#141826] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] lg:p-4">
-            <div className="mb-1 flex shrink-0 items-end justify-between gap-3 sm:mb-2">
-              <div className="min-w-0">
-                <p className="mono-label text-[10px] text-[#ffd23f]">Game mode</p>
-                <h2 className="sr-only mt-0.5 truncate text-lg font-black uppercase tracking-normal sm:not-sr-only sm:block sm:text-xl lg:text-2xl">{selectedModeSummary?.name ?? 'Classic'}</h2>
-              </div>
-              <p className="mono-label hidden shrink-0 text-right text-[9px] text-white/35 sm:block">
-                {selectedModeSummary?.bidContests ?? 2} bid / {selectedModeSummary?.stackRounds.length ?? 2} stack / {selectedModeSummary?.moneyWords ?? 10} final
-              </p>
+            <div className="mb-1 shrink-0 sm:mb-2">
+              <p className="mono-label text-[10px] text-[#ffd23f]">Options</p>
             </div>
 
-            <select
-              value={selectedMode}
-              onChange={event => chooseMode(event.target.value)}
-              aria-label="Game mode"
-              className="h-10 w-full shrink-0 rounded-md border border-[#ffd23f]/40 bg-[#0a0d14] px-3 text-base font-black uppercase text-white outline-none focus:border-[#ffd23f] sm:hidden"
-            >
-              {gameModes.map(mode => (
-                <option key={mode.id} value={mode.id}>
-                  {mode.name}
-                </option>
-              ))}
-            </select>
-
-            <div className="panel-scroll mt-2 hidden min-h-0 flex-1 overflow-y-auto pr-1 sm:block">
-              <div className="grid auto-rows-[5.25rem] grid-cols-1 gap-1.5 xl:grid-cols-2">
-                {gameModes.map(mode => {
-                  const selected = selectedMode === mode.id
-                  return (
-                    <button
-                      key={mode.id}
-                      type="button"
-                      onClick={() => chooseMode(mode.id)}
-                      className={`h-full overflow-hidden rounded-md border px-2.5 py-2 text-left transition-all active:scale-[0.99] ${
-                        selected
-                          ? 'border-[#ffd23f] bg-[#ffd23f]/10 shadow-[inset_0_0_0_1px_rgba(255,210,63,0.18)]'
-                          : 'border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.055]'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="min-w-0 truncate text-xs font-black uppercase leading-none">{mode.name}</span>
-                        <span className={`mono-label shrink-0 rounded border px-1.5 py-1 text-[8px] leading-none ${selected ? 'border-[#ffd23f]/35 text-[#ffd23f]' : 'border-white/10 text-white/35'}`}>
-                          {mode.shortName}
-                        </span>
-                      </div>
-                      <p className="mt-1.5 overflow-hidden text-[11px] leading-snug text-white/45 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
-                        {mode.description}
-                      </p>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-
-            <div className="mt-1 grid shrink-0 grid-cols-2 gap-1.5 sm:mt-2">
+            <div className="grid shrink-0 grid-cols-2 gap-1.5">
               <label className="flex h-7 items-center justify-between gap-2 rounded-md border border-white/10 bg-[#0a0d14] px-2 sm:h-10">
                 <span className="truncate text-[10px] font-bold leading-none text-white/75 sm:text-xs">Party prompts</span>
                 <input

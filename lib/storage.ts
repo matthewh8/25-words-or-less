@@ -8,7 +8,6 @@ export interface SavedSetupState {
   players: string[]
   teamNames: [string, string]
   teamPlayers: [string[], string[]]
-  selectedMode: string
   challengesEnabled: boolean
   alcoholPromptsEnabled: boolean
 }
@@ -127,7 +126,6 @@ function normalizeSavedSetup(value: unknown): SavedSetupState | null {
       normalizeTeamName(teamNames[1], 'Team 2'),
     ],
     teamPlayers: normalizeTeamPlayers(record.teamPlayers, players),
-    selectedMode: typeof record.selectedMode === 'string' && record.selectedMode.trim() ? record.selectedMode.trim() : 'classic',
     challengesEnabled: typeof record.challengesEnabled === 'boolean' ? record.challengesEnabled : true,
     alcoholPromptsEnabled: typeof record.alcoholPromptsEnabled === 'boolean' ? record.alcoholPromptsEnabled : false,
   }

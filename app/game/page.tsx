@@ -1,5 +1,4 @@
-import { loadGameMode } from '@/lib/gameModeServer'
-import { firstParam, parseGameQuery } from '@/lib/gameQuery'
+import { parseGameQuery } from '@/lib/gameQuery'
 import GameClient from './GameClient'
 
 interface GamePageProps {
@@ -8,8 +7,7 @@ interface GamePageProps {
 
 export default async function GamePage({ searchParams }: GamePageProps) {
   const params = await searchParams
-  const gameMode = await loadGameMode(firstParam(params.mode))
-  const parsed = parseGameQuery(params, gameMode)
+  const parsed = parseGameQuery(params)
 
   return (
     <GameClient
@@ -17,7 +15,6 @@ export default async function GamePage({ searchParams }: GamePageProps) {
       team2Name={parsed.team2Name}
       teamPlayers={parsed.teamPlayers}
       challengeSettings={parsed.challengeSettings}
-      gameMode={gameMode}
     />
   )
 }

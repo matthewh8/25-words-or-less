@@ -1,5 +1,4 @@
-import { getStackRound } from '@/lib/gameMode'
-import { loadGameMode } from '@/lib/gameModeServer'
+import { DEFAULT_GAME_MODE, getStackRound } from '@/lib/gameMode'
 import { getDefinitionsForWords, getWordsForDeck } from '@/lib/words'
 import { appendUsedWords } from '@/lib/dealing'
 import { canonicalWord } from '@/lib/wordSelection'
@@ -10,7 +9,6 @@ type DealKind = 'bidding' | 'stack' | 'money'
 
 interface RawDealRequest {
   kind?: DealKind
-  modeId?: string
   usedWords?: unknown
   roundNumber?: unknown
 }
@@ -49,7 +47,7 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Invalid deal kind' }, { status: 400 })
   }
 
-  const gameMode = await loadGameMode(body.modeId)
+  const gameMode = DEFAULT_GAME_MODE
   const usedWords = normalizeUsedWords(body.usedWords)
 
   if (body.kind === 'bidding') {

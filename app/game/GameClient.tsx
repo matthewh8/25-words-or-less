@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { gameReducer, initGame, isCluingPhase } from '@/lib/gameState'
 import type { GameAction, GameState } from '@/lib/gameState'
-import type { GameMode } from '@/lib/gameMode'
+import { DEFAULT_GAME_MODE } from '@/lib/gameMode'
 import type { ChallengeSettings } from '@/lib/challenges'
 import { actionFromDeal, planDeal } from '@/lib/dealPlan'
 import type { DealRequest, DealResponse } from '@/lib/dealPlan'
@@ -24,7 +24,6 @@ interface GameClientProps {
   team2Name: string
   teamPlayers: [string[], string[]]
   challengeSettings: ChallengeSettings
-  gameMode: GameMode
 }
 
 async function requestDeal(body: DealRequest): Promise<DealResponse> {
@@ -55,9 +54,9 @@ function cluingReadyKey(state: GameState): string | null {
   ].join(':')
 }
 
-export default function GameClient({ team1Name, team2Name, teamPlayers, challengeSettings, gameMode }: GameClientProps) {
+export default function GameClient({ team1Name, team2Name, teamPlayers, challengeSettings }: GameClientProps) {
   const [state, dispatch] = useReducer(gameReducer, undefined, () => {
-    return initGame(team1Name, team2Name, readUsedWords(), gameMode, teamPlayers, challengeSettings)
+    return initGame(team1Name, team2Name, readUsedWords(), DEFAULT_GAME_MODE, teamPlayers, challengeSettings)
   })
   const stateRef = useRef(state)
   const pendingDealRef = useRef(false)
